@@ -1,75 +1,377 @@
+// =====================================
+// CONFIGURAÇÕES GERAIS
+// =====================================
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  // Use the DATABASE_URL environment variable for production
-  // or a local SQLite file for development
-  // Uncomment the line below to use a local SQLite file
-  // url = "file:./dev.db"
- url = env("DATABASE_URL")
-}
-/// Role de usuário no sistema
-enum Role {
- USER
- SUPPORT
- ADMIN
-}
-/// Status do chamado
-enum TicketStatus {
- OPEN
- IN_PROGRESS
- RESOLVED
- CLOSED
- CANCELLED
-}
-model User {
- id String @id @default(cuid())
- createdAt DateTime @default(now())
- updatedAt DateTime @updatedAt
- email String @unique
- name String
- passwordHash String
- role Role @default(USER)
- ticketsAuthored Ticket[] @relation("AuthorTickets")
- ticketsAssigned Ticket[] @relation("AssignedTickets")
- updates TicketUpdate[]
- refreshTokens RefreshToken[]
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model Ticket {
- id String @id @default(cuid())
- createdAt DateTime @default(now())
- updatedAt DateTime @updatedAt
- title String
- description String
- status TicketStatus @default(OPEN)
- author User @relation("AuthorTickets", fields: [authorId],references: [id])
- authorId String
- assignedTo User? @relation("AssignedTickets", fields:[assignedToId], references: [id])
- assignedToId String?
- updates TicketUpdate[]
-}
-model TicketUpdate {
- id String @id @default(cuid())
- createdAt DateTime @default(now())
- message String
- previousStatus TicketStatus?
- newStatus TicketStatus?
- ticket Ticket @relation(fields: [ticketId], references: [id])
- ticketId String
- user User @relation(fields: [userId], references: [id])
- userId String
-}
-model RefreshToken {
- id String @id @default(cuid())
- createdAt DateTime @default(now())
- updatedAt DateTime @updatedAt
- token String @unique
- isRevoked Boolean @default(false)
- expiresAt DateTime
- user User @relation(fields: [userId], references: [id])
- userId String
+// =====================================
+// ENUMS - Domains convertidos para Prisma
+// =====================================
+enum StatusRegistro {
+  INATIVO  @map("0")
+  ATIVO    @map("1")
+  EXCLUIDO @map("2")
 }
 
+enum StatusGenero {
+  MASCULINO     @map("1")
+  FEMININO      @map("2")
+  NEUTRO        @map("3")
+  NAO_BINARIE   @map("4")
+  IGNORADO      @map("5")
+}
+enum SiglaEstado {
+  AC   @map("AC")
+  AL   @map("AL")
+  AP   @map("AP")
+  AM   @map("AM")
+  BA   @map("BA")
+  CE   @map("CE")
+  DF   @map("DF")
+  ES   @map("ES")
+  GO   @map("GO")
+  MA   @map("MA")
+  MT   @map("MT")
+  MS   @map("MS")
+  MG   @map("MG")
+  PA   @map("PA")
+  PB   @map("PB")
+  PR   @map("PR")
+  PE   @map("PE")
+  PI   @map("PI")
+  RJ   @map("RJ")
+  RN   @map("RN")
+  RS   @map("RS")
+  RO   @map("RO")
+  RR   @map("RR")
+  SC   @map("SC")
+  SP   @map("SP")
+  SE   @map("SE")
+  TO   @map("TO")
+}
+
+// =====================================
+// MODELS
+// =====================================
+
+model Empresa {
+  id           BigInt         @id @default(autoincrement()) @map("id_empresa")
+  parentId     BigInt         @default(-1) @map("id_parent_empresa")
+  tipoId       BigInt         @map("id_empresa_tipo")
+  categoriaId  BigInt         @map("id_empresa_categoria")
+  cnpj         String         @db.VarChar(20)
+  codigo       String?        @db.VarChar(50)
+  razaoSocial  String         @db.VarChar(500) @map("razao_social")
+  nomeFantasia String         @db.VarChar(500) @map("nome_fantasia")
+  logradouro   String?        @db.VarChar(50)
+  endereco     String?        @db.VarChar(150)
+  numero       String?        @db.VarChar(20)
+  complemento  String?        @db.VarChar(50)
+  bairro       String?        @db.VarChar(150)
+  cidade       String?        @db.VarChar(150)
+  estado       SiglaEstado?   @map("estado")
+  cep          String?        @db.VarChar(20)
+  contato      String?        @db.VarChar(50)
+  email        String?        @db.VarChar(150)
+  observacao   String?        @db.VarChar(500)
+  ativo        StatusRegistro
+  motivo       String?        @db.VarChar(500)
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime?      @map("updated_at")
+
+  tipos        EmpresaTipo[]  @relation("EmpresaTipos")
+  categorias   EmpresaCategoria[] @relation("EmpresaCategorias")
+  sistemas     Sistema[]
+  empresaSistemas     EmpresaSistema[]
+  pessoas      Pessoa[]
+  pessoasTipos  PessoaTipo[]
+  perfis       Perfil[]
+  prioridades  Prioridade[]
+  ocorrencias  Ocorrencia[]
+  ocorrenciasTipos OcorrenciaTipo[]
+  chamados     Chamado[]
+  chamadosMovimentos ChamadoMovimentoEtapa[]
+
+  @@map("empresas")
+}
+
+model EmpresaTipo {
+  id        BigInt         @id @default(autoincrement()) @map("id_empresa_tipo")
+  empresaId BigInt         @map("id_empresa")
+  descricao String         @db.VarChar(100)
+  ativo     StatusRegistro
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime?      @map("updated_at")
+
+  empresa   Empresa        @relation("EmpresaTipos", fields: [empresaId], references: [id])
+
+  @@map("empresas_tipos")
+}
+
+model EmpresaCategoria {
+  id        BigInt         @id @default(autoincrement()) @map("id_empresa_categoria")
+  empresaId BigInt         @map("id_empresa")
+  descricao String         @db.VarChar(100)
+  ativo     StatusRegistro
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime?      @map("updated_at")
+
+  empresa   Empresa        @relation("EmpresaCategorias", fields: [empresaId], references: [id])
+
+  @@map("empresas_categorias")
+}
+
+model Sistema {
+  id        BigInt         @id @default(autoincrement()) @map("id_sistema")
+  empresaId BigInt         @map("id_empresa")
+  nome      String         @db.VarChar(50)
+  descricao String         @db.VarChar(100)
+  ativo     StatusRegistro
+  motivo    String?        @db.VarChar(500)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime?      @map("updated_at")
+
+  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  empresasSistemas EmpresaSistema[]
+  chamados  Chamado[]
+
+  @@map("sistemas")
+}
+
+model EmpresaSistema {
+  id        BigInt         @id @default(autoincrement()) @map("id_empresa_sistema")
+  empresaId BigInt         @map("id_empresa")
+  sistemaId BigInt         @map("id_sistema")
+  versao    String         @db.VarChar(50)
+  ativo     StatusRegistro
+  motivo    String?        @db.VarChar(500)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime?      @map("updated_at")
+
+  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  sistema   Sistema        @relation(fields: [sistemaId], references: [id])
+
+  @@map("empresas_sistemas")
+}
+
+model Pessoa {
+  id         BigInt         @id @default(autoincrement()) @map("id_pessoa")
+  empresaId  BigInt         @map("id_empresa")
+  tipoId     BigInt         @map("id_pessoa_tipo")
+  genero     StatusGenero
+  nome       String         @db.VarChar(150)
+  nomeSocial String?        @db.VarChar(150) @map("nome_social")
+  ativo      StatusRegistro
+  motivo     String?        @db.VarChar(500)
+  createdAt  DateTime       @default(now()) @map("created_at")
+  updatedAt  DateTime?      @map("updated_at")
+
+  empresa    Empresa        @relation(fields: [empresaId], references: [id])
+  tipo       PessoaTipo     @relation(fields: [tipoId], references: [id])
+  usuarios   PessoaUsuario[]
+
+  @@map("pessoas")
+}
+
+model PessoaTipo {
+  id        BigInt         @id @default(autoincrement()) @map("id_pessoa_tipo")
+  empresaId BigInt         @map("id_empresa")
+  descricao String         @db.VarChar(100)
+  ativo     StatusRegistro
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime?      @map("updated_at")
+
+  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  pessoas   Pessoa[]
+
+  @@map("pessoas_tipos")
+}
+
+model PessoaUsuario {
+  id        BigInt         @id @default(autoincrement()) @map("id_pessoa_usuario")
+  pessoaId  BigInt         @map("id_pessoa")
+  perfilId  BigInt         @map("id_pessoa_perfil")
+  email     String         @db.VarChar(150)
+  login     String         @db.VarChar(150)
+  senha     String?        @db.VarChar(150)
+  ativo     StatusRegistro
+  motivo    String?        @db.VarChar(500)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime?      @map("updated_at")
+
+  pessoa    Pessoa         @relation(fields: [pessoaId], references: [id])
+  perfil    Perfil         @relation(fields: [perfilId], references: [id])
+
+  @@map("pessoas_usuarios")
+}
+
+model Perfil {
+  id        BigInt         @id @default(autoincrement()) @map("id_perfil")
+  empresaId BigInt         @map("id_empresa")
+  descricao String         @db.VarChar(100)
+  ativo     StatusRegistro
+  motivo    String?        @db.VarChar(500)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime?      @map("updated_at")
+
+  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  usuarios  PessoaUsuario[]
+
+  @@map("perfis")
+}
+
+model Prioridade {
+  id        BigInt         @id @default(autoincrement()) @map("id_prioridade")
+  empresaId BigInt         @map("id_empresa")
+  descricao String         @db.VarChar(100)
+  cor       String         @db.VarChar(100)
+  tempo     DateTime       @db.Time @map("tempo_resolucao")
+  ativo     StatusRegistro
+  motivo    String?        @db.VarChar(500)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime?      @map("updated_at")
+
+  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  chamados  Chamado[]
+
+  @@map("prioridades")
+}
+
+model OcorrenciaTipo {
+  id        BigInt         @id @default(autoincrement()) @map("id_ocorrencia_tipo")
+  empresaId BigInt         @map("id_empresa")
+  descricao String         @db.VarChar(100)
+  ativo     StatusRegistro
+  motivo    String?        @db.VarChar(500)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime?      @map("updated_at")
+
+  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  ocorrencias Ocorrencia[]
+
+  @@map("ocorrencias_tipos")
+}
+
+model Ocorrencia {
+  id        BigInt         @id @default(autoincrement()) @map("id_ocorrencia")
+  tipoId    BigInt         @map("id_ocorrencia_tipo")
+  empresaId BigInt         @map("id_empresa")
+  descricao String         @db.VarChar(100)
+  ativo     StatusRegistro
+  motivo    String?        @db.VarChar(500)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime?      @map("updated_at")
+
+  tipo      OcorrenciaTipo @relation(fields: [tipoId], references: [id])
+  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  chamados  Chamado[]
+
+  @@map("ocorrencias")
+}
+
+model Chamado {
+  id           BigInt         @id @default(autoincrement()) @map("id_chamado")
+  empresaId    BigInt         @map("id_empresa")
+  sistemaId    BigInt         @map("id_sistema")
+  pessoaId     BigInt         @map("id_pessoa_empresa")
+  usuarioId    BigInt         @map("id_pessoa_usuario")
+  ocorrenciaId BigInt         @map("id_ocorrencia")
+  prioridadeId BigInt         @map("id_prioridade")
+  protocolo    Int?
+  titulo       String         @db.VarChar(100)
+  descricao    String         @db.VarChar(500)
+  observacao   String         @db.VarChar(500)
+  ativo        StatusRegistro
+  motivo       String?        @db.VarChar(500)
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime?      @map("updated_at")
+
+  empresa      Empresa        @relation(fields: [empresaId], references: [id])
+  sistema      Sistema        @relation(fields: [sistemaId], references: [id])
+  ocorrencia   Ocorrencia     @relation(fields: [ocorrenciaId], references: [id])
+  prioridade   Prioridade     @relation(fields: [prioridadeId], references: [id])
+  movimentos   ChamadoMovimento[]
+
+  @@map("chamados")
+}
+
+model ChamadoMovimento {
+  id        BigInt         @id @default(autoincrement()) @map("id_chamado_movimento")
+  chamadoId BigInt         @map("id_chamado")
+  etapaId   BigInt         @map("id_chamado_movimento_etapa")
+  usuarioId BigInt         @map("id_pessoa_usuario")
+  ordem     Int?
+  inicio    DateTime?      @map("data_hora_inicio")
+  fim       DateTime?      @map("data_hora_fim")
+  descricaoAcao String     @db.VarChar(500) @map("descricao_acao")
+  observacaoTec String     @db.VarChar(500) @map("observacao_tecnica")
+  ativo     StatusRegistro
+  motivo    String?        @db.VarChar(500)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime?      @map("updated_at")
+
+  chamado   Chamado        @relation(fields: [chamadoId], references: [id])
+  etapa     ChamadoMovimentoEtapa @relation(fields: [etapaId], references: [id])
+  anexos    ChamadoMovimentoAnexo[]
+  mensagens ChamadoMovimentoMensagem[]
+
+  @@map("chamados_movimentos")
+}
+
+model ChamadoMovimentoEtapa {
+  id        BigInt         @id @default(autoincrement()) @map("id_chamado_movimento_etapa")
+  empresaId BigInt         @map("id_empresa")
+  descricao String         @db.VarChar(100)
+  ativo     StatusRegistro
+  motivo    String?        @db.VarChar(500)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime?      @map("updated_at")
+
+  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  movimentos ChamadoMovimento[]
+
+  @@map("chamados_movimentos_etapas")
+}
+
+model ChamadoMovimentoAnexo {
+  id        BigInt         @id @default(autoincrement()) @map("id_chamado_movimento_anexo")
+  movimentoId BigInt       @map("id_chamado_movimento")
+  usuarioId  BigInt        @map("id_pessoa_usuario")
+  ordem      Int?
+  descricao  String        @db.VarChar(100)
+  dataHora   DateTime?     @map("data_hora_")
+  caminho    String        @db.VarChar(150)
+  ativo      StatusRegistro
+  motivo     String?       @db.VarChar(500)
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime?     @map("updated_at")
+
+  movimento  ChamadoMovimento @relation(fields: [movimentoId], references: [id])
+
+  @@map("chamados_movimentos_anexos")
+}
+
+model ChamadoMovimentoMensagem {
+  id        BigInt         @id @default(autoincrement()) @map("id_chamado_movimento_mensagem")
+  movimentoId BigInt       @map("id_chamado_movimento")
+  usuarioEnvioId BigInt    @map("id_pessoa_usuario_envio")
+  usuarioLeituraId BigInt  @map("id_pessoa_usuario_leitura")
+  ordem      Int?
+  descricao  String        @db.VarChar(500)
+  envio      DateTime?     @map("data_hora_envio")
+  leitura    DateTime?     @map("data_hora_leitura")
+  ativo      StatusRegistro
+  motivo     String?       @db.VarChar(500)
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime?     @map("updated_at")
+
+  movimento  ChamadoMovimento @relation(fields: [movimentoId], references: [id])
+
+  @@map("chamados_movimentos_mensagens")
+}

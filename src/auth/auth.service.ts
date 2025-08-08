@@ -1,45 +1,70 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+// auth/auth.service.ts
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from '../common/enums/role.enum';
-import { comparePassword, hashPassword } from '../common/utils/password.util';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
+import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
-    private jwt: JwtService,
+    private jwtService: JwtService,
   ) {}
+
   async register(data: RegisterDto) {
-    const exists = await this.prisma.user.findUnique({
-      where: { email: data.email },
-    });
-    if (exists) throw new ConflictException('Email já registrado');
-    const passwordHash = await hashPassword(data.password);
-    const user = await this.prisma.user.create({
+    const hashedPassword = await bcrypt.hash(data.senha, 10);
+
+    const user = await this.prisma.pessoaUsuario.create({
       data: {
+        pessoaId: data.pessoaId,
+        perfilId: data.perfilId,
         email: data.email,
-        name: data.name,
-        passwordHash,
-        role: data.role ?? Role.USER,
+        login: data.login,
+        senha: hashedPassword,
+        ativo: 'ATIVO',
       },
     });
-    return { id: user.id, email: user.email, name: user.name, role: user.role };
+
+    return { message: 'Usuário registrado com sucesso', user };
   }
-  async validateUser(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) return null;
-    const valid = await comparePassword(password, user.passwordHash);
-    if (!valid) return null;
+
+  async login(user: any) {
+    console.log("Como ta esse user: ",user);
+    const payload = { sub: user.id.toString(), login: user.login };
+    const token = this.jwtService.sign(payload);
+
+    return { access_token: token };
+  }
+
+  async validateUser(userId: string) {
+    return this.prisma.pessoaUsuario.findUnique({
+      where: { id: BigInt(userId) },
+      include: {
+        pessoa: true,
+        perfil: true,
+      },
+    });
+  }
+
+  async validateUserByLoginAndSenha(login: string, senha: string) {
+    const user = await this.prisma.pessoaUsuario.findFirst({
+      where: { login: login },
+    });
+    
+    if (!user) {
+      return null;
+    }
+    const validPassword = await bcrypt.compare(senha, user.senha);
+    if (!validPassword) {
+      return null;
+    }
     return user;
   }
-  async login(user: { id: string; email: string; role: Role }) {
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    const access_token = await this.jwt.signAsync(payload, {
-      secret: process.env.JWT_SECRET,
-      expiresIn: process.env.JWT_EXPIRES_IN || '15m',
-    });
-    return { access_token };
-  }
+
+  getJwtToken(payload: any) {
+  return this.jwtService.sign(payload);
+}
+
 }

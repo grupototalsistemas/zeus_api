@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { ChamadosModule } from './chamados/chamados.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { TicketModule } from './ticket/ticket.module';
 
-import { UsersModule } from './user/user.module';
+import { EmpresasModule } from './empresas/empresas.module';
+import { PessoasModule } from './pessoas/pessoas.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -17,8 +18,9 @@ import { UsersModule } from './user/user.module';
     }),
     PrismaModule,
     AuthModule,
-    UsersModule,
-    TicketModule,
+    PessoasModule,
+    ChamadosModule,
+    EmpresasModule,
   ],
 })
 export class AppModule {}

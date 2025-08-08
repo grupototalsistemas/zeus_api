@@ -4,6 +4,7 @@ import * as net from 'net';
 import { AppModule } from './app.module';
 import { PrismaClientExceptionFilter } from './common/filters/prisma-client-exception.filter';
 import { setupSwagger } from './config/swagger.config';
+import { BigIntInterceptor } from './common/interceptors/bigint.interceptor';
 
 async function findAvailablePort(startPort: number): Promise<number> {
   return new Promise((resolve) => {
@@ -19,6 +20,7 @@ async function findAvailablePort(startPort: number): Promise<number> {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
+  app.useGlobalInterceptors(new BigIntInterceptor());
 
   app.useGlobalPipes(
     new ValidationPipe({
