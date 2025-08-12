@@ -1,22 +1,38 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import * as bcrypt from 'bcrypt';
 import { Strategy } from 'passport-local';
-import { AuthService } from '../auth.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
-export class LocalStrategy extends PassportStrategy(Strategy) {
-  constructor(private authService: AuthService) {
-    super({ usernameField: 'login', passwordField: 'senha' });
-
+export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
+  constructor(private prisma: PrismaService) {
+    super({
+      usernameField: 'login',
+      passwordField: 'senha',
+    });
   }
-  async validate(login: string, senha: string) {
-    console.log('login', login);
-    const user = await this.authService.validateUserByLoginAndSenha(
-      login,
-      senha,
-    );
-    if (!user) {
+
+  async validate(login: string, senha: string): Promise<any> {
+    const usuario = await this.prisma.pessoaUsuario.findFirst({
+      where: { login },
+      include: {
+        pessoa: true,
+        perfil: true,
+      },
+    });
+
+    if (!usuario) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
-    return user;
+
+    const senhaValida = await bcrypt.compare(senha, usuario.senha ?? '');
+
+    if (!senhaValida) {
+      throw new UnauthorizedException('Credenciais inválidas');
+    }
+
+    // Remove senha para segurança
+
+    return usuario; // Esse retorno vai ser setado em req.user
   }
 }

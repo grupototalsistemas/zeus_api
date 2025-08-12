@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { Public } from 'src/auth/decorators/public.decorator';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { PessoasService } from './pessoas.service';
@@ -21,6 +22,7 @@ export class PessoasController {
     return this.pessoasService.create(dto);
   }
 
+  @Public()
   @Get()
   findAll() {
     return this.pessoasService.findAll();

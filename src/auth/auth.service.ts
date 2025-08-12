@@ -3,8 +3,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
+import { RegisterRecibeDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -13,13 +12,78 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(data: RegisterDto) {
+  async register(data: RegisterRecibeDto) {
+    let pessoaId: bigint;
+    let perfilId: bigint;
+    //Verifica se o login e a senha ja existe no banco de dados
+    const userExists = await this.validateUserByLoginAndSenha(
+      data.login,
+      data.senha,
+    );
+    if (userExists) {
+      throw new UnauthorizedException('Login ja cadastrado');
+    }
+    // Verifica se tem a pessoa no banco, se não tiver cria
+    const pessoa = await this.prisma.pessoa.findFirst({
+      where: {
+        nome: data.pessoa.nome,
+        nomeSocial: data.pessoa.nome_social,
+        genero: data.pessoa.genero,
+        ativo: 'ATIVO',
+      },
+    });
+
+    if (!pessoa) {
+      const save_pessoa = await this.prisma.pessoa.create({
+        data: {
+          empresaId: data.pessoa.id_empresa,
+          tipoId: data.pessoa.id_pessoa_tipo,
+          genero: data.pessoa.genero,
+          nome: data.pessoa.nome,
+          nomeSocial: data.pessoa.nome_social,
+          ativo: 'ATIVO',
+        },
+      });
+      if (!save_pessoa) {
+        throw new UnauthorizedException('Erro ao criar pessoa');
+      }
+      pessoaId = save_pessoa.id;
+    } else {
+      pessoaId = pessoa.id;
+    }
+
+    // Verifica se tem o perfil no banco, se não tiver cria
+    const perfil = await this.prisma.perfil.findFirst({
+      where: {
+        empresaId: data.perfil.id_empresa,
+        descricao: data.perfil.descricao,
+        ativo: 'ATIVO',
+      },
+    });
+
+    if (!perfil) {
+      const save_perfil = await this.prisma.perfil.create({
+        data: {
+          empresaId: data.perfil.id_empresa,
+          descricao: data.perfil.descricao,
+          ativo: 'ATIVO',
+        },
+      });
+      if (!save_perfil) {
+        throw new UnauthorizedException('Erro ao criar perfil');
+      }
+      perfilId = save_perfil.id;
+    } else {
+      perfilId = perfil.id;
+    }
+
+    // Todo salvamento de senha precisa ser criptografado
     const hashedPassword = await bcrypt.hash(data.senha, 10);
 
-    const user = await this.prisma.pessoaUsuario.create({
+    const user: any = await this.prisma.pessoaUsuario.create({
       data: {
-        pessoaId: data.pessoaId,
-        perfilId: data.perfilId,
+        pessoaId: pessoaId,
+        perfilId: perfilId,
         email: data.email,
         login: data.login,
         senha: hashedPassword,
@@ -27,15 +91,34 @@ export class AuthService {
       },
     });
 
+    if (!user) {
+      throw new UnauthorizedException('Erro ao criar usuário');
+    }
+
+    // Retirada da senha do objeto
+    delete user.senha;
+
     return { message: 'Usuário registrado com sucesso', user };
   }
 
   async login(user: any) {
-    console.log("Como ta esse user: ",user);
     const payload = { sub: user.id.toString(), login: user.login };
     const token = this.jwtService.sign(payload);
 
-    return { access_token: token };
+    // Retornar apenas campos necessários
+    const userData = {
+      id: user.id,
+      email: user.email,
+      login: user.login,
+      pessoaId: user.pessoa?.id,
+      nome: user.pessoa?.nome,
+      nomeSocial: user.pessoa?.nomeSocial,
+      perfilId: user.perfil?.id,
+      genero: user.pessoa?.genero,
+      perfil: user.perfil?.descricao,
+    };
+
+    return { accessToken: token, user: userData };
   }
 
   async validateUser(userId: string) {
@@ -52,7 +135,7 @@ export class AuthService {
     const user = await this.prisma.pessoaUsuario.findFirst({
       where: { login: login },
     });
-    
+
     if (!user) {
       return null;
     }
@@ -64,7 +147,6 @@ export class AuthService {
   }
 
   getJwtToken(payload: any) {
-  return this.jwtService.sign(payload);
-}
-
+    return this.jwtService.sign(payload);
+  }
 }
