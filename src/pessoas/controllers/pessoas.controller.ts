@@ -9,9 +9,9 @@ import {
   Post,
 } from '@nestjs/common';
 import { Public } from 'src/auth/decorators/public.decorator';
-import { CreatePessoaDto } from './dto/create-pessoa.dto';
-import { UpdatePessoaDto } from './dto/update-pessoa.dto';
-import { PessoasService } from './pessoas.service';
+import { CreatePessoaDto } from '../dto/create-pessoa.dto';
+import { UpdatePessoaDto } from '../dto/update-pessoa.dto';
+import { PessoasService } from '../services/pessoas.service';
 
 @Controller('pessoas')
 export class PessoasController {
