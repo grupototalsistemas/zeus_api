@@ -42,6 +42,11 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new PrismaClientExceptionFilter());
+  // Converte BigInt para string automaticamente no JSON
+  (BigInt.prototype as any).toJSON = function () {
+    return this.toString();
+  };
+
   setupSwagger(app);
 
   const port = await findAvailablePort(Number(process.env.PORT) || 3000);
