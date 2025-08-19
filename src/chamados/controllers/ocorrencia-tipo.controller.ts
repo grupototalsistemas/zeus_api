@@ -31,7 +31,7 @@ export class ChamadoOcorrenciaTipoController {
 
   @Post()
   @ApiOperation({ summary: 'Cria um novo tipo de ocorrencia de chamado' })
-  @ApiBody({ type: CreateChamadoOcorrenciaDto })
+  @ApiBody({ type: CreateChamadoOcorrenciaTipoDto })
   @ApiResponse({
     status: 201,
     description: 'Ocorrencia de chamado criado com sucesso.',

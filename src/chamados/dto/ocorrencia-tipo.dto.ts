@@ -22,5 +22,5 @@ export class CreateChamadoOcorrenciaTipoDto {
 
   @IsOptional()
   @IsString()
-  movito: string;
+  motivo?: string;
 }
