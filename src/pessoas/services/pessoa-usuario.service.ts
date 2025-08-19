@@ -75,6 +75,22 @@ export class PessoaUsuarioService {
   }
 
   async remove(id: bigint) {
+    const usuario = await this.prisma.pessoaUsuario.findUnique({
+      where: { id },
+      include: { pessoa: { include: { usuarios: true } } },
+    });
+
+    if (!usuario) {
+      throw new Error('Usuário não encontrado');
+    }
+
+    // Se essa pessoa só tiver esse usuário
+    if (usuario.pessoa.usuarios.length === 1) {
+      await this.prisma.pessoa.delete({
+        where: { id: usuario.pessoaId },
+      });
+    }
+
     return this.prisma.pessoaUsuario.delete({ where: { id } });
   }
 }
