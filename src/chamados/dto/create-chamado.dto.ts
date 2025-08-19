@@ -1,4 +1,3 @@
-// chamados/dto/create-chamado.dto.ts
 import { StatusRegistro } from '@prisma/client';
 import {
   IsEnum,
@@ -44,9 +43,34 @@ export class CreateChamadoDto {
   @IsString()
   descricao: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  observacao: string = '';
+  observacao?: string;
+
+  @IsOptional()
+  movimento?: {
+    etapaId: number;
+    ordem?: number;
+    descricaoAcao: string;
+    observacaoTec?: string;
+    anexos?: {
+      usuarioId: number;
+      descricao: string;
+      caminho: string;
+    }[];
+    mensagens?: {
+      usuarioEnvioId: number;
+      usuarioLeituraId: number;
+      descricao: string;
+    }[];
+  };
+
+  @IsOptional()
+  anexos?: {
+    usuarioId: number;
+    descricao: string;
+    caminho: string;
+  }[];
 
   @IsNotEmpty()
   @IsEnum(StatusRegistro)

@@ -1,0 +1,321 @@
+import { Injectable } from '@nestjs/common';
+import { StatusRegistro } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CreateChamadoDto } from '../dto/create-chamado.dto';
+import { CreateMovimentoDto } from '../dto/create-movimento.dto';
+import { FindChamadosDto } from '../dto/find-chamados.dto';
+import { UpdateChamadoDto } from '../dto/update-chamado.dto';
+import { MovimentoStatus } from '../enums/movimento-status.enum';
+
+@Injectable()
+export class ChamadosService {
+  constructor(private prisma: PrismaService) {}
+
+  // =================== OPERAÇÕES DE CHAMADO ===================
+
+  async criarChamado(dados: {
+    empresaId: number;
+    sistemaId: number;
+    pessoaId: number;
+    usuarioId: number;
+    ocorrenciaId: number;
+    prioridadeId: number;
+    protocolo?: number;
+    titulo: string;
+    descricao: string;
+    observacao: string;
+    ativo?: StatusRegistro;
+  }) {
+    return this.prisma.chamado.create({
+      data: {
+        ...dados,
+        ativo: dados.ativo || StatusRegistro.ATIVO,
+      },
+    });
+  }
+
+  async buscarChamado(id: bigint) {
+    return this.prisma.chamado.findUnique({
+      where: { id },
+      include: {
+        empresa: true,
+        sistema: true,
+        ocorrencia: true,
+        prioridade: true,
+        movimentos: {
+          include: {
+            etapa: true,
+            anexos: true,
+            mensagens: true,
+          },
+        },
+      },
+    });
+  }
+
+  async atualizarChamado(
+    id: bigint,
+    dados: {
+      titulo?: string;
+      descricao?: string;
+      observacao?: string;
+      prioridadeId?: number;
+    },
+  ) {
+    return this.prisma.chamado.update({
+      where: { id },
+      data: dados,
+    });
+  }
+
+  async excluirChamado(id: bigint) {
+    return this.prisma.chamado.delete({
+      where: { id },
+    });
+  }
+
+  // =================== OPERAÇÕES DE MOVIMENTO ===================
+
+  async criarMovimento(dados: CreateMovimentoDto) {
+    return this.prisma.chamadoMovimento.create({
+      data: {
+        ...(() => {
+          const { anexos, ...rest } = dados as any;
+          return rest;
+        })(),
+        ativo: StatusRegistro.ATIVO,
+      },
+    });
+  }
+
+  async excluirMovimentos(chamadoId: number) {
+    return this.prisma.chamadoMovimento.deleteMany({
+      where: { chamadoId },
+    });
+  }
+
+  // =================== OPERAÇÕES DE ANEXO ===================
+
+  async criarAnexos(dados: {
+    movimentoId: number;
+    anexos: {
+      usuarioId: number;
+      descricao: string;
+      caminho: string;
+    }[];
+  }) {
+    return this.prisma.chamadoMovimentoAnexo.createMany({
+      data: dados.anexos.map((anexo) => ({
+        movimentoId: dados.movimentoId,
+        usuarioId: anexo.usuarioId,
+        descricao: anexo.descricao,
+        caminho: anexo.caminho,
+        ativo: StatusRegistro.ATIVO,
+      })),
+    });
+  }
+
+  async excluirAnexos(movimentoId: number) {
+    return this.prisma.chamadoMovimentoAnexo.deleteMany({
+      where: { movimentoId },
+    });
+  }
+
+  // =================== OPERAÇÕES DE MENSAGEM ===================
+
+  async criarMensagens(dados: {
+    movimentoId: number;
+    mensagens: {
+      usuarioEnvioId: number;
+      usuarioLeituraId: number;
+      descricao: string;
+    }[];
+  }) {
+    return this.prisma.chamadoMovimentoMensagem.createMany({
+      data: dados.mensagens.map((msg) => ({
+        movimentoId: dados.movimentoId,
+        usuarioEnvioId: msg.usuarioEnvioId,
+        usuarioLeituraId: msg.usuarioLeituraId,
+        descricao: msg.descricao,
+        ativo: StatusRegistro.ATIVO,
+      })),
+    });
+  }
+
+  async excluirMensagens(movimentoId: number) {
+    return this.prisma.chamadoMovimentoMensagem.deleteMany({
+      where: { movimentoId },
+    });
+  }
+
+  // =================== MÉTODOS PRINCIPAIS ===================
+
+  async create(data: CreateChamadoDto) {
+    // 1. Criar o chamado
+    const chamado = await this.criarChamado({
+      empresaId: data.empresaId,
+      sistemaId: data.sistemaId,
+      pessoaId: data.pessoaId,
+      usuarioId: data.usuarioId,
+      ocorrenciaId: data.ocorrenciaId,
+      prioridadeId: data.prioridadeId,
+      protocolo: data.protocolo,
+      titulo: data.titulo,
+      descricao: data.descricao,
+      observacao: data.observacao || '',
+    });
+
+    // 2. Se houver movimento inicial, criar
+    if (data.movimento) {
+      // 2.1 Criar o movimento
+      const movimento = await this.criarMovimento({
+        chamadoId: Number(chamado.id),
+        usuarioId: data.usuarioId,
+        etapaId: data.movimento.etapaId,
+        ordem: data.movimento.ordem || 0,
+        descricaoAcao: data.movimento.descricaoAcao,
+        observacaoTec: data.movimento.observacaoTec || '',
+        status: MovimentoStatus.CRIADO,
+        mensagem: '',
+      });
+
+      // 2.2 Se houver anexos, criar
+      if (data.movimento.anexos?.length) {
+        await this.criarAnexos({
+          movimentoId: Number(movimento.id),
+          anexos: data.movimento.anexos,
+        });
+      }
+
+      // 2.3 Se houver mensagens, criar
+      if (data.movimento.mensagens?.length) {
+        await this.criarMensagens({
+          movimentoId: Number(movimento.id),
+          mensagens: data.movimento.mensagens,
+        });
+      }
+    }
+
+    // 3. Retornar chamado com todos os relacionamentos
+    return this.buscarChamado(chamado.id);
+  }
+
+  async findAll(query: FindChamadosDto) {
+    const { page = 1, limit = 10, startDate, endDate, ...filters } = query;
+    const skip = (page - 1) * limit;
+
+    // Construir where com os filtros
+    const where = {
+      ...(filters.empresaId && { empresaId: filters.empresaId }),
+      ...(filters.sistemaId && { sistemaId: filters.sistemaId }),
+      ...(filters.pessoaId && { pessoaId: filters.pessoaId }),
+      ...(filters.usuarioId && { usuarioId: filters.usuarioId }),
+      ...(filters.ocorrenciaId && { ocorrenciaId: filters.ocorrenciaId }),
+      ...(filters.prioridadeId && { prioridadeId: filters.prioridadeId }),
+      ...((startDate || endDate) && {
+        createdAt: {
+          ...(startDate && { gte: new Date(startDate) }),
+          ...(endDate && { lte: new Date(endDate) }),
+        },
+      }),
+    };
+
+    // Buscar chamados com paginação
+    const [chamados, total] = await Promise.all([
+      this.prisma.chamado.findMany({
+        where,
+        include: {
+          empresa: true,
+          sistema: true,
+          ocorrencia: true,
+          prioridade: true,
+          movimentos: {
+            include: {
+              etapa: true,
+              anexos: true,
+              mensagens: true,
+            },
+          },
+        },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.chamado.count({ where }),
+    ]);
+
+    return {
+      data: chamados,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async findOne(id: bigint) {
+    return this.buscarChamado(id);
+  }
+
+  async update(id: bigint, data: UpdateChamadoDto) {
+    const { movimento, ...chamadoData } = data;
+
+    // 1. Atualizar dados básicos do chamado
+    await this.atualizarChamado(id, chamadoData);
+
+    // 2. Se houver novo movimento, criar
+    if (movimento) {
+      // 2.1 Criar o movimento
+      const novoMovimento = await this.criarMovimento({
+        chamadoId: Number(id),
+        usuarioId: data.usuarioId!,
+        etapaId: movimento.etapaId,
+        ordem: movimento.ordem || 0,
+        descricaoAcao: movimento.descricaoAcao,
+        observacaoTec: movimento.observacaoTec || '',
+        status: MovimentoStatus.ATUALIZADO,
+        mensagem: '',
+      });
+
+      // 2.2 Se houver anexos, criar
+      if (movimento.anexos?.length) {
+        await this.criarAnexos({
+          movimentoId: Number(novoMovimento.id),
+          anexos: movimento.anexos,
+        });
+      }
+
+      // 2.3 Se houver mensagens, criar
+      if (movimento.mensagens?.length) {
+        await this.criarMensagens({
+          movimentoId: Number(novoMovimento.id),
+          mensagens: movimento.mensagens,
+        });
+      }
+    }
+
+    // 3. Retornar chamado atualizado
+    return this.buscarChamado(id);
+  }
+
+  async remove(id: bigint) {
+    // 1. Buscar todos os movimentos do chamado
+    const movimentos = await this.prisma.chamadoMovimento.findMany({
+      where: { chamadoId: Number(id) },
+    });
+
+    // 2. Para cada movimento, excluir anexos e mensagens
+    for (const movimento of movimentos) {
+      await this.excluirAnexos(Number(movimento.id));
+      await this.excluirMensagens(Number(movimento.id));
+    }
+
+    // 3. Excluir todos os movimentos
+    await this.excluirMovimentos(Number(id));
+
+    // 4. Excluir o chamado
+    return this.excluirChamado(id);
+  }
+}

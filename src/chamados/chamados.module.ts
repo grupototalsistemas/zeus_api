@@ -1,10 +1,51 @@
-// chamados/chamados.module.ts
 import { Module } from '@nestjs/common';
-import { ChamadosController } from './chamados.controller';
-import { ChamadosService } from './chamados.service';
+import { PrismaModule } from '../prisma/prisma.module';
+import { ChamadosMetricasController } from './controllers/chamados-metricas.controller';
+import { ChamadosRelatorioController } from './controllers/chamados-relatorio.controller';
+import { ChamadosWorkflowController } from './controllers/chamados-workflow.controller';
+import { ChamadosController } from './controllers/chamados.controller';
+import { ChamadoOcorrenciaTipoController } from './controllers/ocorrencia-tipo.controller';
+import { ChamadoOcorrenciaController } from './controllers/ocorrencia.controller';
+import { ChamadoPrioridadeController } from './controllers/prioridade.controller';
+import { ChamadosMetricasService } from './services/chamados-metricas.service';
+import { ChamadosNotificacaoService } from './services/chamados-notificacao.service';
+import { ChamadosRelatorioService } from './services/chamados-relatorio.service';
+import { ChamadosWorkflowService } from './services/chamados-workflow.service';
+import { ChamadosService } from './services/chamados.service';
+import { ChamadoOcorrenciaTipoService } from './services/ocorrencia-tipo.service';
+import { ChamadoOcorrenciaService } from './services/ocorrencia.service';
+import { ChamadoPrioridadeService } from './services/prioridade.service';
 
 @Module({
-  controllers: [ChamadosController],
-  providers: [ChamadosService],
+  imports: [PrismaModule],
+  controllers: [
+    ChamadosController,
+    ChamadosMetricasController,
+    ChamadosWorkflowController,
+    ChamadosRelatorioController,
+    ChamadoOcorrenciaController,
+    ChamadoOcorrenciaTipoController,
+    ChamadoPrioridadeController,
+  ],
+  providers: [
+    ChamadosService,
+    ChamadosMetricasService,
+    ChamadosWorkflowService,
+    ChamadosNotificacaoService,
+    ChamadosRelatorioService,
+    ChamadoOcorrenciaService,
+    ChamadoOcorrenciaTipoService,
+    ChamadoPrioridadeService,
+  ],
+  exports: [
+    ChamadosService,
+    ChamadosMetricasService,
+    ChamadosWorkflowService,
+    ChamadosNotificacaoService,
+    ChamadosRelatorioService,
+    ChamadoOcorrenciaService,
+    ChamadoOcorrenciaTipoService,
+    ChamadoPrioridadeService,
+  ],
 })
 export class ChamadosModule {}
