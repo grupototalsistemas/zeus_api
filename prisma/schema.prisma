@@ -231,7 +231,7 @@ model Prioridade {
   empresaId BigInt         @map("id_empresa")
   descricao String         @db.VarChar(100)
   cor       String         @db.VarChar(100)
-  tempo     DateTime       @db.Time @map("tempo_resolucao")
+  tempo     Int            @default(0) @map("tempo_resolucao")
   ativo     StatusRegistro
   motivo    String?        @db.VarChar(500)
   createdAt DateTime       @default(now()) @map("created_at")
@@ -283,7 +283,7 @@ model Chamado {
   usuarioId    BigInt         @map("id_pessoa_usuario")
   ocorrenciaId BigInt         @map("id_ocorrencia")
   prioridadeId BigInt         @map("id_prioridade")
-  protocolo    Int?
+  protocolo    String?        @db.VarChar(50)
   titulo       String         @db.VarChar(100)
   descricao    String         @db.VarChar(500)
   observacao   String         @db.VarChar(500)
