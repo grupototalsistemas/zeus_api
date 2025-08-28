@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Delete,
-  FileTypeValidator,
   Get,
   MaxFileSizeValidator,
   Param,
@@ -111,7 +110,7 @@ export class ChamadosController {
       fileFilter: (req, file, callback) => {
         const allowedMimes = [
           'image/jpeg',
-          'image/jpg', 
+          'image/jpg',
           'image/png',
           'image/gif',
           'application/pdf',
@@ -120,13 +119,16 @@ export class ChamadosController {
           'video/quicktime',
           'text/plain',
           'application/msword',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         ];
-        
+
         if (allowedMimes.includes(file.mimetype)) {
           callback(null, true);
         } else {
-          callback(new Error(`Tipo de arquivo não permitido: ${file.mimetype}`), false);
+          callback(
+            new Error(`Tipo de arquivo não permitido: ${file.mimetype}`),
+            false,
+          );
         }
       },
       limits: {
@@ -139,22 +141,23 @@ export class ChamadosController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
-          new FileTypeValidator({ 
-            fileType: /(jpg|jpeg|png|gif|pdf|mp4|avi|mov|txt|doc|docx)$/ 
-          }),
+          // new FileTypeValidator({
+          //   fileType: /(jpg|jpeg|png|gif|pdf|mp4|avi|mov|txt|doc|docx)$/
+          // }),
         ],
         fileIsRequired: true,
       }),
     )
     files: Express.Multer.File[],
-    @Body() dados: { 
-      movimentoId: string; 
-      descricao: string 
+    @Body()
+    dados: {
+      movimentoId: string;
+      descricao: string;
     },
-    @GetUsuario() usuarioId: number,
+    @GetUsuario() usuarioId,
   ) {
-    const anexos = files.map(file => ({
-      usuarioId: usuarioId,
+    const anexos = files.map((file) => ({
+      usuarioId: usuarioId.userId,
       descricao: dados.descricao || file.originalname,
       caminho: file.path,
     }));
@@ -171,28 +174,32 @@ export class ChamadosController {
   async downloadAnexo(@Param('id') id: string, @Res() res: Response) {
     try {
       const anexo = await this.chamadosService.obterAnexo(BigInt(id));
-      
+
       if (!anexo) {
         return res.status(404).json({ message: 'Anexo não encontrado' });
       }
 
       const filePath = join(process.cwd(), anexo.caminho);
-      
+
       if (!existsSync(filePath)) {
-        return res.status(404).json({ message: 'Arquivo não encontrado no servidor' });
+        return res
+          .status(404)
+          .json({ message: 'Arquivo não encontrado no servidor' });
       }
 
       const file = createReadStream(filePath);
-      
+
       // Usar apenas campos que existem no modelo atual
       res.set({
         'Content-Type': 'application/octet-stream',
         'Content-Disposition': `attachment; filename="${anexo.descricao}"`,
       });
-      
+
       file.pipe(res);
     } catch (error) {
-      return res.status(500).json({ message: 'Erro ao baixar arquivo', error: error.message });
+      return res
+        .status(500)
+        .json({ message: 'Erro ao baixar arquivo', error: error.message });
     }
   }
 
