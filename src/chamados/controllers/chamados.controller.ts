@@ -2,20 +2,32 @@ import {
   Body,
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   Patch,
   Post,
+  Res,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Response } from 'express';
+import { createReadStream, existsSync } from 'fs';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
 
 import { GetUsuario } from 'src/common/decorators/get-usuario.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -37,10 +49,9 @@ export class ChamadosController {
   @ApiResponse({ status: 201, description: 'Chamado criado com sucesso.' })
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
   @ApiResponse({ status: 401, description: 'Não autorizado.' })
-  create(@Body() dto: CreateChamadoDto, @GetUsuario() usuarioId: number) {
+  create(@Body() dto: CreateChamadoDto) {
     return this.chamadosService.create({
       ...dto,
-      usuarioId,
     });
   }
 
@@ -60,6 +71,129 @@ export class ChamadosController {
       ...dto,
       usuarioId,
     });
+  }
+
+  @Post('upload-anexos')
+  @ApiOperation({ summary: 'Faz upload de anexos para chamados' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Arquivos para upload',
+    type: 'multipart/form-data',
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+        movimentoId: {
+          type: 'number',
+        },
+        descricao: {
+          type: 'string',
+        },
+      },
+    },
+  })
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      storage: diskStorage({
+        destination: './uploads/chamados/anexos',
+        filename: (req, file, callback) => {
+          const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+          const extension = extname(file.originalname);
+          callback(null, `${uniqueName}${extension}`);
+        },
+      }),
+      fileFilter: (req, file, callback) => {
+        const allowedMimes = [
+          'image/jpeg',
+          'image/jpg', 
+          'image/png',
+          'image/gif',
+          'application/pdf',
+          'video/mp4',
+          'video/avi',
+          'video/quicktime',
+          'text/plain',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        
+        if (allowedMimes.includes(file.mimetype)) {
+          callback(null, true);
+        } else {
+          callback(new Error(`Tipo de arquivo não permitido: ${file.mimetype}`), false);
+        }
+      },
+      limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB
+      },
+    }),
+  )
+  async uploadAnexos(
+    @UploadedFiles(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
+          new FileTypeValidator({ 
+            fileType: /(jpg|jpeg|png|gif|pdf|mp4|avi|mov|txt|doc|docx)$/ 
+          }),
+        ],
+        fileIsRequired: true,
+      }),
+    )
+    files: Express.Multer.File[],
+    @Body() dados: { 
+      movimentoId: string; 
+      descricao: string 
+    },
+    @GetUsuario() usuarioId: number,
+  ) {
+    const anexos = files.map(file => ({
+      usuarioId: usuarioId,
+      descricao: dados.descricao || file.originalname,
+      caminho: file.path,
+    }));
+
+    return await this.chamadosService.criarAnexos({
+      movimentoId: parseInt(dados.movimentoId),
+      anexos: anexos,
+    });
+  }
+
+  @Get('anexo/:id')
+  @ApiOperation({ summary: 'Download de anexo' })
+  @ApiParam({ name: 'id', type: String, description: 'ID do anexo' })
+  async downloadAnexo(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const anexo = await this.chamadosService.obterAnexo(BigInt(id));
+      
+      if (!anexo) {
+        return res.status(404).json({ message: 'Anexo não encontrado' });
+      }
+
+      const filePath = join(process.cwd(), anexo.caminho);
+      
+      if (!existsSync(filePath)) {
+        return res.status(404).json({ message: 'Arquivo não encontrado no servidor' });
+      }
+
+      const file = createReadStream(filePath);
+      
+      // Usar apenas campos que existem no modelo atual
+      res.set({
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition': `attachment; filename="${anexo.descricao}"`,
+      });
+      
+      file.pipe(res);
+    } catch (error) {
+      return res.status(500).json({ message: 'Erro ao baixar arquivo', error: error.message });
+    }
   }
 
   @Get()

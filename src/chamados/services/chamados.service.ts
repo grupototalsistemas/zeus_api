@@ -5,7 +5,6 @@ import { CreateChamadoDto } from '../dto/create-chamado.dto';
 import { CreateMovimentoDto } from '../dto/create-movimento.dto';
 import { FindChamadosDto } from '../dto/find-chamados.dto';
 import { UpdateChamadoDto } from '../dto/update-chamado.dto';
-import { MovimentoStatus } from '../enums/movimento-status.enum';
 
 @Injectable()
 export class ChamadosService {
@@ -20,23 +19,71 @@ export class ChamadosService {
     usuarioId: number;
     ocorrenciaId: number;
     prioridadeId: number;
-    protocolo?: number;
+    protocolo?: string | null;
     titulo: string;
     descricao: string;
     observacao: string;
     ativo?: StatusRegistro;
   }) {
-    return this.prisma.chamado.create({
-      data: {
-        ...dados,
-        ativo: dados.ativo || StatusRegistro.ATIVO,
+    const chamado = await this.prisma.chamado.findFirst({
+      where: {
+        empresaId: dados.empresaId,
+        sistemaId: dados.sistemaId,
+        pessoaId: dados.pessoaId,
+        protocolo: dados.protocolo,
       },
     });
+
+    if (chamado) {
+      return this.prisma.chamado.update({
+        where: { id: chamado.id },
+        data: {
+          ...dados,
+          ativo: dados.ativo || StatusRegistro.ATIVO,
+        },
+      });
+    } else {
+      console.log('Criando novo chamado:', dados);
+      return this.prisma.chamado.create({
+        data: {
+          empresaId: BigInt(dados.empresaId),
+          sistemaId: BigInt(dados.sistemaId),
+          pessoaId: BigInt(dados.pessoaId),
+          usuarioId: BigInt(dados.usuarioId),
+          ocorrenciaId: BigInt(dados.ocorrenciaId),
+          prioridadeId: BigInt(dados.prioridadeId),
+          protocolo: dados.protocolo ? String(dados.protocolo) : undefined,
+          titulo: dados.titulo,
+          descricao: dados.descricao,
+          observacao: dados.observacao,
+          ativo: dados.ativo || StatusRegistro.ATIVO,
+        },
+      });
+    }
   }
 
   async buscarChamado(id: bigint) {
     return this.prisma.chamado.findUnique({
       where: { id },
+      include: {
+        empresa: true,
+        sistema: true,
+        ocorrencia: true,
+        prioridade: true,
+        movimentos: {
+          include: {
+            etapa: true,
+            anexos: true,
+            mensagens: true,
+          },
+        },
+      },
+    });
+  }
+
+  async buscarChamadoPorProtocolo(protocolo: string) {
+    return this.prisma.chamado.findFirst({
+      where: { protocolo },
       include: {
         empresa: true,
         sistema: true,
@@ -110,14 +157,37 @@ export class ChamadosService {
         usuarioId: anexo.usuarioId,
         descricao: anexo.descricao,
         caminho: anexo.caminho,
+        dataHora: new Date(),
         ativo: StatusRegistro.ATIVO,
       })),
+    });
+  }
+
+  async obterAnexo(id: bigint) {
+    return this.prisma.chamadoMovimentoAnexo.findUnique({
+      where: { id },
+    });
+  }
+
+  async listarAnexos(movimentoId: number) {
+    return this.prisma.chamadoMovimentoAnexo.findMany({
+      where: { 
+        movimentoId,
+        ativo: StatusRegistro.ATIVO 
+      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async excluirAnexos(movimentoId: number) {
     return this.prisma.chamadoMovimentoAnexo.deleteMany({
       where: { movimentoId },
+    });
+  }
+
+  async excluirAnexo(id: bigint) {
+    return this.prisma.chamadoMovimentoAnexo.delete({
+      where: { id },
     });
   }
 
@@ -175,8 +245,8 @@ export class ChamadosService {
         ordem: data.movimento.ordem || 0,
         descricaoAcao: data.movimento.descricaoAcao,
         observacaoTec: data.movimento.observacaoTec || '',
-        status: MovimentoStatus.CRIADO,
-        mensagem: '',
+        ativo: StatusRegistro.ATIVO,
+        
       });
 
       // 2.2 Se houver anexos, criar
@@ -244,15 +314,7 @@ export class ChamadosService {
       this.prisma.chamado.count({ where }),
     ]);
 
-    return {
-      data: chamados,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    return chamados;
   }
 
   async findOne(id: bigint) {
@@ -275,8 +337,8 @@ export class ChamadosService {
         ordem: movimento.ordem || 0,
         descricaoAcao: movimento.descricaoAcao,
         observacaoTec: movimento.observacaoTec || '',
-        status: MovimentoStatus.ATUALIZADO,
-        mensagem: '',
+        ativo: StatusRegistro.ATIVO,
+        
       });
 
       // 2.2 Se houver anexos, criar

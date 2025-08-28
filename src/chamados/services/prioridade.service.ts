@@ -39,9 +39,11 @@ export class ChamadoPrioridadeService {
         );
       }
 
-      // Valida se o tempo é futuro
-      if (new Date(data.tempo) <= new Date()) {
-        throw new BadRequestException('O tempo deve ser uma data/hora futura');
+      // Valida se o tempo está dentro dos limites permitidos
+      if (data.tempo < 1 || data.tempo > 525600) {
+        throw new BadRequestException(
+          'O tempo deve estar entre 1 minuto e 525600 minutos (1 ano)',
+        );
       }
 
       // Verifica se já existe uma prioridade com a mesma descrição para a empresa
@@ -222,8 +224,10 @@ export class ChamadoPrioridadeService {
       }
 
       // Valida tempo se fornecido
-      if (data.tempo && new Date(data.tempo) <= new Date()) {
-        throw new BadRequestException('O tempo deve ser uma data/hora futura');
+      if (data.tempo && (data.tempo < 1 || data.tempo > 525600)) {
+        throw new BadRequestException(
+          'O tempo deve estar entre 1 minuto e 525600 minutos (1 ano)',
+        );
       }
 
       // Se está alterando a descrição, verifica duplicata
@@ -392,16 +396,18 @@ export class ChamadoPrioridadeService {
     }
   }
 
-  async findByTempoLimite(tempoLimite: Date) {
+  async findByTempoLimite(tempoLimiteMinutos: number) {
     try {
-      if (!tempoLimite) {
-        throw new BadRequestException('Tempo limite é obrigatório');
+      if (!tempoLimiteMinutos || tempoLimiteMinutos <= 0) {
+        throw new BadRequestException(
+          'Tempo limite em minutos é obrigatório e deve ser maior que zero',
+        );
       }
 
       return await this.prisma.prioridade.findMany({
         where: {
           tempo: {
-            lte: tempoLimite,
+            lte: tempoLimiteMinutos,
           },
           ativo: StatusRegistro.ATIVO,
         },
@@ -429,13 +435,12 @@ export class ChamadoPrioridadeService {
 
   async findUrgentes() {
     try {
-      const agora = new Date();
-      const proximaHora = new Date(agora.getTime() + 60 * 60 * 1000); // + 1 hora
+      const TEMPO_URGENTE_MINUTOS = 60; // Define prioridades urgentes como aquelas com tempo <= 60 minutos
 
       return await this.prisma.prioridade.findMany({
         where: {
           tempo: {
-            lte: proximaHora,
+            lte: TEMPO_URGENTE_MINUTOS,
           },
           ativo: StatusRegistro.ATIVO,
         },

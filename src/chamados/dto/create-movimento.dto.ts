@@ -1,28 +1,37 @@
+import { StatusRegistro } from '@prisma/client';
 import {
+  IsDate,
   IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
-import { MovimentoStatus } from '../enums/movimento-status.enum';
 
 export class CreateMovimentoDto {
   @IsNotEmpty()
   @IsNumber()
   chamadoId: number;
 
+   @IsOptional()
+  @IsString()
+  etapaId: number;
+
   @IsNotEmpty()
   @IsNumber()
   usuarioId: number;
 
-  @IsNotEmpty()
-  @IsEnum(MovimentoStatus)
-  status: MovimentoStatus;
-
   @IsOptional()
   @IsNumber()
   ordem: number;
+
+  @IsOptional()
+  @IsDate()
+  inicio?: Date;
+
+  @IsOptional()
+  @IsDate()
+  fim?: Date;
 
   @IsOptional()
   @IsString()
@@ -33,12 +42,16 @@ export class CreateMovimentoDto {
   observacaoTec: string;
 
   @IsNotEmpty()
-  @IsString()
-  mensagem: string;
+  @IsEnum(StatusRegistro)
+  ativo: StatusRegistro;
 
   @IsOptional()
   @IsString()
-  etapaId: number;
+  motivo?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  mensages?: string[];
 
   @IsOptional()
   @IsString({ each: true })

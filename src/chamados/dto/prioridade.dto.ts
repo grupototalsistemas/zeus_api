@@ -1,13 +1,14 @@
 import { StatusRegistro } from '@prisma/client';
-import { Type } from 'class-transformer';
 import {
-  IsDate,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
-  MinDate,
+  Max,
+  Min,
 } from 'class-validator';
 
 export class CreateChamadoPrioridadeDto {
@@ -20,10 +21,11 @@ export class CreateChamadoPrioridadeDto {
   cor: string;
 
   @IsNotEmpty()
-  @IsDate()
-  @MinDate(new Date())
-  @Type(() => Date)
-  tempo: Date;
+  @IsInt()
+  @IsPositive()
+  @Min(1) // Mínimo 1 minuto
+  @Max(525600) // Máximo 1 ano em minutos
+  tempo: number;
 
   @IsNotEmpty()
   @IsEnum(StatusRegistro)

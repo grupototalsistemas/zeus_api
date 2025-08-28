@@ -4,6 +4,7 @@ import { ChamadosMetricasController } from './controllers/chamados-metricas.cont
 import { ChamadosRelatorioController } from './controllers/chamados-relatorio.controller';
 import { ChamadosWorkflowController } from './controllers/chamados-workflow.controller';
 import { ChamadosController } from './controllers/chamados.controller';
+import { ChamadoMovimentoEtapaController } from './controllers/movimento-etapa.controller';
 import { ChamadoOcorrenciaTipoController } from './controllers/ocorrencia-tipo.controller';
 import { ChamadoOcorrenciaController } from './controllers/ocorrencia.controller';
 import { ChamadoPrioridadeController } from './controllers/prioridade.controller';
@@ -12,6 +13,7 @@ import { ChamadosNotificacaoService } from './services/chamados-notificacao.serv
 import { ChamadosRelatorioService } from './services/chamados-relatorio.service';
 import { ChamadosWorkflowService } from './services/chamados-workflow.service';
 import { ChamadosService } from './services/chamados.service';
+import { ChamadoMovimentoEtapaService } from './services/movimento-etapa.service';
 import { ChamadoOcorrenciaTipoService } from './services/ocorrencia-tipo.service';
 import { ChamadoOcorrenciaService } from './services/ocorrencia.service';
 import { ChamadoPrioridadeService } from './services/prioridade.service';
@@ -26,6 +28,7 @@ import { ChamadoPrioridadeService } from './services/prioridade.service';
     ChamadoOcorrenciaController,
     ChamadoOcorrenciaTipoController,
     ChamadoPrioridadeController,
+    ChamadoMovimentoEtapaController,
   ],
   providers: [
     ChamadosService,
@@ -36,6 +39,7 @@ import { ChamadoPrioridadeService } from './services/prioridade.service';
     ChamadoOcorrenciaService,
     ChamadoOcorrenciaTipoService,
     ChamadoPrioridadeService,
+    ChamadoMovimentoEtapaService,
   ],
   exports: [
     ChamadosService,
@@ -46,6 +50,7 @@ import { ChamadoPrioridadeService } from './services/prioridade.service';
     ChamadoOcorrenciaService,
     ChamadoOcorrenciaTipoService,
     ChamadoPrioridadeService,
+    ChamadoMovimentoEtapaService,
   ],
 })
 export class ChamadosModule {}
