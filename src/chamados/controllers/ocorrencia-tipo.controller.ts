@@ -15,7 +15,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CreateChamadoOcorrenciaTipoDto } from '../dto/ocorrencia-tipo.dto';
 import { CreateChamadoOcorrenciaDto } from '../dto/ocorrencia.dto';
 import { ChamadoOcorrenciaTipoService } from '../services/ocorrencia-tipo.service';

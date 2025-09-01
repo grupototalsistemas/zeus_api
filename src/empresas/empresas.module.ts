@@ -1,6 +1,6 @@
 // empresas/empresas.module.ts
 import { Module } from '@nestjs/common';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from '../prisma/prisma.module';
 import { EmpresaCategoriaController } from './controllers/categoria.controller';
 import { EmpresaSistemaController } from './controllers/empresa-sistema.controller';
 import { EmpresaTipoController } from './controllers/empresa-tipo.controller';
@@ -12,7 +12,6 @@ import { EmpresaTipoService } from './services/empresa-tipo.service';
 import { EmpresasService } from './services/empresas.service';
 import { SistemasService } from './services/sistemas.service';
 
-
 @Module({
   imports: [PrismaModule],
   controllers: [
@@ -20,21 +19,21 @@ import { SistemasService } from './services/sistemas.service';
     EmpresaCategoriaController,
     EmpresaTipoController,
     EmpresaSistemaController,
-    SistemasController
+    SistemasController,
   ],
   providers: [
     EmpresasService,
     EmpresaCategoriaService,
     EmpresaTipoService,
     EmpresaSistemaService,
-    SistemasService
+    SistemasService,
   ],
   exports: [
     EmpresasService,
     EmpresaCategoriaService,
     EmpresaTipoService,
     EmpresaSistemaService,
-    SistemasService
+    SistemasService,
   ],
 })
 export class EmpresasModule {}

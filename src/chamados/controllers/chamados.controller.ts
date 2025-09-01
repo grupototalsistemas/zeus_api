@@ -29,8 +29,9 @@ import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 
 import * as mime from 'mime-types';
-import { GetUsuario } from 'src/common/decorators/get-usuario.decorator';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { GetUsuario } from '../../common/decorators/get-usuario.decorator';
 import { CreateChamadoDto } from '../dto/create-chamado.dto';
 import { CreateMovimentoDto } from '../dto/create-movimento.dto';
 import { UpdateChamadoDto } from '../dto/update-chamado.dto';

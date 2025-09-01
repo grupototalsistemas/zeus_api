@@ -21,9 +21,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { StatusRegistro } from '@prisma/client';
-import { Public } from 'src/auth/decorators/public.decorator';
+import { Public } from '../../auth/decorators/public.decorator';
 import { CreateEmpresaDto, UpdateEmpresaDto } from '../dto/create-empresa.dto';
-
 import { EmpresasService } from '../services/empresas.service';
 
 @ApiTags('Empresas')

@@ -1,14 +1,17 @@
 // empresas/empresa-sistema.service.ts
 import {
-    BadRequestException,
-    ConflictException,
-    Injectable,
-    NotFoundException,
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateEmpresaSistemaDto, EmpresaSistemaResponseDto, UpdateEmpresaSistemaDto } from '../dto/create-empresa-sistema.dto';
-
+import { PrismaService } from '../../prisma/prisma.service';
+import {
+  CreateEmpresaSistemaDto,
+  EmpresaSistemaResponseDto,
+  UpdateEmpresaSistemaDto,
+} from '../dto/create-empresa-sistema.dto';
 
 interface FindAllFilters {
   ativo?: StatusRegistro;
@@ -21,11 +24,13 @@ interface FindAllFilters {
 export class EmpresaSistemaService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateEmpresaSistemaDto): Promise<EmpresaSistemaResponseDto> {
+  async create(
+    data: CreateEmpresaSistemaDto,
+  ): Promise<EmpresaSistemaResponseDto> {
     // Validar se empresa e sistema existem
     await this.validateEmpresaExists(data.empresaId);
     await this.validateSistemaExists(data.sistemaId);
-    
+
     // Validar se o vínculo já existe
     await this.validateVinculoUnique(data.empresaId, data.sistemaId);
 
@@ -58,11 +63,15 @@ export class EmpresaSistemaService {
 
       return this.mapToResponseDto(empresaSistema);
     } catch (error) {
-      throw new BadRequestException('Erro ao criar vínculo empresa-sistema: ' + error.message);
+      throw new BadRequestException(
+        'Erro ao criar vínculo empresa-sistema: ' + error.message,
+      );
     }
   }
 
-  async findAll(filters: FindAllFilters = {}): Promise<EmpresaSistemaResponseDto[]> {
+  async findAll(
+    filters: FindAllFilters = {},
+  ): Promise<EmpresaSistemaResponseDto[]> {
     const where: any = {};
 
     if (filters.ativo) where.ativo = filters.ativo;
@@ -96,7 +105,7 @@ export class EmpresaSistemaService {
       ],
     });
 
-    return vinculos.map(vinculo => this.mapToResponseDto(vinculo));
+    return vinculos.map((vinculo) => this.mapToResponseDto(vinculo));
   }
 
   async findOne(id: bigint): Promise<EmpresaSistemaResponseDto> {
@@ -122,7 +131,9 @@ export class EmpresaSistemaService {
     });
 
     if (!vinculo) {
-      throw new NotFoundException(`Vínculo empresa-sistema com ID ${id} não encontrado`);
+      throw new NotFoundException(
+        `Vínculo empresa-sistema com ID ${id} não encontrado`,
+      );
     }
 
     return this.mapToResponseDto(vinculo);
@@ -130,7 +141,7 @@ export class EmpresaSistemaService {
 
   async findByEmpresa(
     empresaId: bigint,
-    ativo?: StatusRegistro
+    ativo?: StatusRegistro,
   ): Promise<EmpresaSistemaResponseDto[]> {
     await this.validateEmpresaExists(Number(empresaId));
 
@@ -158,12 +169,12 @@ export class EmpresaSistemaService {
       orderBy: { sistema: { nome: 'asc' } },
     });
 
-    return vinculos.map(vinculo => this.mapToResponseDto(vinculo));
+    return vinculos.map((vinculo) => this.mapToResponseDto(vinculo));
   }
 
   async findBySistema(
     sistemaId: bigint,
-    ativo?: StatusRegistro
+    ativo?: StatusRegistro,
   ): Promise<EmpresaSistemaResponseDto[]> {
     await this.validateSistemaExists(Number(sistemaId));
 
@@ -191,10 +202,13 @@ export class EmpresaSistemaService {
       orderBy: { empresa: { razaoSocial: 'asc' } },
     });
 
-    return vinculos.map(vinculo => this.mapToResponseDto(vinculo));
+    return vinculos.map((vinculo) => this.mapToResponseDto(vinculo));
   }
 
-  async update(id: bigint, data: UpdateEmpresaSistemaDto): Promise<EmpresaSistemaResponseDto> {
+  async update(
+    id: bigint,
+    data: UpdateEmpresaSistemaDto,
+  ): Promise<EmpresaSistemaResponseDto> {
     // Verificar se o vínculo existe
     await this.findOne(id);
 
@@ -214,29 +228,29 @@ export class EmpresaSistemaService {
         where: { id },
         select: { empresaId: true, sistemaId: true },
       });
-      
-      const empresaIdToCheck = data.empresaId 
-        ? BigInt(data.empresaId) 
+
+      const empresaIdToCheck = data.empresaId
+        ? BigInt(data.empresaId)
         : current?.empresaId;
-      
-      const sistemaIdToCheck = data.sistemaId 
-        ? BigInt(data.sistemaId) 
+
+      const sistemaIdToCheck = data.sistemaId
+        ? BigInt(data.sistemaId)
         : current?.sistemaId;
-        
+
       await this.validateVinculoUnique(
-        Number(empresaIdToCheck), 
+        Number(empresaIdToCheck),
         Number(sistemaIdToCheck),
-        id
+        id,
       );
     }
 
     try {
       const updateData: any = { ...data };
-      
+
       if (data.empresaId) {
         updateData.empresaId = BigInt(data.empresaId);
       }
-      
+
       if (data.sistemaId) {
         updateData.sistemaId = BigInt(data.sistemaId);
       }
@@ -266,7 +280,9 @@ export class EmpresaSistemaService {
 
       return this.mapToResponseDto(vinculo);
     } catch (error) {
-      throw new BadRequestException('Erro ao atualizar vínculo: ' + error.message);
+      throw new BadRequestException(
+        'Erro ao atualizar vínculo: ' + error.message,
+      );
     }
   }
 
@@ -283,7 +299,7 @@ export class EmpresaSistemaService {
       });
     } catch (error) {
       throw new ConflictException(
-        'Não foi possível excluir o vínculo. Verifique se não há relacionamentos pendentes.'
+        'Não foi possível excluir o vínculo. Verifique se não há relacionamentos pendentes.',
       );
     }
   }
@@ -321,7 +337,10 @@ export class EmpresaSistemaService {
     return this.mapToResponseDto(vinculo);
   }
 
-  async deactivate(id: bigint, motivo: string): Promise<EmpresaSistemaResponseDto> {
+  async deactivate(
+    id: bigint,
+    motivo: string,
+  ): Promise<EmpresaSistemaResponseDto> {
     if (!motivo || motivo.trim().length === 0) {
       throw new BadRequestException('Motivo da desativação é obrigatório');
     }
@@ -358,7 +377,10 @@ export class EmpresaSistemaService {
     return this.mapToResponseDto(vinculo);
   }
 
-  async updateVersion(id: bigint, versao: string): Promise<EmpresaSistemaResponseDto> {
+  async updateVersion(
+    id: bigint,
+    versao: string,
+  ): Promise<EmpresaSistemaResponseDto> {
     if (!versao || versao.trim().length === 0) {
       throw new BadRequestException('Versão é obrigatória');
     }
@@ -404,7 +426,9 @@ export class EmpresaSistemaService {
     });
 
     if (!empresa) {
-      throw new NotFoundException(`Empresa com ID ${empresaId} não encontrada ou inativa`);
+      throw new NotFoundException(
+        `Empresa com ID ${empresaId} não encontrada ou inativa`,
+      );
     }
   }
 
@@ -417,28 +441,34 @@ export class EmpresaSistemaService {
     });
 
     if (!sistema) {
-      throw new NotFoundException(`Sistema com ID ${sistemaId} não encontrado ou inativo`);
+      throw new NotFoundException(
+        `Sistema com ID ${sistemaId} não encontrado ou inativo`,
+      );
     }
   }
 
   private async validateVinculoUnique(
     empresaId: number,
     sistemaId: number,
-    excludeId?: bigint
+    excludeId?: bigint,
   ): Promise<void> {
-    const where: any = { 
+    const where: any = {
       empresaId: BigInt(empresaId),
       sistemaId: BigInt(sistemaId),
     };
-    
+
     if (excludeId) {
       where.id = { not: excludeId };
     }
 
-    const existingVinculo = await this.prisma.empresaSistema.findFirst({ where });
-    
+    const existingVinculo = await this.prisma.empresaSistema.findFirst({
+      where,
+    });
+
     if (existingVinculo) {
-      throw new ConflictException('Vínculo entre esta empresa e sistema já existe');
+      throw new ConflictException(
+        'Vínculo entre esta empresa e sistema já existe',
+      );
     }
   }
 
@@ -446,7 +476,6 @@ export class EmpresaSistemaService {
     // Aqui você pode adicionar validações específicas
     // Por exemplo, verificar se existem chamados que dependem deste vínculo
     // ou outros relacionamentos críticos
-
     // Exemplo de validação (ajuste conforme sua regra de negócio):
     /*
     const chamadosCount = await this.prisma.chamado.count({

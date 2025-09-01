@@ -1,14 +1,17 @@
 // empresas/empresa-categoria.service.ts
 import {
-    BadRequestException,
-    ConflictException,
-    Injectable,
-    NotFoundException,
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateEmpresaCategoriaDto, EmpresaCategoriaResponseDto, UpdateEmpresaCategoriaDto } from '../dto/create-empresa-categoria.dto';
-
+import { PrismaService } from '../../prisma/prisma.service';
+import {
+  CreateEmpresaCategoriaDto,
+  EmpresaCategoriaResponseDto,
+  UpdateEmpresaCategoriaDto,
+} from '../dto/create-empresa-categoria.dto';
 
 interface FindAllFilters {
   ativo?: StatusRegistro;
@@ -20,7 +23,9 @@ interface FindAllFilters {
 export class EmpresaCategoriaService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateEmpresaCategoriaDto): Promise<EmpresaCategoriaResponseDto> {
+  async create(
+    data: CreateEmpresaCategoriaDto,
+  ): Promise<EmpresaCategoriaResponseDto> {
     await this.validateEmpresaExists(data.empresaId);
     await this.validateDescricaoUnique(data.descricao, data.empresaId);
 
@@ -34,11 +39,15 @@ export class EmpresaCategoriaService {
 
       return this.mapToResponseDto(categoria);
     } catch (error) {
-      throw new BadRequestException('Erro ao criar categoria: ' + error.message);
+      throw new BadRequestException(
+        'Erro ao criar categoria: ' + error.message,
+      );
     }
   }
 
-  async findAll(filters: FindAllFilters = {}): Promise<EmpresaCategoriaResponseDto[]> {
+  async findAll(
+    filters: FindAllFilters = {},
+  ): Promise<EmpresaCategoriaResponseDto[]> {
     const where: any = {};
 
     if (filters.ativo) where.ativo = filters.ativo;
@@ -52,7 +61,7 @@ export class EmpresaCategoriaService {
       orderBy: { descricao: 'asc' },
     });
 
-    return categorias.map(cat => this.mapToResponseDto(cat));
+    return categorias.map((cat) => this.mapToResponseDto(cat));
   }
 
   async findOne(id: bigint): Promise<EmpresaCategoriaResponseDto> {
@@ -67,21 +76,26 @@ export class EmpresaCategoriaService {
     return this.mapToResponseDto(categoria);
   }
 
-  async findByEmpresa(empresaId: bigint): Promise<EmpresaCategoriaResponseDto[]> {
+  async findByEmpresa(
+    empresaId: bigint,
+  ): Promise<EmpresaCategoriaResponseDto[]> {
     await this.validateEmpresaExists(Number(empresaId));
 
     const categorias = await this.prisma.empresaCategoria.findMany({
-      where: { 
+      where: {
         empresaId,
         ativo: StatusRegistro.ATIVO,
       },
       orderBy: { descricao: 'asc' },
     });
 
-    return categorias.map(cat => this.mapToResponseDto(cat));
+    return categorias.map((cat) => this.mapToResponseDto(cat));
   }
 
-  async update(id: bigint, data: UpdateEmpresaCategoriaDto): Promise<EmpresaCategoriaResponseDto> {
+  async update(
+    id: bigint,
+    data: UpdateEmpresaCategoriaDto,
+  ): Promise<EmpresaCategoriaResponseDto> {
     await this.findOne(id);
 
     if (data.empresaId) {
@@ -93,15 +107,15 @@ export class EmpresaCategoriaService {
         where: { id },
         select: { empresaId: true },
       });
-      
-      const empresaIdToCheck = data.empresaId 
-        ? BigInt(data.empresaId) 
+
+      const empresaIdToCheck = data.empresaId
+        ? BigInt(data.empresaId)
         : current?.empresaId;
-        
+
       await this.validateDescricaoUnique(
-        data.descricao, 
-        Number(empresaIdToCheck), 
-        id
+        data.descricao,
+        Number(empresaIdToCheck),
+        id,
       );
     }
 
@@ -119,7 +133,9 @@ export class EmpresaCategoriaService {
 
       return this.mapToResponseDto(categoria);
     } catch (error) {
-      throw new BadRequestException('Erro ao atualizar categoria: ' + error.message);
+      throw new BadRequestException(
+        'Erro ao atualizar categoria: ' + error.message,
+      );
     }
   }
 
@@ -175,28 +191,32 @@ export class EmpresaCategoriaService {
     });
 
     if (!empresa) {
-      throw new NotFoundException(`Empresa com ID ${empresaId} não encontrada ou inativa`);
+      throw new NotFoundException(
+        `Empresa com ID ${empresaId} não encontrada ou inativa`,
+      );
     }
   }
 
   private async validateDescricaoUnique(
     descricao: string,
     empresaId: number,
-    excludeId?: bigint
+    excludeId?: bigint,
   ): Promise<void> {
-    const where: any = { 
+    const where: any = {
       descricao: { equals: descricao, mode: 'insensitive' },
       empresaId: BigInt(empresaId),
     };
-    
+
     if (excludeId) {
       where.id = { not: excludeId };
     }
 
     const existing = await this.prisma.empresaCategoria.findFirst({ where });
-    
+
     if (existing) {
-      throw new ConflictException('Categoria com esta descrição já existe para esta empresa');
+      throw new ConflictException(
+        'Categoria com esta descrição já existe para esta empresa',
+      );
     }
   }
 
@@ -207,7 +227,7 @@ export class EmpresaCategoriaService {
 
     if (empresasUsing > 0) {
       throw new ConflictException(
-        'Não é possível excluir categoria que está sendo utilizada por empresas'
+        'Não é possível excluir categoria que está sendo utilizada por empresas',
       );
     }
   }

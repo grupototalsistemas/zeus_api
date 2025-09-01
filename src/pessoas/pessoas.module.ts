@@ -1,7 +1,7 @@
 // pessoas/pessoas.module.ts
 import { Module } from '@nestjs/common';
 
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 import { PessoaPerfilController } from './controllers/pessoa-perfil.controller';
 import { PessoaTipoController } from './controllers/pessoa-tipo.controller';

@@ -1,14 +1,17 @@
 // sistemas/sistemas.service.ts
 import {
-    BadRequestException,
-    ConflictException,
-    Injectable,
-    NotFoundException,
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateSistemaDto, SistemaResponseDto, UpdateSistemaDto } from '../dto/create-sistema.dto';
-
+import { PrismaService } from '../../prisma/prisma.service';
+import {
+  CreateSistemaDto,
+  SistemaResponseDto,
+  UpdateSistemaDto,
+} from '../dto/create-sistema.dto';
 
 interface FindAllFilters {
   ativo?: StatusRegistro;
@@ -23,7 +26,7 @@ export class SistemasService {
   async create(data: CreateSistemaDto): Promise<SistemaResponseDto> {
     // Validar se empresa existe
     await this.validateEmpresaExists(data.empresaId);
-    
+
     // Validar se nome do sistema é único para esta empresa
     await this.validateNomeUnique(data.nome, data.empresaId);
 
@@ -76,13 +79,10 @@ export class SistemasService {
           },
         },
       },
-      orderBy: [
-        { empresa: { razaoSocial: 'asc' } },
-        { nome: 'asc' },
-      ],
+      orderBy: [{ empresa: { razaoSocial: 'asc' } }, { nome: 'asc' }],
     });
 
-    return sistemas.map(sistema => this.mapToResponseDto(sistema));
+    return sistemas.map((sistema) => this.mapToResponseDto(sistema));
   }
 
   async findOne(id: bigint): Promise<SistemaResponseDto> {
@@ -123,7 +123,7 @@ export class SistemasService {
     await this.validateEmpresaExists(Number(empresaId));
 
     const sistemas = await this.prisma.sistema.findMany({
-      where: { 
+      where: {
         empresaId,
         ativo: StatusRegistro.ATIVO,
       },
@@ -139,10 +139,13 @@ export class SistemasService {
       orderBy: { nome: 'asc' },
     });
 
-    return sistemas.map(sistema => this.mapToResponseDto(sistema));
+    return sistemas.map((sistema) => this.mapToResponseDto(sistema));
   }
 
-  async update(id: bigint, data: UpdateSistemaDto): Promise<SistemaResponseDto> {
+  async update(
+    id: bigint,
+    data: UpdateSistemaDto,
+  ): Promise<SistemaResponseDto> {
     // Verificar se sistema existe
     await this.findOne(id);
 
@@ -157,21 +160,17 @@ export class SistemasService {
         where: { id },
         select: { empresaId: true },
       });
-      
-      const empresaIdToCheck = data.empresaId 
-        ? BigInt(data.empresaId) 
+
+      const empresaIdToCheck = data.empresaId
+        ? BigInt(data.empresaId)
         : currentSistema?.empresaId;
-        
-      await this.validateNomeUnique(
-        data.nome, 
-        Number(empresaIdToCheck), 
-        id
-      );
+
+      await this.validateNomeUnique(data.nome, Number(empresaIdToCheck), id);
     }
 
     try {
       const updateData: any = { ...data };
-      
+
       if (data.empresaId) {
         updateData.empresaId = BigInt(data.empresaId);
       }
@@ -194,7 +193,9 @@ export class SistemasService {
 
       return this.mapToResponseDto(sistema);
     } catch (error) {
-      throw new BadRequestException('Erro ao atualizar sistema: ' + error.message);
+      throw new BadRequestException(
+        'Erro ao atualizar sistema: ' + error.message,
+      );
     }
   }
 
@@ -211,7 +212,7 @@ export class SistemasService {
       });
     } catch (error) {
       throw new ConflictException(
-        'Não foi possível excluir o sistema. Verifique se não há relacionamentos pendentes.'
+        'Não foi possível excluir o sistema. Verifique se não há relacionamentos pendentes.',
       );
     }
   }
@@ -282,28 +283,32 @@ export class SistemasService {
     });
 
     if (!empresa) {
-      throw new NotFoundException(`Empresa com ID ${empresaId} não encontrada ou inativa`);
+      throw new NotFoundException(
+        `Empresa com ID ${empresaId} não encontrada ou inativa`,
+      );
     }
   }
 
   private async validateNomeUnique(
     nome: string,
     empresaId: number,
-    excludeId?: bigint
+    excludeId?: bigint,
   ): Promise<void> {
-    const where: any = { 
+    const where: any = {
       nome: { equals: nome, mode: 'insensitive' },
       empresaId: BigInt(empresaId),
     };
-    
+
     if (excludeId) {
       where.id = { not: excludeId };
     }
 
     const existingSistema = await this.prisma.sistema.findFirst({ where });
-    
+
     if (existingSistema) {
-      throw new ConflictException('Sistema com este nome já existe para esta empresa');
+      throw new ConflictException(
+        'Sistema com este nome já existe para esta empresa',
+      );
     }
   }
 
@@ -315,7 +320,7 @@ export class SistemasService {
 
     if (chamadosCount > 0) {
       throw new ConflictException(
-        'Não é possível excluir sistema que possui chamados vinculados'
+        'Não é possível excluir sistema que possui chamados vinculados',
       );
     }
 
@@ -326,7 +331,7 @@ export class SistemasService {
 
     if (empresaSistemasCount > 0) {
       throw new ConflictException(
-        'Não é possível excluir sistema que possui empresas vinculadas'
+        'Não é possível excluir sistema que possui empresas vinculadas',
       );
     }
   }

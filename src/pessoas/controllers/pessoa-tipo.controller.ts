@@ -14,7 +14,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreatePessoaTipoDto } from '../dto/create-pessoa-tipo.dto';
 import { PessoaTipoService } from '../services/pessoa-tipo.service';
 
