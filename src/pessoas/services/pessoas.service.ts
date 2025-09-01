@@ -73,7 +73,17 @@ export class PessoasService {
     });
   }
 
-  remove(id: bigint) {
+  async remove(id: bigint) {
+    const chamadosCount = await this.prisma.chamado.count({
+      where: { pessoaId: id },
+    });
+
+    if (chamadosCount > 0) {
+      throw new ConflictException(
+        'Não é possível excluir pessoa que possui chamados vinculados',
+      );
+    }
+
     return this.prisma.pessoa.delete({ where: { id } });
   }
 }
