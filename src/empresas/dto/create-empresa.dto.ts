@@ -15,6 +15,14 @@ import {
 
 export class CreateEmpresaDto {
   @ApiProperty({
+    description: 'ID da empresa',
+    example: 1,
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'O campo id deve ser um número.' })
+  id?: number;
+
+  @ApiProperty({
     description: 'CNPJ da empresa',
     example: '12.345.678/0001-90',
   })
@@ -30,7 +38,9 @@ export class CreateEmpresaDto {
   })
   @IsNotEmpty({ message: 'O campo razaoSocial é obrigatório.' })
   @IsString({ message: 'O campo razaoSocial deve ser uma string.' })
-  @MaxLength(255, { message: 'O campo razaoSocial pode ter no máximo 255 caracteres.' })
+  @MaxLength(255, {
+    message: 'O campo razaoSocial pode ter no máximo 255 caracteres.',
+  })
   razaoSocial: string;
 
   @ApiProperty({
@@ -39,8 +49,113 @@ export class CreateEmpresaDto {
   })
   @IsNotEmpty({ message: 'O campo nomeFantasia é obrigatório.' })
   @IsString({ message: 'O campo nomeFantasia deve ser uma string.' })
-  @MaxLength(255, { message: 'O campo nomeFantasia pode ter no máximo 255 caracteres.' })
+  @MaxLength(255, {
+    message: 'O campo nomeFantasia pode ter no máximo 255 caracteres.',
+  })
   nomeFantasia: string;
+
+  @ApiPropertyOptional({
+    description: 'ID da empresa matriz (caso exista)',
+    example: 50,
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'O campo parentId deve ser um número.' })
+  parentId?: number;
+
+  @ApiPropertyOptional({
+    description: 'Código interno da empresa',
+    example: 'EMP-001',
+  })
+  @IsOptional()
+  @IsString()
+  codigo?: string;
+
+  @ApiPropertyOptional({
+    description: 'Logradouro da empresa',
+    example: 'Rua das Palmeiras',
+  })
+  @IsOptional()
+  @IsString()
+  logradouro?: string;
+
+  @ApiPropertyOptional({
+    description: 'Endereço completo',
+    example: 'Av. Paulista',
+  })
+  @IsOptional()
+  @IsString()
+  endereco?: string;
+
+  @ApiPropertyOptional({ description: 'Número do endereço', example: '1234' })
+  @IsOptional()
+  @IsString()
+  numero?: string;
+
+  @ApiPropertyOptional({
+    description: 'Complemento do endereço',
+    example: 'Sala 5',
+  })
+  @IsOptional()
+  @IsString()
+  complemento?: string;
+
+  @ApiPropertyOptional({ description: 'Bairro da empresa', example: 'Centro' })
+  @IsOptional()
+  @IsString()
+  bairro?: string;
+
+  @ApiPropertyOptional({ description: 'CEP da empresa', example: '01000-000' })
+  @IsOptional()
+  @IsString()
+  cep?: string;
+
+  @ApiPropertyOptional({
+    description: 'Cidade da empresa',
+    example: 'São Paulo',
+  })
+  @IsOptional()
+  @IsString()
+  cidade?: string;
+
+  @ApiPropertyOptional({
+    description: 'Nome do contato principal',
+    example: 'João Silva',
+  })
+  @IsOptional()
+  @IsString()
+  contato?: string;
+
+  @ApiPropertyOptional({
+    description: 'Telefone da empresa',
+    example: '(11) 99999-9999',
+  })
+  @IsOptional()
+  @IsString()
+  telefone?: string;
+
+  @ApiPropertyOptional({
+    description: 'Email da empresa',
+    example: 'contato@empresa.com',
+  })
+  @IsOptional()
+  @IsEmail({}, { message: 'O campo email deve ser um email válido.' })
+  email?: string;
+
+  @ApiPropertyOptional({
+    description: 'Observações adicionais sobre a empresa',
+    example: 'Aberto aos sábados',
+  })
+  @IsOptional()
+  @IsString()
+  observacao?: string;
+
+  @ApiPropertyOptional({
+    description: 'Motivo do status da empresa',
+    example: 'Empresa suspensa por inadimplência',
+  })
+  @IsOptional()
+  @IsString()
+  motivo?: string;
 
   @ApiPropertyOptional({
     description: 'Estado (sigla) onde a empresa está localizada',
@@ -48,7 +163,9 @@ export class CreateEmpresaDto {
     example: 'SP',
   })
   @IsOptional()
-  @IsEnum(SiglaEstado, { message: 'O campo estado deve ser uma sigla de estado válida.' })
+  @IsEnum(SiglaEstado, {
+    message: 'O campo estado deve ser uma sigla de estado válida.',
+  })
   estado?: SiglaEstado;
 
   @ApiProperty({
@@ -78,106 +195,22 @@ export class CreateEmpresaDto {
   @IsNotEmpty({ message: 'O campo categoriaId é obrigatório.' })
   @IsNumber({}, { message: 'O campo categoriaId deve ser um número.' })
   categoriaId: number;
-}
 
-
-export class UpdateEmpresaDto extends PartialType(CreateEmpresaDto) {
- 
-  // PartialType herda os validators e torna os campos opcionais
-}
-
-export class EmpresaResponseDto {
-  @ApiProperty({ description: 'ID único da empresa', example: 101 })
-  id: number;
-
-  @ApiProperty({ description: 'CNPJ da empresa', example: '12.345.678/0001-90' })
-  cnpj: string;
-
-  @ApiPropertyOptional({ description: 'ID da empresa matriz (caso exista)', example: 50 })
-  parentId?: number;
-
-  @ApiPropertyOptional({ description: 'Código interno da empresa', example: 'EMP-001' })
-  codigo?: string;
-
-  @ApiPropertyOptional({ description: 'Logradouro da empresa', example: 'Rua das Palmeiras' })
-  logradouro?: string;
-
-  @ApiPropertyOptional({ description: 'Endereço completo', example: 'Av. Paulista' })
-  endereco?: string;
-
-  @ApiPropertyOptional({ description: 'Número do endereço', example: '1234' })
-  numero?: string;
-
-  @ApiPropertyOptional({ description: 'Complemento do endereço', example: 'Sala 5' })
-  complemento?: string;
-
-  @ApiPropertyOptional({ description: 'Bairro da empresa', example: 'Centro' })
-  bairro?: string;
-
-  @ApiPropertyOptional({ description: 'CEP da empresa', example: '01000-000' })
-  cep?: string;
-
-  @ApiPropertyOptional({ description: 'Cidade da empresa', example: 'São Paulo' })
-  cidade?: string;
-
-  @ApiPropertyOptional({ description: 'Nome do contato principal', example: 'João Silva' })
-  contato?: string;
-
-  @ApiPropertyOptional({ description: 'Telefone da empresa', example: '(11) 99999-9999' })
-  telefone?: string;
-
-  @ApiPropertyOptional({ description: 'Email da empresa', example: 'contato@empresa.com' })
-  @IsOptional()
-  @IsEmail({}, { message: 'O campo email deve ser um email válido.' })
-  email?: string;
-
-  @ApiPropertyOptional({ description: 'Observações adicionais sobre a empresa', example: 'Aberto aos sábados' })
-  observacao?: string;
-
-  @ApiPropertyOptional({ description: 'Motivo do status da empresa', example: 'Empresa suspensa por inadimplência' })
-  motivo?: string;
-
-  @ApiProperty({
-    description: 'Razão social da empresa',
-    example: 'Empresa de Exemplo LTDA',
-  })
-  razaoSocial: string;
-
-  @ApiProperty({
-    description: 'Nome fantasia da empresa',
-    example: 'Exemplo Tech',
-  })
-  nomeFantasia: string;
-
+  // Timestamps gerenciados pelo banco de dados
   @ApiPropertyOptional({
-    description: 'Estado da empresa',
-    enum: SiglaEstado,
-    example: 'SP',
-  })
-  estado?: SiglaEstado;
-
-  @ApiProperty({
-    description: 'Status do registro da empresa',
-    enum: StatusRegistro,
-    example: StatusRegistro.ATIVO,
-  })
-  ativo: StatusRegistro;
-
-  @ApiProperty({ description: 'ID do tipo da empresa', example: 2 })
-  tipoId: number;
-
-  @ApiProperty({ description: 'ID da categoria da empresa', example: 5 })
-  categoriaId: number;
-
-  @ApiProperty({
     description: 'Data de criação do registro',
-    example: '2025-08-23T12:34:56.000Z',
+    example: '2023-10-05T14:48:00.000Z',
   })
-  createdAt: Date;
+  @IsOptional()
+  createdAt?: Date;
 
   @ApiPropertyOptional({
-    description: 'Data da última atualização',
-    example: '2025-08-23T15:45:10.000Z',
+    description: 'Data da última atualização do registro',
+    example: '2023-10-10T10:20:30.000Z',
   })
+  @IsOptional()
   updatedAt?: Date;
 }
+
+// Update herda de Create e deixa tudo opcional
+export class UpdateEmpresaDto extends PartialType(CreateEmpresaDto) {}

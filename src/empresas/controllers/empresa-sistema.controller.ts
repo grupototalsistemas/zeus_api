@@ -1,42 +1,45 @@
 // empresas/empresa-sistema.controller.ts
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpStatus,
-    Param,
-    ParseIntPipe,
-    Patch,
-    Post,
-    Query,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
 import {
-    ApiBearerAuth,
-    ApiBody,
-    ApiOperation,
-    ApiParam,
-    ApiQuery,
-    ApiResponse,
-    ApiTags,
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 
 import { StatusRegistro } from '@prisma/client';
-import { CreateEmpresaSistemaDto, EmpresaSistemaResponseDto, UpdateEmpresaSistemaDto } from '../dto/create-empresa-sistema.dto';
+import {
+  CreateEmpresaSistemaDto,
+  EmpresaSistemaResponseDto,
+  UpdateEmpresaSistemaDto,
+} from '../dto/create-empresa-sistema.dto';
 import { EmpresaSistemaService } from '../services/empresa-sistema.service';
 
 @ApiTags('Empresa Sistemas')
 @ApiBearerAuth()
-@Controller('empresas/sistemas')
+@Controller('empresas-sistemas')
 export class EmpresaSistemaController {
-  constructor(
-    private readonly empresaSistemaService: EmpresaSistemaService
-  ) {}
+  constructor(private readonly empresaSistemaService: EmpresaSistemaService) {}
 
   @Post()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Vincular sistema à empresa',
-    description: 'Cria um vínculo entre empresa e sistema com versão específica'
+    description:
+      'Cria um vínculo entre empresa e sistema com versão específica',
   })
   @ApiBody({ type: CreateEmpresaSistemaDto })
   @ApiResponse({
@@ -56,37 +59,39 @@ export class EmpresaSistemaController {
     status: HttpStatus.CONFLICT,
     description: 'Vínculo já existe entre esta empresa e sistema',
   })
-  create(@Body() dto: CreateEmpresaSistemaDto): Promise<EmpresaSistemaResponseDto> {
+  create(
+    @Body() dto: CreateEmpresaSistemaDto,
+  ): Promise<EmpresaSistemaResponseDto> {
     return this.empresaSistemaService.create(dto);
   }
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Listar todos os vínculos empresa-sistema',
-    description: 'Lista todos os vínculos com filtros opcionais'
+    description: 'Lista todos os vínculos com filtros opcionais',
   })
-  @ApiQuery({ 
-    name: 'ativo', 
-    required: false, 
+  @ApiQuery({
+    name: 'ativo',
+    required: false,
     enum: StatusRegistro,
-    description: 'Filtrar por status ativo/inativo'
+    description: 'Filtrar por status ativo/inativo',
   })
-  @ApiQuery({ 
-    name: 'empresaId', 
-    required: false, 
+  @ApiQuery({
+    name: 'empresaId',
+    required: false,
     type: 'number',
-    description: 'Filtrar por empresa específica'
+    description: 'Filtrar por empresa específica',
   })
-  @ApiQuery({ 
-    name: 'sistemaId', 
-    required: false, 
+  @ApiQuery({
+    name: 'sistemaId',
+    required: false,
     type: 'number',
-    description: 'Filtrar por sistema específico'
+    description: 'Filtrar por sistema específico',
   })
-  @ApiQuery({ 
-    name: 'versao', 
-    required: false, 
-    description: 'Filtrar por versão específica'
+  @ApiQuery({
+    name: 'versao',
+    required: false,
+    description: 'Filtrar por versão específica',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -95,27 +100,29 @@ export class EmpresaSistemaController {
   })
   findAll(
     @Query('ativo') ativo?: StatusRegistro,
-    @Query('empresaId', new ParseIntPipe({ optional: true })) empresaId?: number,
-    @Query('sistemaId', new ParseIntPipe({ optional: true })) sistemaId?: number,
+    @Query('empresaId', new ParseIntPipe({ optional: true }))
+    empresaId?: number,
+    @Query('sistemaId', new ParseIntPipe({ optional: true }))
+    sistemaId?: number,
     @Query('versao') versao?: string,
   ): Promise<EmpresaSistemaResponseDto[]> {
-    return this.empresaSistemaService.findAll({ 
-      ativo, 
-      empresaId, 
-      sistemaId, 
-      versao 
+    return this.empresaSistemaService.findAll({
+      ativo,
+      empresaId,
+      sistemaId,
+      versao,
     });
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar vínculo por ID',
-    description: 'Retorna os dados de um vínculo específico'
+    description: 'Retorna os dados de um vínculo específico',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do vínculo',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -126,25 +133,27 @@ export class EmpresaSistemaController {
     status: HttpStatus.NOT_FOUND,
     description: 'Vínculo não encontrado',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<EmpresaSistemaResponseDto> {
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<EmpresaSistemaResponseDto> {
     return this.empresaSistemaService.findOne(BigInt(id));
   }
 
   @Get('empresa/:empresaId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar sistemas de uma empresa',
-    description: 'Lista todos os sistemas vinculados a uma empresa específica'
+    description: 'Lista todos os sistemas vinculados a uma empresa específica',
   })
-  @ApiParam({ 
-    name: 'empresaId', 
+  @ApiParam({
+    name: 'empresaId',
     description: 'ID da empresa',
-    type: 'number'
+    type: 'number',
   })
-  @ApiQuery({ 
-    name: 'ativo', 
-    required: false, 
+  @ApiQuery({
+    name: 'ativo',
+    required: false,
     enum: StatusRegistro,
-    description: 'Filtrar por status ativo/inativo'
+    description: 'Filtrar por status ativo/inativo',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -159,20 +168,20 @@ export class EmpresaSistemaController {
   }
 
   @Get('sistema/:sistemaId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar empresas que usam um sistema',
-    description: 'Lista todas as empresas que possuem um sistema específico'
+    description: 'Lista todas as empresas que possuem um sistema específico',
   })
-  @ApiParam({ 
-    name: 'sistemaId', 
+  @ApiParam({
+    name: 'sistemaId',
     description: 'ID do sistema',
-    type: 'number'
+    type: 'number',
   })
-  @ApiQuery({ 
-    name: 'ativo', 
-    required: false, 
+  @ApiQuery({
+    name: 'ativo',
+    required: false,
     enum: StatusRegistro,
-    description: 'Filtrar por status ativo/inativo'
+    description: 'Filtrar por status ativo/inativo',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -187,14 +196,14 @@ export class EmpresaSistemaController {
   }
 
   @Patch(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar vínculo empresa-sistema',
-    description: 'Atualiza os dados de um vínculo existente'
+    description: 'Atualiza os dados de um vínculo existente',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do vínculo',
-    type: 'number'
+    type: 'number',
   })
   @ApiBody({ type: UpdateEmpresaSistemaDto })
   @ApiResponse({
@@ -212,20 +221,20 @@ export class EmpresaSistemaController {
   })
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateEmpresaSistemaDto
+    @Body() dto: UpdateEmpresaSistemaDto,
   ): Promise<EmpresaSistemaResponseDto> {
     return this.empresaSistemaService.update(BigInt(id), dto);
   }
 
   @Delete(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Remover vínculo empresa-sistema',
-    description: 'Remove o vínculo entre empresa e sistema'
+    description: 'Remove o vínculo entre empresa e sistema',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do vínculo',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -244,33 +253,35 @@ export class EmpresaSistemaController {
   }
 
   @Patch(':id/activate')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Ativar vínculo empresa-sistema',
-    description: 'Ativa um vínculo inativo'
+    description: 'Ativa um vínculo inativo',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do vínculo',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Vínculo ativado com sucesso',
     type: EmpresaSistemaResponseDto,
   })
-  activate(@Param('id', ParseIntPipe) id: number): Promise<EmpresaSistemaResponseDto> {
+  activate(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<EmpresaSistemaResponseDto> {
     return this.empresaSistemaService.activate(BigInt(id));
   }
 
   @Patch(':id/deactivate')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Desativar vínculo empresa-sistema',
-    description: 'Desativa um vínculo ativo'
+    description: 'Desativa um vínculo ativo',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do vínculo',
-    type: 'number'
+    type: 'number',
   })
   @ApiBody({
     schema: {
@@ -279,11 +290,11 @@ export class EmpresaSistemaController {
         motivo: {
           type: 'string',
           description: 'Motivo da desativação',
-          maxLength: 500
-        }
+          maxLength: 500,
+        },
       },
-      required: ['motivo']
-    }
+      required: ['motivo'],
+    },
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -292,20 +303,21 @@ export class EmpresaSistemaController {
   })
   deactivate(
     @Param('id', ParseIntPipe) id: number,
-    @Body('motivo') motivo: string
+    @Body('motivo') motivo: string,
   ): Promise<EmpresaSistemaResponseDto> {
     return this.empresaSistemaService.deactivate(BigInt(id), motivo);
   }
 
   @Patch(':id/update-version')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar versão do sistema',
-    description: 'Atualiza apenas a versão de um vínculo empresa-sistema específico'
+    description:
+      'Atualiza apenas a versão de um vínculo empresa-sistema específico',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do vínculo',
-    type: 'number'
+    type: 'number',
   })
   @ApiBody({
     schema: {
@@ -314,11 +326,11 @@ export class EmpresaSistemaController {
         versao: {
           type: 'string',
           description: 'Nova versão do sistema',
-          maxLength: 50
-        }
+          maxLength: 50,
+        },
       },
-      required: ['versao']
-    }
+      required: ['versao'],
+    },
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -331,7 +343,7 @@ export class EmpresaSistemaController {
   })
   updateVersion(
     @Param('id', ParseIntPipe) id: number,
-    @Body('versao') versao: string
+    @Body('versao') versao: string,
   ): Promise<EmpresaSistemaResponseDto> {
     return this.empresaSistemaService.updateVersion(BigInt(id), versao);
   }

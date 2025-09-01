@@ -2,12 +2,12 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { StatusRegistro } from '@prisma/client';
 import {
-    IsEnum,
-    IsNotEmpty,
-    IsNumber,
-    IsString,
-    MaxLength,
-    MinLength
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 
 export class CreateEmpresaTipoDto {
@@ -27,7 +27,9 @@ export class CreateEmpresaTipoDto {
   @IsNotEmpty({ message: 'O campo descricao é obrigatório.' })
   @IsString({ message: 'O campo descricao deve ser uma string.' })
   @MinLength(1, { message: 'O campo descricao não pode estar vazio.' })
-  @MaxLength(100, { message: 'O campo descricao pode ter no máximo 100 caracteres.' })
+  @MaxLength(100, {
+    message: 'O campo descricao pode ter no máximo 100 caracteres.',
+  })
   descricao: string;
 
   @ApiProperty({

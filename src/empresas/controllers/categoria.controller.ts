@@ -1,42 +1,46 @@
 // empresas/empresa-categoria.controller.ts
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpStatus,
-    Param,
-    ParseIntPipe,
-    Patch,
-    Post,
-    Query,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
 import {
-    ApiBearerAuth,
-    ApiBody,
-    ApiOperation,
-    ApiParam,
-    ApiQuery,
-    ApiResponse,
-    ApiTags,
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 
 import { StatusRegistro } from '@prisma/client';
-import { CreateEmpresaCategoriaDto, EmpresaCategoriaResponseDto, UpdateEmpresaCategoriaDto } from '../dto/create-empresa-categoria.dto';
+import {
+  CreateEmpresaCategoriaDto,
+  EmpresaCategoriaResponseDto,
+  UpdateEmpresaCategoriaDto,
+} from '../dto/create-empresa-categoria.dto';
 import { EmpresaCategoriaService } from '../services/categoria.service';
 
 @ApiTags('Empresa Categorias')
 @ApiBearerAuth()
-@Controller('empresas/categorias')
+@Controller('empresas-categorias')
 export class EmpresaCategoriaController {
   constructor(
-    private readonly empresaCategoriaService: EmpresaCategoriaService
+    private readonly empresaCategoriaService: EmpresaCategoriaService,
   ) {}
 
   @Post()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Criar nova categoria de empresa',
-    description: 'Cria uma nova categoria vinculada a uma empresa'
+    description: 'Cria uma nova categoria vinculada a uma empresa',
   })
   @ApiBody({ type: CreateEmpresaCategoriaDto })
   @ApiResponse({
@@ -56,31 +60,33 @@ export class EmpresaCategoriaController {
     status: HttpStatus.CONFLICT,
     description: 'Categoria com mesma descrição já existe para esta empresa',
   })
-  create(@Body() dto: CreateEmpresaCategoriaDto): Promise<EmpresaCategoriaResponseDto> {
+  create(
+    @Body() dto: CreateEmpresaCategoriaDto,
+  ): Promise<EmpresaCategoriaResponseDto> {
     return this.empresaCategoriaService.create(dto);
   }
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Listar todas as categorias de empresa',
-    description: 'Lista todas as categorias com filtros opcionais'
+    description: 'Lista todas as categorias com filtros opcionais',
   })
-  @ApiQuery({ 
-    name: 'ativo', 
-    required: false, 
+  @ApiQuery({
+    name: 'ativo',
+    required: false,
     enum: StatusRegistro,
-    description: 'Filtrar por status ativo/inativo'
+    description: 'Filtrar por status ativo/inativo',
   })
-  @ApiQuery({ 
-    name: 'empresaId', 
-    required: false, 
+  @ApiQuery({
+    name: 'empresaId',
+    required: false,
     type: 'number',
-    description: 'Filtrar por empresa específica'
+    description: 'Filtrar por empresa específica',
   })
-  @ApiQuery({ 
-    name: 'descricao', 
-    required: false, 
-    description: 'Filtrar por descrição (busca parcial)'
+  @ApiQuery({
+    name: 'descricao',
+    required: false,
+    description: 'Filtrar por descrição (busca parcial)',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -89,21 +95,26 @@ export class EmpresaCategoriaController {
   })
   findAll(
     @Query('ativo') ativo?: StatusRegistro,
-    @Query('empresaId', new ParseIntPipe({ optional: true })) empresaId?: number,
+    @Query('empresaId', new ParseIntPipe({ optional: true }))
+    empresaId?: number,
     @Query('descricao') descricao?: string,
   ): Promise<EmpresaCategoriaResponseDto[]> {
-    return this.empresaCategoriaService.findAll({ ativo, empresaId, descricao });
+    return this.empresaCategoriaService.findAll({
+      ativo,
+      empresaId,
+      descricao,
+    });
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar categoria por ID',
-    description: 'Retorna os dados de uma categoria específica'
+    description: 'Retorna os dados de uma categoria específica',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID da categoria',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -114,19 +125,21 @@ export class EmpresaCategoriaController {
     status: HttpStatus.NOT_FOUND,
     description: 'Categoria não encontrada',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<EmpresaCategoriaResponseDto> {
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<EmpresaCategoriaResponseDto> {
     return this.empresaCategoriaService.findOne(BigInt(id));
   }
 
   @Get('empresa/:empresaId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar categorias por empresa',
-    description: 'Lista todas as categorias de uma empresa específica'
+    description: 'Lista todas as categorias de uma empresa específica',
   })
-  @ApiParam({ 
-    name: 'empresaId', 
+  @ApiParam({
+    name: 'empresaId',
     description: 'ID da empresa',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -134,20 +147,20 @@ export class EmpresaCategoriaController {
     type: [EmpresaCategoriaResponseDto],
   })
   findByEmpresa(
-    @Param('empresaId', ParseIntPipe) empresaId: number
+    @Param('empresaId', ParseIntPipe) empresaId: number,
   ): Promise<EmpresaCategoriaResponseDto[]> {
     return this.empresaCategoriaService.findByEmpresa(BigInt(empresaId));
   }
 
   @Patch(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar categoria',
-    description: 'Atualiza os dados de uma categoria existente'
+    description: 'Atualiza os dados de uma categoria existente',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID da categoria',
-    type: 'number'
+    type: 'number',
   })
   @ApiBody({ type: UpdateEmpresaCategoriaDto })
   @ApiResponse({
@@ -165,20 +178,20 @@ export class EmpresaCategoriaController {
   })
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateEmpresaCategoriaDto
+    @Body() dto: UpdateEmpresaCategoriaDto,
   ): Promise<EmpresaCategoriaResponseDto> {
     return this.empresaCategoriaService.update(BigInt(id), dto);
   }
 
   @Delete(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Excluir categoria',
-    description: 'Exclui uma categoria do sistema'
+    description: 'Exclui uma categoria do sistema',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID da categoria',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -197,40 +210,44 @@ export class EmpresaCategoriaController {
   }
 
   @Patch(':id/activate')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Ativar categoria',
-    description: 'Ativa uma categoria inativa'
+    description: 'Ativa uma categoria inativa',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID da categoria',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Categoria ativada com sucesso',
     type: EmpresaCategoriaResponseDto,
   })
-  activate(@Param('id', ParseIntPipe) id: number): Promise<EmpresaCategoriaResponseDto> {
+  activate(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<EmpresaCategoriaResponseDto> {
     return this.empresaCategoriaService.activate(BigInt(id));
   }
 
   @Patch(':id/deactivate')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Desativar categoria',
-    description: 'Desativa uma categoria ativa'
+    description: 'Desativa uma categoria ativa',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID da categoria',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Categoria desativada com sucesso',
     type: EmpresaCategoriaResponseDto,
   })
-  deactivate(@Param('id', ParseIntPipe) id: number): Promise<EmpresaCategoriaResponseDto> {
+  deactivate(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<EmpresaCategoriaResponseDto> {
     return this.empresaCategoriaService.deactivate(BigInt(id));
   }
 }

@@ -1,8 +1,16 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
-import { StatusRegistro } from "@prisma/client";
-import { PrismaService } from "src/prisma/prisma.service";
-import { CreateEmpresaTipoDto, EmpresaTipoResponseDto, UpdateEmpresaTipoDto } from "../dto/create-empresa-tipo.dto";
-
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { StatusRegistro } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
+import {
+  CreateEmpresaTipoDto,
+  EmpresaTipoResponseDto,
+  UpdateEmpresaTipoDto,
+} from '../dto/create-empresa-tipo.dto';
 
 @Injectable()
 export class EmpresaTipoService {
@@ -40,7 +48,7 @@ export class EmpresaTipoService {
       orderBy: { descricao: 'asc' },
     });
 
-    return tipos.map(tipo => this.mapToResponseDto(tipo));
+    return tipos.map((tipo) => this.mapToResponseDto(tipo));
   }
 
   async findOne(id: bigint): Promise<EmpresaTipoResponseDto> {
@@ -59,17 +67,20 @@ export class EmpresaTipoService {
     await this.validateEmpresaExists(Number(empresaId));
 
     const tipos = await this.prisma.empresaTipo.findMany({
-      where: { 
+      where: {
         empresaId,
         ativo: StatusRegistro.ATIVO,
       },
       orderBy: { descricao: 'asc' },
     });
 
-    return tipos.map(tipo => this.mapToResponseDto(tipo));
+    return tipos.map((tipo) => this.mapToResponseDto(tipo));
   }
 
-  async update(id: bigint, data: UpdateEmpresaTipoDto): Promise<EmpresaTipoResponseDto> {
+  async update(
+    id: bigint,
+    data: UpdateEmpresaTipoDto,
+  ): Promise<EmpresaTipoResponseDto> {
     await this.findOne(id);
 
     if (data.empresaId) {
@@ -81,15 +92,15 @@ export class EmpresaTipoService {
         where: { id },
         select: { empresaId: true },
       });
-      
-      const empresaIdToCheck = data.empresaId 
-        ? BigInt(data.empresaId) 
+
+      const empresaIdToCheck = data.empresaId
+        ? BigInt(data.empresaId)
         : current?.empresaId;
-        
+
       await this.validateDescricaoUnique(
-        data.descricao, 
-        Number(empresaIdToCheck), 
-        id
+        data.descricao,
+        Number(empresaIdToCheck),
+        id,
       );
     }
 
@@ -163,28 +174,32 @@ export class EmpresaTipoService {
     });
 
     if (!empresa) {
-      throw new NotFoundException(`Empresa com ID ${empresaId} não encontrada ou inativa`);
+      throw new NotFoundException(
+        `Empresa com ID ${empresaId} não encontrada ou inativa`,
+      );
     }
   }
 
   private async validateDescricaoUnique(
     descricao: string,
     empresaId: number,
-    excludeId?: bigint
+    excludeId?: bigint,
   ): Promise<void> {
-    const where: any = { 
+    const where: any = {
       descricao: { equals: descricao, mode: 'insensitive' },
       empresaId: BigInt(empresaId),
     };
-    
+
     if (excludeId) {
       where.id = { not: excludeId };
     }
 
     const existing = await this.prisma.empresaTipo.findFirst({ where });
-    
+
     if (existing) {
-      throw new ConflictException('Tipo com esta descrição já existe para esta empresa');
+      throw new ConflictException(
+        'Tipo com esta descrição já existe para esta empresa',
+      );
     }
   }
 
@@ -195,7 +210,7 @@ export class EmpresaTipoService {
 
     if (empresasUsing > 0) {
       throw new ConflictException(
-        'Não é possível excluir tipo que está sendo utilizado por empresas'
+        'Não é possível excluir tipo que está sendo utilizado por empresas',
       );
     }
   }

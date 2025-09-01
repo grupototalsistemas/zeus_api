@@ -1,40 +1,44 @@
 // empresas/empresa-tipo.controller.ts
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpStatus,
-    Param,
-    ParseIntPipe,
-    Patch,
-    Post,
-    Query,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
 import {
-    ApiBearerAuth,
-    ApiBody,
-    ApiOperation,
-    ApiParam,
-    ApiQuery,
-    ApiResponse,
-    ApiTags,
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 
 import { StatusRegistro } from '@prisma/client';
-import { CreateEmpresaTipoDto, EmpresaTipoResponseDto, UpdateEmpresaTipoDto } from '../dto/create-empresa-tipo.dto';
+import {
+  CreateEmpresaTipoDto,
+  EmpresaTipoResponseDto,
+  UpdateEmpresaTipoDto,
+} from '../dto/create-empresa-tipo.dto';
 import { EmpresaTipoService } from '../services/empresa-tipo.service';
 
 @ApiTags('Empresa Tipos')
 @ApiBearerAuth()
-@Controller('empresas/tipos')
+@Controller('empresas-tipos')
 export class EmpresaTipoController {
   constructor(private readonly empresaTipoService: EmpresaTipoService) {}
 
   @Post()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Criar novo tipo de empresa',
-    description: 'Cria um novo tipo vinculado a uma empresa'
+    description: 'Cria um novo tipo vinculado a uma empresa',
   })
   @ApiBody({ type: CreateEmpresaTipoDto })
   @ApiResponse({
@@ -59,26 +63,26 @@ export class EmpresaTipoController {
   }
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Listar todos os tipos de empresa',
-    description: 'Lista todos os tipos com filtros opcionais'
+    description: 'Lista todos os tipos com filtros opcionais',
   })
-  @ApiQuery({ 
-    name: 'ativo', 
-    required: false, 
+  @ApiQuery({
+    name: 'ativo',
+    required: false,
     enum: StatusRegistro,
-    description: 'Filtrar por status ativo/inativo'
+    description: 'Filtrar por status ativo/inativo',
   })
-  @ApiQuery({ 
-    name: 'empresaId', 
-    required: false, 
+  @ApiQuery({
+    name: 'empresaId',
+    required: false,
     type: 'number',
-    description: 'Filtrar por empresa específica'
+    description: 'Filtrar por empresa específica',
   })
-  @ApiQuery({ 
-    name: 'descricao', 
-    required: false, 
-    description: 'Filtrar por descrição (busca parcial)'
+  @ApiQuery({
+    name: 'descricao',
+    required: false,
+    description: 'Filtrar por descrição (busca parcial)',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -87,21 +91,22 @@ export class EmpresaTipoController {
   })
   findAll(
     @Query('ativo') ativo?: StatusRegistro,
-    @Query('empresaId', new ParseIntPipe({ optional: true })) empresaId?: number,
+    @Query('empresaId', new ParseIntPipe({ optional: true }))
+    empresaId?: number,
     @Query('descricao') descricao?: string,
   ): Promise<EmpresaTipoResponseDto[]> {
     return this.empresaTipoService.findAll({ ativo, empresaId, descricao });
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar tipo por ID',
-    description: 'Retorna os dados de um tipo específico'
+    description: 'Retorna os dados de um tipo específico',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do tipo',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -112,19 +117,21 @@ export class EmpresaTipoController {
     status: HttpStatus.NOT_FOUND,
     description: 'Tipo não encontrado',
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<EmpresaTipoResponseDto> {
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<EmpresaTipoResponseDto> {
     return this.empresaTipoService.findOne(BigInt(id));
   }
 
   @Get('empresa/:empresaId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar tipos por empresa',
-    description: 'Lista todos os tipos de uma empresa específica'
+    description: 'Lista todos os tipos de uma empresa específica',
   })
-  @ApiParam({ 
-    name: 'empresaId', 
+  @ApiParam({
+    name: 'empresaId',
     description: 'ID da empresa',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -132,20 +139,20 @@ export class EmpresaTipoController {
     type: [EmpresaTipoResponseDto],
   })
   findByEmpresa(
-    @Param('empresaId', ParseIntPipe) empresaId: number
+    @Param('empresaId', ParseIntPipe) empresaId: number,
   ): Promise<EmpresaTipoResponseDto[]> {
     return this.empresaTipoService.findByEmpresa(BigInt(empresaId));
   }
 
   @Patch(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar tipo',
-    description: 'Atualiza os dados de um tipo existente'
+    description: 'Atualiza os dados de um tipo existente',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do tipo',
-    type: 'number'
+    type: 'number',
   })
   @ApiBody({ type: UpdateEmpresaTipoDto })
   @ApiResponse({
@@ -163,20 +170,20 @@ export class EmpresaTipoController {
   })
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateEmpresaTipoDto
+    @Body() dto: UpdateEmpresaTipoDto,
   ): Promise<EmpresaTipoResponseDto> {
     return this.empresaTipoService.update(BigInt(id), dto);
   }
 
   @Delete(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Excluir tipo',
-    description: 'Exclui um tipo do sistema'
+    description: 'Exclui um tipo do sistema',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do tipo',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -195,40 +202,44 @@ export class EmpresaTipoController {
   }
 
   @Patch(':id/activate')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Ativar tipo',
-    description: 'Ativa um tipo inativo'
+    description: 'Ativa um tipo inativo',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do tipo',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Tipo ativado com sucesso',
     type: EmpresaTipoResponseDto,
   })
-  activate(@Param('id', ParseIntPipe) id: number): Promise<EmpresaTipoResponseDto> {
+  activate(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<EmpresaTipoResponseDto> {
     return this.empresaTipoService.activate(BigInt(id));
   }
 
   @Patch(':id/deactivate')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Desativar tipo',
-    description: 'Desativa um tipo ativo'
+    description: 'Desativa um tipo ativo',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do tipo',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Tipo desativado com sucesso',
     type: EmpresaTipoResponseDto,
   })
-  deactivate(@Param('id', ParseIntPipe) id: number): Promise<EmpresaTipoResponseDto> {
+  deactivate(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<EmpresaTipoResponseDto> {
     return this.empresaTipoService.deactivate(BigInt(id));
   }
 }

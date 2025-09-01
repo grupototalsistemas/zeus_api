@@ -7,8 +7,7 @@ import {
 } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateEmpresaDto, EmpresaResponseDto, UpdateEmpresaDto } from '../dto/create-empresa.dto';
-
+import { CreateEmpresaDto, UpdateEmpresaDto } from '../dto/create-empresa.dto';
 
 interface FindAllFilters {
   ativo?: StatusRegistro;
@@ -20,13 +19,13 @@ interface FindAllFilters {
 export class EmpresasService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateEmpresaDto): Promise<EmpresaResponseDto> {
+  async create(data: CreateEmpresaDto): Promise<CreateEmpresaDto> {
     // Validar se CNPJ já existe
     await this.validateCnpjUnique(data.cnpj);
-    
+
     // Validar se tipo existe
     await this.validateEmpresaTipoExists(data.tipoId);
-    
+
     // Validar se categoria existe
     await this.validateEmpresaCategoriaExists(data.categoriaId);
 
@@ -52,7 +51,7 @@ export class EmpresasService {
     }
   }
 
-  async findAll(filters: FindAllFilters = {}): Promise<EmpresaResponseDto[]> {
+  async findAll(filters: FindAllFilters = {}): Promise<CreateEmpresaDto[]> {
     const where: any = {};
 
     if (filters.ativo) {
@@ -64,7 +63,10 @@ export class EmpresasService {
     }
 
     if (filters.razaoSocial) {
-      where.razaoSocial = { contains: filters.razaoSocial, mode: 'insensitive' };
+      where.razaoSocial = {
+        contains: filters.razaoSocial,
+        mode: 'insensitive',
+      };
     }
 
     const empresas = await this.prisma.empresa.findMany({
@@ -78,10 +80,10 @@ export class EmpresasService {
       },
     });
 
-    return empresas.map(empresa => this.mapToResponseDto(empresa));
+    return empresas.map((empresa) => this.mapToResponseDto(empresa));
   }
 
-  async findOne(id: bigint): Promise<EmpresaResponseDto> {
+  async findOne(id: bigint): Promise<CreateEmpresaDto> {
     const empresa = await this.prisma.empresa.findUnique({
       where: { id },
       include: {
@@ -134,7 +136,7 @@ export class EmpresasService {
     return empresa;
   }
 
-  async update(id: bigint, data: UpdateEmpresaDto): Promise<EmpresaResponseDto> {
+  async update(id: bigint, data: UpdateEmpresaDto): Promise<CreateEmpresaDto> {
     // Verificar se empresa existe
     await this.findOne(id);
 
@@ -156,17 +158,17 @@ export class EmpresasService {
 
     try {
       const updateData: any = { ...data };
-      
+
       if (data.tipoId) {
         updateData.tipoId = BigInt(data.tipoId);
       }
-      
+
       if (data.categoriaId) {
         updateData.categoriaId = BigInt(data.categoriaId);
       }
 
       updateData.updatedAt = new Date();
-
+      console.log('Update Data:', updateData); // Log para depuração
       const empresa = await this.prisma.empresa.update({
         where: { id },
         data: updateData,
@@ -175,32 +177,31 @@ export class EmpresasService {
           categorias: true,
         },
       });
-
+      console.log('Empresa Atualizada:', empresa); // Log para depuração
       return this.mapToResponseDto(empresa);
     } catch (error) {
-      throw new BadRequestException('Erro ao atualizar empresa: ' + error.message);
-    }
-  }
-
-  async remove(id: bigint): Promise<void> {
-    // Verificar se empresa existe
-    await this.findOne(id);
-
-    // Verificar se possui relacionamentos que impedem exclusão
-    await this.validateCanDelete(id);
-
-    try {
-      await this.prisma.empresa.delete({
-        where: { id },
-      });
-    } catch (error) {
-      throw new ConflictException(
-        'Não foi possível excluir a empresa. Verifique se não há relacionamentos pendentes.'
+      throw new BadRequestException(
+        'Erro ao atualizar empresa: ' + error.message,
       );
     }
   }
 
-  async activate(id: bigint): Promise<EmpresaResponseDto> {
+  // service
+  async remove(id: bigint): Promise<{ message: string }> {
+    await this.findOne(id);
+    await this.validateCanDelete(id);
+
+    try {
+      await this.prisma.empresa.delete({ where: { id } });
+      return { message: 'Empresa excluída com sucesso' };
+    } catch (error) {
+      throw new ConflictException(
+        'Não foi possível excluir a empresa. Verifique se não há relacionamentos pendentes.',
+      );
+    }
+  }
+
+  async activate(id: bigint): Promise<CreateEmpresaDto> {
     const empresa = await this.prisma.empresa.update({
       where: { id },
       data: {
@@ -221,7 +222,7 @@ export class EmpresasService {
     return this.mapToResponseDto(empresa);
   }
 
-  async deactivate(id: bigint, motivo: string): Promise<EmpresaResponseDto> {
+  async deactivate(id: bigint, motivo: string): Promise<CreateEmpresaDto> {
     if (!motivo || motivo.trim().length === 0) {
       throw new BadRequestException('Motivo da desativação é obrigatório');
     }
@@ -247,15 +248,18 @@ export class EmpresasService {
   }
 
   // Métodos de validação privados
-  private async validateCnpjUnique(cnpj: string, excludeId?: bigint): Promise<void> {
+  private async validateCnpjUnique(
+    cnpj: string,
+    excludeId?: bigint,
+  ): Promise<void> {
     const where: any = { cnpj };
-    
+
     if (excludeId) {
       where.id = { not: excludeId };
     }
 
     const existingEmpresa = await this.prisma.empresa.findFirst({ where });
-    
+
     if (existingEmpresa) {
       throw new ConflictException('CNPJ já cadastrado para outra empresa');
     }
@@ -270,11 +274,15 @@ export class EmpresasService {
     });
 
     if (!tipo) {
-      throw new NotFoundException(`Tipo de empresa com ID ${tipoId} não encontrado ou inativo`);
+      throw new NotFoundException(
+        `Tipo de empresa com ID ${tipoId} não encontrado ou inativo`,
+      );
     }
   }
 
-  private async validateEmpresaCategoriaExists(categoriaId: number): Promise<void> {
+  private async validateEmpresaCategoriaExists(
+    categoriaId: number,
+  ): Promise<void> {
     const categoria = await this.prisma.empresaCategoria.findFirst({
       where: {
         id: BigInt(categoriaId),
@@ -283,14 +291,16 @@ export class EmpresasService {
     });
 
     if (!categoria) {
-      throw new NotFoundException(`Categoria de empresa com ID ${categoriaId} não encontrada ou inativa`);
+      throw new NotFoundException(
+        `Categoria de empresa com ID ${categoriaId} não encontrada ou inativa`,
+      );
     }
   }
 
   private validateCnpjFormat(cnpj: string): void {
     // Remove caracteres não numéricos
     const cnpjNumbers = cnpj.replace(/\D/g, '');
-    
+
     if (cnpjNumbers.length !== 14) {
       throw new BadRequestException('CNPJ deve conter 14 dígitos');
     }
@@ -309,7 +319,7 @@ export class EmpresasService {
 
     if (pessoasCount > 0) {
       throw new ConflictException(
-        'Não é possível excluir empresa que possui pessoas vinculadas'
+        'Não é possível excluir empresa que possui pessoas vinculadas',
       );
     }
 
@@ -320,7 +330,7 @@ export class EmpresasService {
 
     if (chamadosCount > 0) {
       throw new ConflictException(
-        'Não é possível excluir empresa que possui chamados'
+        'Não é possível excluir empresa que possui chamados',
       );
     }
 
@@ -331,12 +341,12 @@ export class EmpresasService {
 
     if (sistemasCount > 0) {
       throw new ConflictException(
-        'Não é possível excluir empresa que possui sistemas vinculados'
+        'Não é possível excluir empresa que possui sistemas vinculados',
       );
     }
   }
 
-  private mapToResponseDto(empresa: any): EmpresaResponseDto {
+  private mapToResponseDto(empresa: any): CreateEmpresaDto {
     return {
       id: Number(empresa.id),
       parentId: Number(empresa.parentId),

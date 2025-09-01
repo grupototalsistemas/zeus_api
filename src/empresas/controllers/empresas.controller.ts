@@ -22,7 +22,7 @@ import {
 } from '@nestjs/swagger';
 import { StatusRegistro } from '@prisma/client';
 import { Public } from 'src/auth/decorators/public.decorator';
-import { CreateEmpresaDto, EmpresaResponseDto, UpdateEmpresaDto } from '../dto/create-empresa.dto';
+import { CreateEmpresaDto, UpdateEmpresaDto } from '../dto/create-empresa.dto';
 
 import { EmpresasService } from '../services/empresas.service';
 
@@ -33,15 +33,16 @@ export class EmpresasController {
   constructor(private readonly empresasService: EmpresasService) {}
 
   @Post()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Criar nova empresa',
-    description: 'Cria uma nova empresa no sistema com validações de CNPJ e dados obrigatórios'
+    description:
+      'Cria uma nova empresa no sistema com validações de CNPJ e dados obrigatórios',
   })
   @ApiBody({ type: CreateEmpresaDto })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Empresa criada com sucesso',
-    type: EmpresaResponseDto,
+    type: CreateEmpresaDto,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -51,59 +52,60 @@ export class EmpresasController {
     status: HttpStatus.NOT_FOUND,
     description: 'Tipo ou categoria da empresa não encontrados',
   })
-  create(@Body() dto: CreateEmpresaDto): Promise<EmpresaResponseDto> {
+  create(@Body() dto: CreateEmpresaDto): Promise<CreateEmpresaDto> {
     return this.empresasService.create(dto);
   }
 
   @Public()
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Listar todas as empresas',
-    description: 'Lista todas as empresas com filtros opcionais'
+    description: 'Lista todas as empresas com filtros opcionais',
   })
-  @ApiQuery({ 
-    name: 'ativo', 
-    required: false, 
+  @ApiQuery({
+    name: 'ativo',
+    required: false,
     enum: StatusRegistro,
-    description: 'Filtrar por status ativo/inativo'
+    description: 'Filtrar por status ativo/inativo',
   })
-  @ApiQuery({ 
-    name: 'cnpj', 
-    required: false, 
-    description: 'Filtrar por CNPJ específico'
+  @ApiQuery({
+    name: 'cnpj',
+    required: false,
+    description: 'Filtrar por CNPJ específico',
   })
-  @ApiQuery({ 
-    name: 'razaoSocial', 
-    required: false, 
-    description: 'Filtrar por razão social (busca parcial)'
+  @ApiQuery({
+    name: 'razaoSocial',
+    required: false,
+    description: 'Filtrar por razão social (busca parcial)',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Lista de empresas retornada com sucesso',
-    type: [EmpresaResponseDto],
+    type: [CreateEmpresaDto],
   })
   findAll(
     @Query('ativo') ativo?: StatusRegistro,
     @Query('cnpj') cnpj?: string,
     @Query('razaoSocial') razaoSocial?: string,
-  ): Promise<EmpresaResponseDto[]> {
+  ): Promise<CreateEmpresaDto[]> {
     return this.empresasService.findAll({ ativo, cnpj, razaoSocial });
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar empresa por ID',
-    description: 'Retorna os dados de uma empresa específica incluindo relacionamentos'
+    description:
+      'Retorna os dados de uma empresa específica incluindo relacionamentos',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID da empresa',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Empresa encontrada',
-    type: EmpresaResponseDto,
+    type: CreateEmpresaDto,
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -113,21 +115,20 @@ export class EmpresasController {
     status: HttpStatus.BAD_REQUEST,
     description: 'ID inválido',
   })
-  findOne(
-    @Param('id', ParseIntPipe) id: number
-  ): Promise<EmpresaResponseDto> {
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<CreateEmpresaDto> {
     return this.empresasService.findOne(BigInt(id));
   }
 
   @Get(':id/complete')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar empresa completa',
-    description: 'Retorna empresa com todos os relacionamentos (tipos, categorias, sistemas)'
+    description:
+      'Retorna empresa com todos os relacionamentos (tipos, categorias, sistemas)',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID da empresa',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -137,27 +138,25 @@ export class EmpresasController {
     status: HttpStatus.NOT_FOUND,
     description: 'Empresa não encontrada',
   })
-  findOneComplete(
-    @Param('id', ParseIntPipe) id: number
-  ) {
+  findOneComplete(@Param('id', ParseIntPipe) id: number) {
     return this.empresasService.findOneComplete(BigInt(id));
   }
 
   @Patch(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar empresa',
-    description: 'Atualiza os dados de uma empresa existente'
+    description: 'Atualiza os dados de uma empresa existente',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID da empresa',
-    type: 'number'
+    type: 'number',
   })
   @ApiBody({ type: UpdateEmpresaDto })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Empresa atualizada com sucesso',
-    type: EmpresaResponseDto,
+    type: CreateEmpresaDto,
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -169,20 +168,20 @@ export class EmpresasController {
   })
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateEmpresaDto
-  ): Promise<EmpresaResponseDto> {
+    @Body() dto: UpdateEmpresaDto,
+  ): Promise<CreateEmpresaDto> {
     return this.empresasService.update(BigInt(id), dto);
   }
 
   @Delete(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Excluir empresa',
-    description: 'Exclui uma empresa do sistema (soft delete)'
+    description: 'Exclui uma empresa do sistema (soft delete)',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID da empresa',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -196,38 +195,38 @@ export class EmpresasController {
     status: HttpStatus.CONFLICT,
     description: 'Empresa possui relacionamentos e não pode ser excluída',
   })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  remove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
     return this.empresasService.remove(BigInt(id));
   }
 
   @Patch(':id/activate')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Ativar empresa',
-    description: 'Ativa uma empresa inativa'
+    description: 'Ativa uma empresa inativa',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID da empresa',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Empresa ativada com sucesso',
-    type: EmpresaResponseDto,
+    type: CreateEmpresaDto,
   })
-  activate(@Param('id', ParseIntPipe) id: number): Promise<EmpresaResponseDto> {
+  activate(@Param('id', ParseIntPipe) id: number): Promise<CreateEmpresaDto> {
     return this.empresasService.activate(BigInt(id));
   }
 
   @Patch(':id/deactivate')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Desativar empresa',
-    description: 'Desativa uma empresa ativa'
+    description: 'Desativa uma empresa ativa',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID da empresa',
-    type: 'number'
+    type: 'number',
   })
   @ApiBody({
     schema: {
@@ -236,21 +235,21 @@ export class EmpresasController {
         motivo: {
           type: 'string',
           description: 'Motivo da desativação',
-          maxLength: 500
-        }
+          maxLength: 500,
+        },
       },
-      required: ['motivo']
-    }
+      required: ['motivo'],
+    },
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Empresa desativada com sucesso',
-    type: EmpresaResponseDto,
+    type: CreateEmpresaDto,
   })
   deactivate(
     @Param('id', ParseIntPipe) id: number,
-    @Body('motivo') motivo: string
-  ): Promise<EmpresaResponseDto> {
+    @Body('motivo') motivo: string,
+  ): Promise<CreateEmpresaDto> {
     return this.empresasService.deactivate(BigInt(id), motivo);
   }
 }
