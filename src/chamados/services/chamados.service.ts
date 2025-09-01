@@ -103,15 +103,46 @@ export class ChamadosService {
   async atualizarChamado(
     id: bigint,
     dados: {
+      empresaId?: number;
+      sistemaId?: number;
+      pessoaId?: number;
+      usuarioId?: number;
+      ocorrenciaId?: number;
+      prioridadeId?: number;
       titulo?: string;
       descricao?: string;
       observacao?: string;
-      prioridadeId?: number;
+      protocolo?: string;
+      ativo?: StatusRegistro;
     },
   ) {
     return this.prisma.chamado.update({
       where: { id },
-      data: dados,
+      data: {
+        ...(dados.empresaId && {
+          empresa: { connect: { id: BigInt(dados.empresaId) } },
+        }),
+        ...(dados.sistemaId && {
+          sistema: { connect: { id: BigInt(dados.sistemaId) } },
+        }),
+        ...(dados.pessoaId && {
+          pessoaId: BigInt(dados.pessoaId),
+        }),
+        ...(dados.usuarioId && {
+          usuarioId: BigInt(dados.usuarioId),
+        }),
+        ...(dados.ocorrenciaId && {
+          ocorrencia: { connect: { id: BigInt(dados.ocorrenciaId) } },
+        }),
+        ...(dados.prioridadeId && {
+          prioridade: { connect: { id: BigInt(dados.prioridadeId) } },
+        }),
+        ...(dados.titulo && { titulo: dados.titulo }),
+        ...(dados.descricao && { descricao: dados.descricao }),
+        ...(dados.observacao && { observacao: dados.observacao }),
+        ...(dados.protocolo && { protocolo: dados.protocolo }),
+        ...(dados.ativo && { ativo: dados.ativo }),
+      },
     });
   }
 
@@ -171,9 +202,9 @@ export class ChamadosService {
 
   async listarAnexos(movimentoId: number) {
     return this.prisma.chamadoMovimentoAnexo.findMany({
-      where: { 
+      where: {
         movimentoId,
-        ativo: StatusRegistro.ATIVO 
+        ativo: StatusRegistro.ATIVO,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -246,7 +277,6 @@ export class ChamadosService {
         descricaoAcao: data.movimento.descricaoAcao,
         observacaoTec: data.movimento.observacaoTec || '',
         ativo: StatusRegistro.ATIVO,
-        
       });
 
       // 2.2 Se houver anexos, criar
@@ -338,7 +368,6 @@ export class ChamadosService {
         descricaoAcao: movimento.descricaoAcao,
         observacaoTec: movimento.observacaoTec || '',
         ativo: StatusRegistro.ATIVO,
-        
       });
 
       // 2.2 Se houver anexos, criar
