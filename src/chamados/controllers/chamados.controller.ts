@@ -28,6 +28,7 @@ import { createReadStream, existsSync } from 'fs';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 
+import * as mime from 'mime-types';
 import { GetUsuario } from 'src/common/decorators/get-usuario.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { CreateChamadoDto } from '../dto/create-chamado.dto';
@@ -141,9 +142,6 @@ export class ChamadosController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
-          // new FileTypeValidator({
-          //   fileType: /(jpg|jpeg|png|gif|pdf|mp4|avi|mov|txt|doc|docx)$/
-          // }),
         ],
         fileIsRequired: true,
       }),
@@ -179,7 +177,9 @@ export class ChamadosController {
         return res.status(404).json({ message: 'Anexo não encontrado' });
       }
 
-      const filePath = join(process.cwd(), anexo.caminho);
+      const uploadDir = join(process.cwd(), 'uploads', 'chamados', 'anexos');
+      const caminho = anexo.caminho.split('\\').pop();
+      const filePath = join(uploadDir, caminho || '');
 
       if (!existsSync(filePath)) {
         return res
@@ -187,14 +187,25 @@ export class ChamadosController {
           .json({ message: 'Arquivo não encontrado no servidor' });
       }
 
+      // Detectar MIME type automaticamente
+      const mimeType = mime.lookup(caminho || '') || 'application/octet-stream';
+
+      res.setHeader('Content-Type', mimeType);
+
+      // Para imagens e PDFs, exibir inline
+      if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
+        res.setHeader(
+          'Content-Disposition',
+          `inline; filename*=UTF-8''${encodeURIComponent(anexo.descricao)}`,
+        );
+      } else {
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename*=UTF-8''${encodeURIComponent(anexo.descricao)}`,
+        );
+      }
+
       const file = createReadStream(filePath);
-
-      // Usar apenas campos que existem no modelo atual
-      res.set({
-        'Content-Type': 'application/octet-stream',
-        'Content-Disposition': `attachment; filename="${anexo.descricao}"`,
-      });
-
       file.pipe(res);
     } catch (error) {
       return res
@@ -235,11 +246,11 @@ export class ChamadosController {
   update(
     @Param('id') id: string,
     @Body() dto: UpdateChamadoDto,
-    @GetUsuario() usuarioId: number,
+    @GetUsuario() usuarioId: { userId: number },
   ) {
     return this.chamadosService.update(BigInt(id), {
       ...dto,
-      usuarioId,
+      usuarioId: usuarioId.userId,
     });
   }
 
