@@ -29,7 +29,13 @@ async function bootstrap() {
 
   // CORS para cookies
   app.enableCors({
-    origin: 'https://zeus-front-swart.vercel.app', // Permite apenas o front-end
+    origin: [
+      'https://zeus-front-swart.vercel.app',
+      /^https:\/\/.*\.vercel\.app$/, // Permite qualquer subdomínio .vercel.app
+      /^https:\/\/zeus-front-swart.*\.vercel\.app$/, // Permite subdominios específicos do projeto
+      'http://localhost:3000', // Para desenvolvimento local
+      'http://localhost:3001', // Para desenvolvimento local
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
