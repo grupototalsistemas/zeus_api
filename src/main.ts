@@ -55,5 +55,5 @@ async function bootstrap() {
   console.log(`🚀 Servidor rodando em http://localhost:${port}`);
   console.log(`📜 Swagger em http://localhost:${port}/api`);
 }
-
 bootstrap();
+export { bootstrap };
