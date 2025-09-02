@@ -2,13 +2,14 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import * as net from 'net';
 import { AppModule } from './app.module';
 import { PrismaClientExceptionFilter } from './common/filters/prisma-client-exception.filter';
 import { BigIntInterceptor } from './common/interceptors/bigint.interceptor';
 import { setupSwagger } from './config/swagger.config';
 
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
 
 const server = express();
 
