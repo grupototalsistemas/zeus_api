@@ -61,11 +61,4 @@ async function bootstrap() {
   console.log(`🚀 Servidor rodando em http://localhost:${port}`);
   console.log(`📜 Swagger em http://localhost:${port}/api`);
 }
-
-// Exporta a aplicação para Vercel
-export default bootstrap();
-
-// Inicia o servidor se não estiver na Vercel
-if (!process.env.VERCEL) {
-  bootstrap();
-}
+bootstrap();
