@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-// import cookieParser from 'cookie-parser';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import * as express from 'express';
 import * as net from 'net';
 import { AppModule } from './app.module';
 import { PrismaClientExceptionFilter } from './common/filters/prisma-client-exception.filter';
@@ -9,33 +10,32 @@ import { setupSwagger } from './config/swagger.config';
 
 const cookieParser = require('cookie-parser');
 
+const server = express();
+
 async function findAvailablePort(startPort: number): Promise<number> {
   return new Promise((resolve) => {
-    const server = net.createServer();
-    server.listen(startPort, () => {
-      server.close(() => resolve(startPort));
+    const tmpServer = net.createServer();
+    tmpServer.listen(startPort, () => {
+      tmpServer.close(() => resolve(startPort));
     });
-    server.on('error', () => {
+    tmpServer.on('error', () => {
       resolve(findAvailablePort(startPort + 1)); // tenta próxima porta
     });
   });
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
 
-  // Habilita CORS com credentials (cookies)
+  // CORS para cookies
   app.enableCors({
-    origin:
-      process.env.PORT || process.env.FRONTEND_URL || 'http://localhost:3000', // domínio do front
-    credentials: true, // permite envio de cookies
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
   });
 
-  // Middleware para ler cookies
   app.use(cookieParser());
 
   app.useGlobalInterceptors(new BigIntInterceptor());
-
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -45,23 +45,25 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new PrismaClientExceptionFilter());
-  // Converte BigInt para string automaticamente no JSON
+
   (BigInt.prototype as any).toJSON = function () {
     return this.toString();
   };
 
   setupSwagger(app);
 
-  if (process.env.VERCEL) {
-    return app;
+  await app.init();
+
+  // 👉 Se rodando localmente, sobe servidor normal
+  if (!process.env.VERCEL) {
+    const port = await findAvailablePort(Number(process.env.PORT) || 3000);
+    await app.listen(port);
+    console.log(`🚀 Servidor rodando em http://localhost:${port}`);
+    console.log(`📜 Swagger em http://localhost:${port}/api`);
   }
 
-  const port = await findAvailablePort(Number(process.env.PORT) || 3000);
-  await app.listen(port);
-
-  console.log(`🚀 Servidor rodando em http://localhost:${port}`);
-  console.log(`📜 Swagger em http://localhost:${port}/api`);
+  // 👉 Retorna o express server para Vercel
+  return server;
 }
-// bootstrap();
-// Exporta a aplicação para Vercel
+
 export default bootstrap();
