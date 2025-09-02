@@ -29,7 +29,7 @@ async function bootstrap() {
   });
 
   // Middleware para ler cookies
-  app.use(() => cookieParser());
+  app.use(cookieParser());
 
   app.useGlobalInterceptors(new BigIntInterceptor());
 
@@ -49,6 +49,10 @@ async function bootstrap() {
 
   setupSwagger(app);
 
+  if (process.env.VERCEL) {
+    return app;
+  }
+
   const port = await findAvailablePort(Number(process.env.PORT) || 3000);
   await app.listen(port);
 
@@ -56,4 +60,10 @@ async function bootstrap() {
   console.log(`📜 Swagger em http://localhost:${port}/api`);
 }
 
-bootstrap();
+// Exporta a aplicação para Vercel
+export default bootstrap();
+
+// Inicia o servidor se não estiver na Vercel
+if (!process.env.VERCEL) {
+  bootstrap();
+}
