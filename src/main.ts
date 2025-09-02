@@ -1,9 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
-
-// import * as net from 'net';
-import net from 'net';
+import * as net from 'net';
 import { AppModule } from './app.module';
 import { PrismaClientExceptionFilter } from './common/filters/prisma-client-exception.filter';
 import { BigIntInterceptor } from './common/interceptors/bigint.interceptor';
@@ -31,7 +29,7 @@ async function bootstrap() {
   });
 
   // Middleware para ler cookies
-  app.use(cookieParser());
+  app.use(() => cookieParser());
 
   app.useGlobalInterceptors(new BigIntInterceptor());
 
@@ -57,5 +55,5 @@ async function bootstrap() {
   console.log(`🚀 Servidor rodando em http://localhost:${port}`);
   console.log(`📜 Swagger em http://localhost:${port}/api`);
 }
+
 bootstrap();
-export { bootstrap };
