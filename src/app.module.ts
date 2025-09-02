@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { CommonServicesModule } from './common/services/common-services.module';
 import { EmpresasModule } from './empresas/empresas.module';
 import { PessoasModule } from './pessoas/pessoas.module';
 @Module({
@@ -19,6 +20,7 @@ import { PessoasModule } from './pessoas/pessoas.module';
       ],
     }),
     PrismaModule,
+    CommonServicesModule,
     AuthModule,
     PessoasModule,
     ChamadosModule,

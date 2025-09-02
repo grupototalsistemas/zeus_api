@@ -8,7 +8,7 @@ import {
   ParseFilePipe,
   Patch,
   Post,
-  Res,
+  Redirect,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -23,15 +23,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Response } from 'express';
-import { createReadStream, existsSync } from 'fs';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
-
-import * as mime from 'mime-types';
 
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { GetUsuario } from '../../common/decorators/get-usuario.decorator';
+import { BlobStorageService } from '../../common/services/blob-storage.service';
 import { CreateChamadoDto } from '../dto/create-chamado.dto';
 import { CreateMovimentoDto } from '../dto/create-movimento.dto';
 import { UpdateChamadoDto } from '../dto/update-chamado.dto';
@@ -42,7 +37,10 @@ import { ChamadosService } from '../services/chamados.service';
 @UseGuards(JwtAuthGuard)
 @Controller('chamados')
 export class ChamadosController {
-  constructor(private readonly chamadosService: ChamadosService) {}
+  constructor(
+    private readonly chamadosService: ChamadosService,
+    private readonly blobStorageService: BlobStorageService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Cria um novo chamado' })
@@ -101,14 +99,6 @@ export class ChamadosController {
   })
   @UseInterceptors(
     FilesInterceptor('files', 10, {
-      storage: diskStorage({
-        destination: './uploads/chamados/anexos',
-        filename: (req, file, callback) => {
-          const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-          const extension = extname(file.originalname);
-          callback(null, `${uniqueName}${extension}`);
-        },
-      }),
       fileFilter: (req, file, callback) => {
         const allowedMimes = [
           'image/jpeg',
@@ -155,63 +145,92 @@ export class ChamadosController {
     },
     @GetUsuario() usuarioId,
   ) {
-    const anexos = files.map((file) => ({
-      usuarioId: usuarioId.userId,
-      descricao: dados.descricao || file.originalname,
-      caminho: file.path,
-    }));
+    try {
+      // Upload dos arquivos para o Blob Storage
+      const uploadPromises = files.map(async (file) => {
+        const uploadResult = await this.blobStorageService.uploadFile(
+          file,
+          'chamados/anexos',
+        );
 
-    return await this.chamadosService.criarAnexos({
-      movimentoId: parseInt(dados.movimentoId),
-      anexos: anexos,
-    });
+        return {
+          usuarioId: usuarioId.userId,
+          descricao: dados.descricao || file.originalname,
+          url: uploadResult.url,
+          pathname: uploadResult.pathname,
+          nomeOriginal: file.originalname,
+          mimeType: file.mimetype,
+          tamanho: file.size,
+        };
+      });
+
+      const anexos = await Promise.all(uploadPromises);
+
+      return await this.chamadosService.criarAnexos({
+        movimentoId: parseInt(dados.movimentoId),
+        anexos: anexos,
+      });
+    } catch (error) {
+      throw new Error(`Erro ao fazer upload dos anexos: ${error.message}`);
+    }
   }
 
   @Get('anexo/:id')
-  @ApiOperation({ summary: 'Download de anexo' })
+  @ApiOperation({ summary: 'Acesso a anexo - redireciona para URL do blob' })
   @ApiParam({ name: 'id', type: String, description: 'ID do anexo' })
-  async downloadAnexo(@Param('id') id: string, @Res() res: Response) {
+  @ApiResponse({
+    status: 302,
+    description: 'Redirecionamento para URL do arquivo no blob storage',
+  })
+  @ApiResponse({ status: 404, description: 'Anexo não encontrado' })
+  @Redirect()
+  async accessAnexo(@Param('id') id: string) {
     try {
       const anexo = await this.chamadosService.obterAnexo(BigInt(id));
 
       if (!anexo) {
-        return res.status(404).json({ message: 'Anexo não encontrado' });
+        throw new Error('Anexo não encontrado');
       }
 
-      const uploadDir = join(process.cwd(), 'uploads', 'chamados', 'anexos');
-      const caminho = anexo.caminho.split('\\').pop();
-      const filePath = join(uploadDir, caminho || '');
+      // Verifica se o arquivo ainda existe no blob storage
+      const fileExists = await this.blobStorageService.fileExists(
+        anexo.pathname,
+      );
 
-      if (!existsSync(filePath)) {
-        return res
-          .status(404)
-          .json({ message: 'Arquivo não encontrado no servidor' });
+      if (!fileExists) {
+        throw new Error('Arquivo não encontrado no storage');
       }
 
-      // Detectar MIME type automaticamente
-      const mimeType = mime.lookup(caminho || '') || 'application/octet-stream';
-
-      res.setHeader('Content-Type', mimeType);
-
-      // Para imagens e PDFs, exibir inline
-      if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
-        res.setHeader(
-          'Content-Disposition',
-          `inline; filename*=UTF-8''${encodeURIComponent(anexo.descricao)}`,
-        );
-      } else {
-        res.setHeader(
-          'Content-Disposition',
-          `attachment; filename*=UTF-8''${encodeURIComponent(anexo.descricao)}`,
-        );
-      }
-
-      const file = createReadStream(filePath);
-      file.pipe(res);
+      // Retorna o objeto de redirecionamento
+      return {
+        url: anexo.url,
+        statusCode: 302,
+      };
     } catch (error) {
-      return res
-        .status(500)
-        .json({ message: 'Erro ao baixar arquivo', error: error.message });
+      throw new Error(`Erro ao acessar anexo: ${error.message}`);
+    }
+  }
+
+  @Delete('anexo/:id')
+  @ApiOperation({ summary: 'Remove um anexo' })
+  @ApiParam({ name: 'id', type: String, description: 'ID do anexo' })
+  @ApiResponse({ status: 200, description: 'Anexo removido com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Anexo não encontrado.' })
+  async deleteAnexo(@Param('id') id: string) {
+    try {
+      const anexo = await this.chamadosService.obterAnexo(BigInt(id));
+
+      if (!anexo) {
+        throw new Error('Anexo não encontrado');
+      }
+
+      // Remove do blob storage
+      await this.blobStorageService.deleteFile(anexo.pathname);
+
+      // Remove do banco de dados
+      return await this.chamadosService.excluirAnexo(BigInt(id));
+    } catch (error) {
+      throw new Error(`Erro ao remover anexo: ${error.message}`);
     }
   }
 

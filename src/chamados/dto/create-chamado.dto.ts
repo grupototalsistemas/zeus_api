@@ -1,3 +1,4 @@
+// src/chamados/dto/create-chamado.dto.ts
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { StatusRegistro } from '@prisma/client';
 import {
@@ -108,7 +109,14 @@ export class CreateChamadoDto {
           properties: {
             usuarioId: { type: 'number', example: 1 },
             descricao: { type: 'string', example: 'Print do erro' },
-            caminho: { type: 'string', example: '/uploads/print.png' },
+            url: {
+              type: 'string',
+              example: 'https://blob.vercel-storage.com/...',
+            },
+            pathname: { type: 'string', example: 'chamados/anexos/...' },
+            nomeOriginal: { type: 'string', example: 'print.png' },
+            mimeType: { type: 'string', example: 'image/png' },
+            tamanho: { type: 'number', example: 1024 },
           },
         },
         required: false,
@@ -136,7 +144,11 @@ export class CreateChamadoDto {
     anexos?: {
       usuarioId: number;
       descricao: string;
-      caminho: string;
+      url: string;
+      pathname: string;
+      nomeOriginal: string;
+      mimeType: string;
+      tamanho: number;
     }[];
     mensagens?: {
       usuarioEnvioId: number;
@@ -153,7 +165,11 @@ export class CreateChamadoDto {
       properties: {
         usuarioId: { type: 'number', example: 1 },
         descricao: { type: 'string', example: 'Documentação' },
-        caminho: { type: 'string', example: '/uploads/doc.pdf' },
+        url: { type: 'string', example: 'https://blob.vercel-storage.com/...' },
+        pathname: { type: 'string', example: 'chamados/anexos/...' },
+        nomeOriginal: { type: 'string', example: 'documento.pdf' },
+        mimeType: { type: 'string', example: 'application/pdf' },
+        tamanho: { type: 'number', example: 2048 },
       },
     },
   })
@@ -161,7 +177,11 @@ export class CreateChamadoDto {
   anexos?: {
     usuarioId: number;
     descricao: string;
-    caminho: string;
+    url: string;
+    pathname: string;
+    nomeOriginal: string;
+    mimeType: string;
+    tamanho: number;
   }[];
 
   @ApiProperty({

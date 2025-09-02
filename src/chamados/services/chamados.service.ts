@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
+import { BlobStorageService } from '../../common/services/blob-storage.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateChamadoDto } from '../dto/create-chamado.dto';
 import { CreateMovimentoDto } from '../dto/create-movimento.dto';
@@ -8,7 +9,10 @@ import { UpdateChamadoDto } from '../dto/update-chamado.dto';
 
 @Injectable()
 export class ChamadosService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private blobStorageService: BlobStorageService,
+  ) {}
 
   // =================== OPERAÇÕES DE CHAMADO ===================
 
@@ -179,7 +183,11 @@ export class ChamadosService {
     anexos: {
       usuarioId: number;
       descricao: string;
-      caminho: string;
+      url: string;
+      pathname: string;
+      nomeOriginal: string;
+      mimeType: string;
+      tamanho: number;
     }[];
   }) {
     return this.prisma.chamadoMovimentoAnexo.createMany({
@@ -187,7 +195,11 @@ export class ChamadosService {
         movimentoId: dados.movimentoId,
         usuarioId: anexo.usuarioId,
         descricao: anexo.descricao,
-        caminho: anexo.caminho,
+        url: anexo.url,
+        pathname: anexo.pathname,
+        nomeOriginal: anexo.nomeOriginal,
+        mimeType: anexo.mimeType,
+        tamanho: anexo.tamanho,
         dataHora: new Date(),
         ativo: StatusRegistro.ATIVO,
       })),
@@ -211,12 +223,32 @@ export class ChamadosService {
   }
 
   async excluirAnexos(movimentoId: number) {
+    // Buscar anexos para deletar do blob storage
+    const anexos = await this.prisma.chamadoMovimentoAnexo.findMany({
+      where: { movimentoId },
+    });
+
+    // Deletar arquivos do blob storage
+    for (const anexo of anexos) {
+      if (anexo.pathname) {
+        await this.blobStorageService.deleteFile(anexo.pathname);
+      }
+    }
+
+    // Deletar registros do banco
     return this.prisma.chamadoMovimentoAnexo.deleteMany({
       where: { movimentoId },
     });
   }
 
   async excluirAnexo(id: bigint) {
+    // Buscar anexo para obter pathname
+    const anexo = await this.obterAnexo(id);
+
+    if (anexo?.pathname) {
+      await this.blobStorageService.deleteFile(anexo.pathname);
+    }
+
     return this.prisma.chamadoMovimentoAnexo.delete({
       where: { id },
     });

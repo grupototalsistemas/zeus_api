@@ -345,8 +345,14 @@ model ChamadoMovimentoAnexo {
   usuarioId  BigInt        @map("id_pessoa_usuario")
   ordem      Int?
   descricao  String        @db.VarChar(100)
+  // Campos para Blob Storage - NOVOS
+  url             String           @db.VarChar(1000) // URL pública do arquivo no blob storage
+  pathname        String           @db.VarChar(500)  // Pathname para operações de delete/head
+  nomeOriginal    String           @db.VarChar(255)  // Nome original do arquivo
+  mimeType        String           @db.VarChar(100)  // Tipo MIME do arquivo
+  tamanho         Int?                               // Tamanho do arquivo em bytes
   dataHora   DateTime?     @map("data_hora_")
-  caminho    String        @db.VarChar(150)
+  
   ativo      StatusRegistro
   motivo     String?       @db.VarChar(500)
   createdAt  DateTime      @default(now()) @map("created_at")
