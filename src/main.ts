@@ -26,7 +26,8 @@ async function bootstrap() {
 
   // Habilita CORS com credentials (cookies)
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000', // domínio do front
+    origin:
+      process.env.PORT || process.env.FRONTEND_URL || 'http://localhost:3000', // domínio do front
     credentials: true, // permite envio de cookies
   });
 
