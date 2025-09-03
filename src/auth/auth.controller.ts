@@ -42,7 +42,6 @@ export class AuthController {
       sameSite: 'none', // Permite cross-site
       maxAge: 24 * 60 * 60 * 1000,
       path: '/',
-      domain: '.vercel.app', // Opcional: compartilha entre subdomínios
     });
     console.log('user controler: ', user);
     return { user };
