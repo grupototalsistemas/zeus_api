@@ -44,7 +44,7 @@ export class AuthController {
       path: '/',
     };
 
-    res.cookie('zeus_token', accessToken, cookieOptions);
+    res.cookie('token', accessToken, cookieOptions);
 
     // DEBUG: Verificar se o cookie foi setado
     console.log('Headers após set cookie:', res.getHeaders());
@@ -56,10 +56,10 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout e retirada de JWT' })
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('zeus_token', {
+    res.clearCookie('token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'none' as const,
       path: '/',
     });
     return { message: 'Logout realizado com sucesso' };
