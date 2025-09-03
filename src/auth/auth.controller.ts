@@ -38,10 +38,11 @@ export class AuthController {
 
     res.cookie('token', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Só em HTTPS no prod
-      sameSite: 'strict', // Protege contra CSRF
-      maxAge: 24 * 60 * 60 * 1000, // 1 dia
+      secure: true, // Sempre true na Vercel (HTTPS)
+      sameSite: 'none', // Permite cross-site
+      maxAge: 24 * 60 * 60 * 1000,
       path: '/',
+      domain: '.vercel.app', // Opcional: compartilha entre subdomínios
     });
     console.log('user controler: ', user);
     return { user };
