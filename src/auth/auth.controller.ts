@@ -36,14 +36,19 @@ export class AuthController {
   async login(@Request() req: any, @Res({ passthrough: true }) res: Response) {
     const { accessToken, user } = await this.authService.login(req.user);
 
-    res.cookie('token', accessToken, {
+    const cookieOptions = {
       httpOnly: true,
-      secure: true, // Sempre true na Vercel (HTTPS)
-      sameSite: 'none', // Permite cross-site
+      secure: true,
+      sameSite: 'none' as const,
       maxAge: 24 * 60 * 60 * 1000,
       path: '/',
-    });
-    console.log('user controler: ', user);
+    };
+
+    res.cookie('zeus_token', accessToken, cookieOptions);
+
+    // DEBUG: Verificar se o cookie foi setado
+    console.log('Headers após set cookie:', res.getHeaders());
+
     return { user };
   }
 
@@ -51,7 +56,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout e retirada de JWT' })
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('token', {
+    res.clearCookie('zeus_token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
