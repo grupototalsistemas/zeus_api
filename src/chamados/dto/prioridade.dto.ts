@@ -12,6 +12,10 @@ import {
 } from 'class-validator';
 
 export class CreateChamadoPrioridadeDto {
+  @IsOptional()
+  @IsNumber()
+  id: number;
+
   @IsNotEmpty()
   @IsNumber()
   empresaId: number;

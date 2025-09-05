@@ -8,6 +8,10 @@ import {
 } from 'class-validator';
 
 export class CreateChamadoOcorrenciaDto {
+  @IsOptional()
+  @IsNumber()
+  id: number;
+
   @IsNotEmpty()
   @IsNumber()
   empresaId: number;

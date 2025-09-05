@@ -61,14 +61,15 @@ export class ChamadoPrioridadeController {
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Cria um novo prioridade de chamado' })
+  @ApiOperation({ summary: 'Atualizar uma prioridade de chamado' })
   @ApiBody({ type: CreateChamadoPrioridadeDto })
   @ApiResponse({
     status: 201,
-    description: 'Prioridade de chamado criado com sucesso.',
+    description: 'Prioridade de chamado atualizada com sucesso.',
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
   update(@Param('id') id: string, @Body() dto: CreateChamadoPrioridadeDto) {
+    console.log(dto);
     return this.chamadoPrioridadeService.update(BigInt(id), dto);
   }
 
