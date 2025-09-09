@@ -1,9 +1,10 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
-import express from 'express';
 import cookieParser from 'cookie-parser';
+import express from 'express';
 import * as net from 'net';
+import { join } from 'path';
 import { AppModule } from './app.module';
 import { PrismaClientExceptionFilter } from './common/filters/prisma-client-exception.filter';
 import { BigIntInterceptor } from './common/interceptors/bigint.interceptor';
@@ -12,6 +13,16 @@ import { setupSwagger } from './config/swagger.config';
 // const cookieParser = require('cookie-parser');
 
 const server = express();
+
+server.get('/', (req, res) => {
+  res.redirect('/api');
+});
+
+// Servir arquivos estáticos do Swagger UI
+server.use(
+  '/swagger-ui',
+  express.static(join(__dirname, '..', 'node_modules', 'swagger-ui-dist')),
+);
 
 async function findAvailablePort(startPort: number): Promise<number> {
   return new Promise((resolve) => {
@@ -39,7 +50,12 @@ async function bootstrap() {
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'X-Requested-With',
+    ],
   });
 
   app.use(cookieParser());
