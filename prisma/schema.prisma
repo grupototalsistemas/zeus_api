@@ -1,6 +1,3 @@
-// =====================================
-// CONFIGURAÇÕES GERAIS
-// =====================================
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,93 +7,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// =====================================
-// ENUMS - Domains convertidos para Prisma
-// =====================================
-enum StatusRegistro {
-  INATIVO  @map("0")
-  ATIVO    @map("1")
-  EXCLUIDO @map("2")
-}
-
-enum StatusGenero {
-  MASCULINO     @map("1")
-  FEMININO      @map("2")
-  NEUTRO        @map("3")
-  NAO_BINARIE   @map("4")
-  IGNORADO      @map("5")
-}
-enum SiglaEstado {
-  AC   @map("AC")
-  AL   @map("AL")
-  AP   @map("AP")
-  AM   @map("AM")
-  BA   @map("BA")
-  CE   @map("CE")
-  DF   @map("DF")
-  ES   @map("ES")
-  GO   @map("GO")
-  MA   @map("MA")
-  MT   @map("MT")
-  MS   @map("MS")
-  MG   @map("MG")
-  PA   @map("PA")
-  PB   @map("PB")
-  PR   @map("PR")
-  PE   @map("PE")
-  PI   @map("PI")
-  RJ   @map("RJ")
-  RN   @map("RN")
-  RS   @map("RS")
-  RO   @map("RO")
-  RR   @map("RR")
-  SC   @map("SC")
-  SP   @map("SP")
-  SE   @map("SE")
-  TO   @map("TO")
-}
-
-// =====================================
-// MODELS
-// =====================================
-
 model Empresa {
-  id           BigInt         @id @default(autoincrement()) @map("id_empresa")
-  parentId     BigInt         @default(-1) @map("id_parent_empresa")
-  tipoId       BigInt         @map("id_empresa_tipo")
-  categoriaId  BigInt         @map("id_empresa_categoria")
-  cnpj         String         @db.VarChar(20)
-  codigo       String?        @db.VarChar(50)
-  razaoSocial  String         @db.VarChar(500) @map("razao_social")
-  nomeFantasia String         @db.VarChar(500) @map("nome_fantasia")
-  logradouro   String?        @db.VarChar(50)
-  endereco     String?        @db.VarChar(150)
-  numero       String?        @db.VarChar(20)
-  complemento  String?        @db.VarChar(50)
-  bairro       String?        @db.VarChar(150)
-  cidade       String?        @db.VarChar(150)
-  estado       SiglaEstado?   @map("estado")
-  cep          String?        @db.VarChar(20)
-  contato      String?        @db.VarChar(50)
-  email        String?        @db.VarChar(150)
-  observacao   String?        @db.VarChar(500)
-  ativo        StatusRegistro
-  motivo       String?        @db.VarChar(500)
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime?      @map("updated_at")
-
-  tipos        EmpresaTipo[]  @relation("EmpresaTipos")
-  categorias   EmpresaCategoria[] @relation("EmpresaCategorias")
-  sistemas     Sistema[]
-  empresaSistemas     EmpresaSistema[]
-  pessoas      Pessoa[]
-  pessoasTipos  PessoaTipo[]
-  perfis       Perfil[]
-  prioridades  Prioridade[]
-  ocorrencias  Ocorrencia[]
-  ocorrenciasTipos OcorrenciaTipo[]
-  chamados     Chamado[]
+  id                 BigInt                  @id @default(autoincrement()) @map("id_empresa")
+  parentId           BigInt                  @default(-1) @map("id_parent_empresa")
+  tipoId             BigInt                  @map("id_empresa_tipo")
+  categoriaId        BigInt                  @map("id_empresa_categoria")
+  cnpj               String                  @db.VarChar(20)
+  codigo             String?                 @db.VarChar(50)
+  razaoSocial        String                  @map("razao_social") @db.VarChar(500)
+  nomeFantasia       String                  @map("nome_fantasia") @db.VarChar(500)
+  logradouro         String?                 @db.VarChar(50)
+  endereco           String?                 @db.VarChar(150)
+  numero             String?                 @db.VarChar(20)
+  complemento        String?                 @db.VarChar(50)
+  bairro             String?                 @db.VarChar(150)
+  cidade             String?                 @db.VarChar(150)
+  estado             SiglaEstado?            @map("estado")
+  cep                String?                 @db.VarChar(20)
+  contato            String?                 @db.VarChar(50)
+  email              String?                 @db.VarChar(150)
+  observacao         String?                 @db.VarChar(500)
+  ativo              StatusRegistro
+  motivo             String?                 @db.VarChar(500)
+  createdAt          DateTime                @default(now()) @map("created_at")
+  updatedAt          DateTime?               @map("updated_at")
+  chamados           Chamado[]
   chamadosMovimentos ChamadoMovimentoEtapa[]
+  categorias         EmpresaCategoria[]      @relation("EmpresaCategorias")
+  empresaSistemas    EmpresaSistema[]
+  tipos              EmpresaTipo[]           @relation("EmpresaTipos")
+  ocorrencias        Ocorrencia[]
+  ocorrenciasTipos   OcorrenciaTipo[]
+  perfis             Perfil[]
+  pessoas            Pessoa[]
+  pessoasTipos       PessoaTipo[]
+  prioridades        Prioridade[]
+  sistemas           Sistema[]
 
   @@map("empresas")
 }
@@ -108,7 +54,6 @@ model EmpresaTipo {
   ativo     StatusRegistro
   createdAt DateTime       @default(now()) @map("created_at")
   updatedAt DateTime?      @map("updated_at")
-
   empresa   Empresa        @relation("EmpresaTipos", fields: [empresaId], references: [id])
 
   @@map("empresas_tipos")
@@ -121,25 +66,23 @@ model EmpresaCategoria {
   ativo     StatusRegistro
   createdAt DateTime       @default(now()) @map("created_at")
   updatedAt DateTime?      @map("updated_at")
-
   empresa   Empresa        @relation("EmpresaCategorias", fields: [empresaId], references: [id])
 
   @@map("empresas_categorias")
 }
 
 model Sistema {
-  id        BigInt         @id @default(autoincrement()) @map("id_sistema")
-  empresaId BigInt         @map("id_empresa")
-  nome      String         @db.VarChar(50)
-  descricao String         @db.VarChar(100)
-  ativo     StatusRegistro
-  motivo    String?        @db.VarChar(500)
-  createdAt DateTime       @default(now()) @map("created_at")
-  updatedAt DateTime?      @map("updated_at")
-
-  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  id               BigInt           @id @default(autoincrement()) @map("id_sistema")
+  empresaId        BigInt           @map("id_empresa")
+  nome             String           @db.VarChar(50)
+  descricao        String           @db.VarChar(100)
+  ativo            StatusRegistro
+  motivo           String?          @db.VarChar(500)
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime?        @map("updated_at")
+  chamados         Chamado[]
   empresasSistemas EmpresaSistema[]
-  chamados  Chamado[]
+  empresa          Empresa          @relation(fields: [empresaId], references: [id])
 
   @@map("sistemas")
 }
@@ -153,7 +96,6 @@ model EmpresaSistema {
   motivo    String?        @db.VarChar(500)
   createdAt DateTime       @default(now()) @map("created_at")
   updatedAt DateTime?      @map("updated_at")
-
   empresa   Empresa        @relation(fields: [empresaId], references: [id])
   sistema   Sistema        @relation(fields: [sistemaId], references: [id])
 
@@ -161,19 +103,18 @@ model EmpresaSistema {
 }
 
 model Pessoa {
-  id         BigInt         @id @default(autoincrement()) @map("id_pessoa")
-  empresaId  BigInt         @map("id_empresa")
-  tipoId     BigInt         @map("id_pessoa_tipo")
+  id         BigInt          @id @default(autoincrement()) @map("id_pessoa")
+  empresaId  BigInt          @map("id_empresa")
+  tipoId     BigInt          @map("id_pessoa_tipo")
   genero     StatusGenero
-  nome       String         @db.VarChar(150)
-  nomeSocial String?        @db.VarChar(150) @map("nome_social")
+  nome       String          @db.VarChar(150)
+  nomeSocial String?         @map("nome_social") @db.VarChar(150)
   ativo      StatusRegistro
-  motivo     String?        @db.VarChar(500)
-  createdAt  DateTime       @default(now()) @map("created_at")
-  updatedAt  DateTime?      @map("updated_at")
-
-  empresa    Empresa        @relation(fields: [empresaId], references: [id])
-  tipo       PessoaTipo     @relation(fields: [tipoId], references: [id])
+  motivo     String?         @db.VarChar(500)
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime?       @map("updated_at")
+  empresa    Empresa         @relation(fields: [empresaId], references: [id])
+  tipo       PessoaTipo      @relation(fields: [tipoId], references: [id])
   usuarios   PessoaUsuario[]
 
   @@map("pessoas")
@@ -186,9 +127,8 @@ model PessoaTipo {
   ativo     StatusRegistro
   createdAt DateTime       @default(now()) @map("created_at")
   updatedAt DateTime?      @map("updated_at")
-
-  empresa   Empresa        @relation(fields: [empresaId], references: [id])
   pessoas   Pessoa[]
+  empresa   Empresa        @relation(fields: [empresaId], references: [id])
 
   @@map("pessoas_tipos")
 }
@@ -204,7 +144,6 @@ model PessoaUsuario {
   motivo    String?        @db.VarChar(500)
   createdAt DateTime       @default(now()) @map("created_at")
   updatedAt DateTime?      @map("updated_at")
-
   pessoa    Pessoa         @relation(fields: [pessoaId], references: [id])
   perfil    Perfil         @relation(fields: [perfilId], references: [id])
 
@@ -212,15 +151,14 @@ model PessoaUsuario {
 }
 
 model Perfil {
-  id        BigInt         @id @default(autoincrement()) @map("id_perfil")
-  empresaId BigInt         @map("id_empresa")
-  descricao String         @db.VarChar(100)
+  id        BigInt          @id @default(autoincrement()) @map("id_perfil")
+  empresaId BigInt          @map("id_empresa")
+  descricao String          @db.VarChar(100)
   ativo     StatusRegistro
-  motivo    String?        @db.VarChar(500)
-  createdAt DateTime       @default(now()) @map("created_at")
-  updatedAt DateTime?      @map("updated_at")
-
-  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  motivo    String?         @db.VarChar(500)
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime?       @map("updated_at")
+  empresa   Empresa         @relation(fields: [empresaId], references: [id])
   usuarios  PessoaUsuario[]
 
   @@map("perfis")
@@ -231,29 +169,27 @@ model Prioridade {
   empresaId BigInt         @map("id_empresa")
   descricao String         @db.VarChar(100)
   cor       String         @db.VarChar(100)
-  tempo     Int            @default(0) @map("tempo_resolucao")
   ativo     StatusRegistro
   motivo    String?        @db.VarChar(500)
   createdAt DateTime       @default(now()) @map("created_at")
   updatedAt DateTime?      @map("updated_at")
-
-  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  tempo     Int            @default(0) @map("tempo_resolucao")
   chamados  Chamado[]
+  empresa   Empresa        @relation(fields: [empresaId], references: [id])
 
   @@map("prioridades")
 }
 
 model OcorrenciaTipo {
-  id        BigInt         @id @default(autoincrement()) @map("id_ocorrencia_tipo")
-  empresaId BigInt         @map("id_empresa")
-  descricao String         @db.VarChar(100)
-  ativo     StatusRegistro
-  motivo    String?        @db.VarChar(500)
-  createdAt DateTime       @default(now()) @map("created_at")
-  updatedAt DateTime?      @map("updated_at")
-
-  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  id          BigInt         @id @default(autoincrement()) @map("id_ocorrencia_tipo")
+  empresaId   BigInt         @map("id_empresa")
+  descricao   String         @db.VarChar(100)
+  ativo       StatusRegistro
+  motivo      String?        @db.VarChar(500)
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime?      @map("updated_at")
   ocorrencias Ocorrencia[]
+  empresa     Empresa        @relation(fields: [empresaId], references: [id])
 
   @@map("ocorrencias_tipos")
 }
@@ -267,117 +203,153 @@ model Ocorrencia {
   motivo    String?        @db.VarChar(500)
   createdAt DateTime       @default(now()) @map("created_at")
   updatedAt DateTime?      @map("updated_at")
-
-  tipo      OcorrenciaTipo @relation(fields: [tipoId], references: [id])
-  empresa   Empresa        @relation(fields: [empresaId], references: [id])
   chamados  Chamado[]
+  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  tipo      OcorrenciaTipo @relation(fields: [tipoId], references: [id])
 
   @@map("ocorrencias")
 }
 
 model Chamado {
-  id           BigInt         @id @default(autoincrement()) @map("id_chamado")
-  empresaId    BigInt         @map("id_empresa")
-  sistemaId    BigInt         @map("id_sistema")
-  pessoaId     BigInt         @map("id_pessoa_empresa")
-  usuarioId    BigInt         @map("id_pessoa_usuario")
-  ocorrenciaId BigInt         @map("id_ocorrencia")
-  prioridadeId BigInt         @map("id_prioridade")
-  protocolo    String?        @db.VarChar(50)
-  titulo       String         @db.VarChar(100)
-  descricao    String         @db.VarChar(500)
-  observacao   String         @db.VarChar(500)
+  id           BigInt             @id @default(autoincrement()) @map("id_chamado")
+  empresaId    BigInt             @map("id_empresa")
+  sistemaId    BigInt             @map("id_sistema")
+  pessoaId     BigInt             @map("id_pessoa_empresa")
+  usuarioId    BigInt             @map("id_pessoa_usuario")
+  ocorrenciaId BigInt             @map("id_ocorrencia")
+  prioridadeId BigInt             @map("id_prioridade")
+  protocolo    String?            @db.VarChar(50)
+  titulo       String             @db.VarChar(100)
+  descricao    String             @db.VarChar(500)
+  observacao   String             @db.VarChar(500)
   ativo        StatusRegistro
-  motivo       String?        @db.VarChar(500)
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime?      @map("updated_at")
-
-  empresa      Empresa        @relation(fields: [empresaId], references: [id])
-  sistema      Sistema        @relation(fields: [sistemaId], references: [id])
-  ocorrencia   Ocorrencia     @relation(fields: [ocorrenciaId], references: [id])
-  prioridade   Prioridade     @relation(fields: [prioridadeId], references: [id])
+  motivo       String?            @db.VarChar(500)
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime?          @map("updated_at")
+  empresa      Empresa            @relation(fields: [empresaId], references: [id])
+  ocorrencia   Ocorrencia         @relation(fields: [ocorrenciaId], references: [id])
+  prioridade   Prioridade         @relation(fields: [prioridadeId], references: [id])
+  sistema      Sistema            @relation(fields: [sistemaId], references: [id])
   movimentos   ChamadoMovimento[]
 
   @@map("chamados")
 }
 
 model ChamadoMovimento {
-  id        BigInt         @id @default(autoincrement()) @map("id_chamado_movimento")
-  chamadoId BigInt         @map("id_chamado")
-  etapaId   BigInt         @map("id_chamado_movimento_etapa")
-  usuarioId BigInt         @map("id_pessoa_usuario")
-  ordem     Int?
-  inicio    DateTime?      @map("data_hora_inicio")
-  fim       DateTime?      @map("data_hora_fim")
-  descricaoAcao String     @db.VarChar(500) @map("descricao_acao")
-  observacaoTec String     @db.VarChar(500) @map("observacao_tecnica")
-  ativo     StatusRegistro
-  motivo    String?        @db.VarChar(500)
-  createdAt DateTime       @default(now()) @map("created_at")
-  updatedAt DateTime?      @map("updated_at")
-
-  chamado   Chamado        @relation(fields: [chamadoId], references: [id])
-  etapa     ChamadoMovimentoEtapa @relation(fields: [etapaId], references: [id])
-  anexos    ChamadoMovimentoAnexo[]
-  mensagens ChamadoMovimentoMensagem[]
+  id            BigInt                     @id @default(autoincrement()) @map("id_chamado_movimento")
+  chamadoId     BigInt                     @map("id_chamado")
+  etapaId       BigInt                     @map("id_chamado_movimento_etapa")
+  usuarioId     BigInt                     @map("id_pessoa_usuario")
+  ordem         Int?
+  inicio        DateTime?                  @map("data_hora_inicio")
+  fim           DateTime?                  @map("data_hora_fim")
+  descricaoAcao String                     @map("descricao_acao") @db.VarChar(500)
+  observacaoTec String                     @map("observacao_tecnica") @db.VarChar(500)
+  ativo         StatusRegistro
+  motivo        String?                    @db.VarChar(500)
+  createdAt     DateTime                   @default(now()) @map("created_at")
+  updatedAt     DateTime?                  @map("updated_at")
+  chamado       Chamado                    @relation(fields: [chamadoId], references: [id])
+  etapa         ChamadoMovimentoEtapa      @relation(fields: [etapaId], references: [id])
+  anexos        ChamadoMovimentoAnexo[]
+  mensagens     ChamadoMovimentoMensagem[]
 
   @@map("chamados_movimentos")
 }
 
 model ChamadoMovimentoEtapa {
-  id        BigInt         @id @default(autoincrement()) @map("id_chamado_movimento_etapa")
-  empresaId BigInt         @map("id_empresa")
-  descricao String         @db.VarChar(100)
-  ativo     StatusRegistro
-  motivo    String?        @db.VarChar(500)
-  createdAt DateTime       @default(now()) @map("created_at")
-  updatedAt DateTime?      @map("updated_at")
-
-  empresa   Empresa        @relation(fields: [empresaId], references: [id])
+  id         BigInt             @id @default(autoincrement()) @map("id_chamado_movimento_etapa")
+  empresaId  BigInt             @map("id_empresa")
+  descricao  String             @db.VarChar(100)
+  ativo      StatusRegistro
+  motivo     String?            @db.VarChar(500)
+  createdAt  DateTime           @default(now()) @map("created_at")
+  updatedAt  DateTime?          @map("updated_at")
   movimentos ChamadoMovimento[]
+  empresa    Empresa            @relation(fields: [empresaId], references: [id])
 
   @@map("chamados_movimentos_etapas")
 }
 
 model ChamadoMovimentoAnexo {
-  id        BigInt         @id @default(autoincrement()) @map("id_chamado_movimento_anexo")
-  movimentoId BigInt       @map("id_chamado_movimento")
-  usuarioId  BigInt        @map("id_pessoa_usuario")
-  ordem      Int?
-  descricao  String        @db.VarChar(100)
-  // Campos para Blob Storage - NOVOS
-  url             String           @db.VarChar(1000) // URL pública do arquivo no blob storage
-  pathname        String           @db.VarChar(500)  // Pathname para operações de delete/head
-  nomeOriginal    String           @db.VarChar(255)  // Nome original do arquivo
-  mimeType        String           @db.VarChar(100)  // Tipo MIME do arquivo
-  tamanho         Int?                               // Tamanho do arquivo em bytes
-  dataHora   DateTime?     @map("data_hora_")
-  
-  ativo      StatusRegistro
-  motivo     String?       @db.VarChar(500)
-  createdAt  DateTime      @default(now()) @map("created_at")
-  updatedAt  DateTime?     @map("updated_at")
-
-  movimento  ChamadoMovimento @relation(fields: [movimentoId], references: [id])
+  id           BigInt           @id @default(autoincrement()) @map("id_chamado_movimento_anexo")
+  movimentoId  BigInt           @map("id_chamado_movimento")
+  usuarioId    BigInt           @map("id_pessoa_usuario")
+  ordem        Int?
+  descricao    String           @db.VarChar(100)
+  dataHora     DateTime?        @map("data_hora_")
+  ativo        StatusRegistro
+  motivo       String?          @db.VarChar(500)
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime?        @map("updated_at")
+  mimeType     String           @db.VarChar(100)
+  nomeOriginal String           @db.VarChar(255)
+  pathname     String           @db.VarChar(500)
+  tamanho      Int?
+  url          String           @db.VarChar(1000)
+  movimento    ChamadoMovimento @relation(fields: [movimentoId], references: [id])
 
   @@map("chamados_movimentos_anexos")
 }
 
 model ChamadoMovimentoMensagem {
-  id        BigInt         @id @default(autoincrement()) @map("id_chamado_movimento_mensagem")
-  movimentoId BigInt       @map("id_chamado_movimento")
-  usuarioEnvioId BigInt    @map("id_pessoa_usuario_envio")
-  usuarioLeituraId BigInt  @map("id_pessoa_usuario_leitura")
-  ordem      Int?
-  descricao  String        @db.VarChar(500)
-  envio      DateTime?     @map("data_hora_envio")
-  leitura    DateTime?     @map("data_hora_leitura")
-  ativo      StatusRegistro
-  motivo     String?       @db.VarChar(500)
-  createdAt  DateTime      @default(now()) @map("created_at")
-  updatedAt  DateTime?     @map("updated_at")
-
-  movimento  ChamadoMovimento @relation(fields: [movimentoId], references: [id])
+  id               BigInt           @id @default(autoincrement()) @map("id_chamado_movimento_mensagem")
+  movimentoId      BigInt           @map("id_chamado_movimento")
+  usuarioEnvioId   BigInt           @map("id_pessoa_usuario_envio")
+  usuarioLeituraId BigInt           @map("id_pessoa_usuario_leitura")
+  ordem            Int?
+  descricao        String           @db.VarChar(500)
+  envio            DateTime?        @map("data_hora_envio")
+  leitura          DateTime?        @map("data_hora_leitura")
+  ativo            StatusRegistro
+  motivo           String?          @db.VarChar(500)
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime?        @map("updated_at")
+  movimento        ChamadoMovimento @relation(fields: [movimentoId], references: [id])
 
   @@map("chamados_movimentos_mensagens")
+}
+
+enum StatusRegistro {
+  INATIVO  @map("0")
+  ATIVO    @map("1")
+  EXCLUIDO @map("2")
+}
+
+enum StatusGenero {
+  MASCULINO   @map("1")
+  FEMININO    @map("2")
+  NEUTRO      @map("3")
+  NAO_BINARIE @map("4")
+  IGNORADO    @map("5")
+}
+
+enum SiglaEstado {
+  AC @map("AC")
+  AL @map("AL")
+  AP @map("AP")
+  AM @map("AM")
+  BA @map("BA")
+  CE @map("CE")
+  DF @map("DF")
+  ES @map("ES")
+  GO @map("GO")
+  MA @map("MA")
+  MT @map("MT")
+  MS @map("MS")
+  MG @map("MG")
+  PA @map("PA")
+  PB @map("PB")
+  PR @map("PR")
+  PE @map("PE")
+  PI @map("PI")
+  RJ @map("RJ")
+  RN @map("RN")
+  RS @map("RS")
+  RO @map("RO")
+  RR @map("RR")
+  SC @map("SC")
+  SP @map("SP")
+  SE @map("SE")
+  TO @map("TO")
 }

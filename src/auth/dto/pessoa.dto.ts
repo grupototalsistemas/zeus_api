@@ -6,11 +6,11 @@ import { IsInt, IsString } from 'class-validator';
 export class PessoaDto {
   @ApiProperty()
   @IsInt()
-  id_empresa: number;
+  empresaId: number;
 
   @ApiProperty()
   @IsInt()
-  id_pessoa_tipo: number;
+  tipoId: number;
 
   @ApiProperty()
   @IsString()
@@ -22,5 +22,5 @@ export class PessoaDto {
 
   @ApiProperty()
   @IsString()
-  nome_social: string;
+  nomeSocial?: string;
 }

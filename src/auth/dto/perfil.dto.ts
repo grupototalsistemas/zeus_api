@@ -3,10 +3,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsString } from 'class-validator';
 
 export class PerfilDto {
-    @ApiProperty()
+  @ApiProperty()
   @IsInt()
-  
-  id_empresa: number;
+  empresaId: number;
 
   @ApiProperty()
   @IsString()

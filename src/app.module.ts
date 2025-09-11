@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { CommonServicesModule } from './common/services/common-services.module';
 import { EmpresasModule } from './empresas/empresas.module';
+import { ImportModule } from './import/import.module';
 import { PessoasModule } from './pessoas/pessoas.module';
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { PessoasModule } from './pessoas/pessoas.module';
     PessoasModule,
     ChamadosModule,
     EmpresasModule,
+    ImportModule,
   ],
   controllers: [],
   providers: [

@@ -1,48 +1,55 @@
 import { PrismaClient } from '@prisma/client';
+import * as xlsx from 'xlsx';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // Criar empresas
-  const empresa = await prisma.empresa.create({
-    data: {
-      cnpj: '12.345.678/0001-90',
-      razaoSocial: 'Empresa Exemplo LTDA',
-      nomeFantasia: 'Exemplo',
-      tipoId: 1, // Supondo que você tenha um tipo de empresa com ID 1
-      categoriaId: 1, // Supondo que você tenha uma categoria de empresa com ID 1
-      ativo: 'ATIVO',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  });
+  console.log('📂 Lendo arquivo Excel...');
 
-  // Criar tipos de empresa
-  const tipoEmpresa = await prisma.empresaTipo.create({
-    data: {
-      empresaId: empresa.id,
-      descricao: 'Tipo Exemplo',
-      ativo: 'ATIVO',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  });
+  const workbook = xlsx.readFile('data/EMPRESAS.xlsx');
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const rows: any[] = xlsx.utils.sheet_to_json(sheet);
 
-  // Criar categorias de empresa
-  const categoriaEmpresa = await prisma.empresaCategoria.create({
-    data: {
-      empresaId: empresa.id,
-      descricao: 'Categoria Exemplo',
-      ativo: 'ATIVO',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  });
+  console.log(`📊 Total de registros encontrados: ${rows.length}`);
 
-  // Criar sistemas
+  // for (const row of rows) {
+  //   try {
+  //     await prisma.empresa.create({
+  //       data: {
+  //         parentId: Number(row.ID_PARENT_EMPRESA) ?? -1,
+  //         tipoId: Number(row.ID_EMPRESA_TIPO),
+  //         categoriaId: Number(row.ID_EMPRESA_CATEGORIA),
+  //         cnpj: String(row.CNPJ),
+  //         codigo: row.CODIGO ? String(row.CODIGO) : null,
+  //         razaoSocial: String(row.RAZAO_SOCIAL),
+  //         nomeFantasia: String(row.NOME_FANTASIA),
+  //         logradouro: row.LOGRADOURO ?? null,
+  //         endereco: row.ENDERECO ?? null,
+  //         numero: row.NUMERO ? String(row.NUMERO) : null,
+  //         complemento: row.COMPLEMENTO ?? null,
+  //         bairro: row.BAIRRO ?? null,
+  //         cidade: row.CIDADE ?? null,
+  //         estado: row.ESTADO ?? null,
+  //         cep: row.CEP ? String(row.CEP) : null,
+  //         contato: row.RESPONSAVEL ?? row.CONTATO ?? null,
+  //         email: row.EMAIL ?? null,
+  //         observacao: row.OBSERVACAO ?? null,
+  //         ativo: row.BLOQUEADO === 1 ? 'INATIVO' : 'ATIVO',
+  //         motivo: null,
+  //       },
+  //     });
+
+  //     console.log(`✅ Empresa inserida: ${row.RAZAO_SOCIAL}`);
+  //   } catch (error: any) {
+  //     console.error(
+  //       `❌ Erro ao inserir empresa ${row.RAZAO_SOCIAL}: ${error.message}`,
+  //     );
+  //   }
+  // }
+
   const sistema = await prisma.sistema.create({
     data: {
-      empresaId: empresa.id,
+      empresaId: 510,
       nome: 'Sistema Exemplo',
       descricao: 'Descrição do Sistema Exemplo',
       ativo: 'ATIVO',
@@ -51,10 +58,19 @@ async function main() {
     },
   });
 
+  const tipoPessoa = await prisma.pessoaTipo.create({
+    data: {
+      empresaId: 510,
+      descricao: 'Funcionario',
+      ativo: 'ATIVO',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
   // Criar pessoas
   const pessoa = await prisma.pessoa.create({
     data: {
-      empresaId: empresa.id,
+      empresaId: 510,
       tipoId: 1, // Supondo que você tenha um tipo de pessoa com ID 1
       genero: 'MASCULINO',
       nome: 'João da Silva',
@@ -67,7 +83,7 @@ async function main() {
   // Criar prioridades
   const prioridade = await prisma.prioridade.create({
     data: {
-      empresaId: empresa.id,
+      empresaId: 510,
       descricao: 'Alta',
       cor: 'Red',
       tempo: 24,
@@ -80,7 +96,7 @@ async function main() {
   // Criar ocorrências
   const ocorrenciaTipo = await prisma.ocorrenciaTipo.create({
     data: {
-      empresaId: empresa.id,
+      empresaId: 510,
       descricao: 'Ocorrência Exemplo',
       ativo: 'ATIVO',
       createdAt: new Date(),
@@ -91,7 +107,7 @@ async function main() {
   const ocorrencia = await prisma.ocorrencia.create({
     data: {
       tipoId: ocorrenciaTipo.id,
-      empresaId: empresa.id,
+      empresaId: 510,
       descricao: 'Descrição da Ocorrência Exemplo',
       ativo: 'ATIVO',
       createdAt: new Date(),
@@ -102,13 +118,13 @@ async function main() {
   // Criar chamados
   const chamado = await prisma.chamado.create({
     data: {
-      empresaId: empresa.id,
+      empresaId: 510,
       sistemaId: sistema.id,
       pessoaId: pessoa.id,
       usuarioId: 1, // Supondo que você tenha um usuário com ID 1
       prioridadeId: prioridade.id,
       ocorrenciaId: ocorrencia.id,
-      protocolo: "12345", // Exemplo de protocolo
+      protocolo: '12345', // Exemplo de protocolo
       titulo: 'Título do Chamado Exemplo',
       descricao: 'Descrição do Chamado Exemplo',
       observacao: 'Observação do Chamado Exemplo',
@@ -119,23 +135,22 @@ async function main() {
   });
 
   console.log({
-    empresa,
-    tipoEmpresa,
-    categoriaEmpresa,
     sistema,
     pessoa,
     prioridade,
     ocorrenciaTipo,
     ocorrencia,
     chamado,
+    tipoPessoa,
   });
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
+  .then(async () => {
     await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
   });

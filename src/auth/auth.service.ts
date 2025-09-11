@@ -27,7 +27,7 @@ export class AuthService {
     const pessoa = await this.prisma.pessoa.findFirst({
       where: {
         nome: data.pessoa.nome,
-        nomeSocial: data.pessoa.nome_social,
+        nomeSocial: data.pessoa.nomeSocial,
         genero: data.pessoa.genero,
         ativo: 'ATIVO',
       },
@@ -36,11 +36,11 @@ export class AuthService {
     if (!pessoa) {
       const save_pessoa = await this.prisma.pessoa.create({
         data: {
-          empresaId: data.pessoa.id_empresa,
-          tipoId: data.pessoa.id_pessoa_tipo,
+          empresaId: data.pessoa.empresaId,
+          tipoId: data.pessoa.tipoId,
           genero: data.pessoa.genero,
           nome: data.pessoa.nome,
-          nomeSocial: data.pessoa.nome_social,
+          nomeSocial: data.pessoa.nomeSocial,
           ativo: 'ATIVO',
         },
       });
@@ -55,7 +55,7 @@ export class AuthService {
     // Verifica se tem o perfil no banco, se não tiver cria
     const perfil = await this.prisma.perfil.findFirst({
       where: {
-        empresaId: data.perfil.id_empresa,
+        empresaId: data.perfil.empresaId,
         descricao: data.perfil.descricao,
         ativo: 'ATIVO',
       },
@@ -64,7 +64,7 @@ export class AuthService {
     if (!perfil) {
       const save_perfil = await this.prisma.perfil.create({
         data: {
-          empresaId: data.perfil.id_empresa,
+          empresaId: data.perfil.empresaId,
           descricao: data.perfil.descricao,
           ativo: 'ATIVO',
         },
