@@ -14,6 +14,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Public } from '../../auth/decorators/public.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreatePessoaTipoDto } from '../dto/create-pessoa-tipo.dto';
 import { PessoaTipoService } from '../services/pessoa-tipo.service';
@@ -37,6 +38,7 @@ export class PessoaTipoController {
     return this.pessoaTipoService.create(dto);
   }
 
+  @Public()
   @Get()
   @ApiOperation({ summary: 'Lista todos os tipos de pessoa' })
   @ApiResponse({
