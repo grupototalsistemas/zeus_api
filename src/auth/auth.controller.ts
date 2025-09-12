@@ -8,6 +8,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBody, ApiOperation } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
@@ -20,12 +21,43 @@ export class AuthController {
 
   @Public()
   @Post('register')
+  @ApiOperation({
+    summary: 'Cadastrar um novo usuário',
+    description: 'Cadastrar um novo usuário',
+  })
+  @ApiBody({
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        pessoaId: { type: 'number' },
+        perfilId: { type: 'number' },
+        email: { type: 'string' },
+        login: { type: 'string' },
+        senha: { type: 'string' },
+      },
+    },
+  })
   register(@Body() dto: RegisterRecibeDto) {
     return this.authService.register(dto);
   }
 
   @Public()
   @Post('login')
+  @ApiOperation({
+    summary: 'Autenticar usuario e fornecer token de acesso',
+    description: 'Autenticar usuario e fornecer token de acesso',
+  })
+  @ApiBody({
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        login: { type: 'string' },
+        senha: { type: 'string' },
+      },
+    },
+  })
   @UseGuards(LocalAuthGuard)
   async login(@Request() req: any, @Res({ passthrough: true }) res: Response) {
     const { accessToken, user } = await this.authService.login(req.user);
@@ -48,6 +80,10 @@ export class AuthController {
 
   @Public()
   @Post('logout')
+  @ApiOperation({
+    summary: 'Deslogar o usuário',
+    description: 'Deslogar o usuário',
+  })
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('token', {
       httpOnly: true,
