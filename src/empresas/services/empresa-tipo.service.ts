@@ -149,7 +149,7 @@ export class EmpresaTipoService {
     return this.mapToResponseDto(tipo);
   }
 
-  async deactivate(id: bigint): Promise<EmpresaTipoResponseDto> {
+  async desactivate(id: bigint): Promise<EmpresaTipoResponseDto> {
     const tipo = await this.prisma.empresaTipo.update({
       where: { id },
       data: {

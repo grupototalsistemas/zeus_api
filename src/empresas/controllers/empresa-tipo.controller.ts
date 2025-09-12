@@ -222,7 +222,7 @@ export class EmpresaTipoController {
     return this.empresaTipoService.activate(BigInt(id));
   }
 
-  @Patch(':id/deactivate')
+  @Patch(':id/desactivate')
   @ApiOperation({
     summary: 'Desativar tipo',
     description: 'Desativa um tipo ativo',
@@ -240,6 +240,6 @@ export class EmpresaTipoController {
   deactivate(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<EmpresaTipoResponseDto> {
-    return this.empresaTipoService.deactivate(BigInt(id));
+    return this.empresaTipoService.desactivate(BigInt(id));
   }
 }
