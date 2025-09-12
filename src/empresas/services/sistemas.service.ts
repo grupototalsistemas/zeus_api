@@ -243,16 +243,17 @@ export class SistemasService {
     return this.mapToResponseDto(sistema);
   }
 
-  async deactivate(id: bigint, motivo: string): Promise<SistemaResponseDto> {
-    if (!motivo || motivo.trim().length === 0) {
-      throw new BadRequestException('Motivo da desativação é obrigatório');
-    }
+  async desactivate(id: bigint, motivo: string): Promise<SistemaResponseDto> {
+    // Talvez vai ser implementado futuramente
+    // if (!motivo || motivo.trim().length === 0) {
+    //   throw new BadRequestException('Motivo da desativação é obrigatório');
+    // }
 
     const sistema = await this.prisma.sistema.update({
       where: { id },
       data: {
         ativo: StatusRegistro.INATIVO,
-        motivo: motivo.trim(),
+        // motivo: motivo.trim(),
         updatedAt: new Date(),
       },
       include: {

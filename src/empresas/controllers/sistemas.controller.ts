@@ -1,28 +1,32 @@
 // sistemas/sistemas.controller.ts
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpStatus,
-    Param,
-    ParseIntPipe,
-    Patch,
-    Post,
-    Query,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
 import {
-    ApiBearerAuth,
-    ApiBody,
-    ApiOperation,
-    ApiParam,
-    ApiQuery,
-    ApiResponse,
-    ApiTags,
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 
 import { StatusRegistro } from '@prisma/client';
-import { CreateSistemaDto, SistemaResponseDto, UpdateSistemaDto } from '../dto/create-sistema.dto';
+import {
+  CreateSistemaDto,
+  SistemaResponseDto,
+  UpdateSistemaDto,
+} from '../dto/create-sistema.dto';
 import { SistemasService } from '../services/sistemas.service';
 
 @ApiTags('Sistemas')
@@ -32,9 +36,9 @@ export class SistemasController {
   constructor(private readonly sistemasService: SistemasService) {}
 
   @Post()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Criar novo sistema',
-    description: 'Cria um novo sistema vinculado a uma empresa'
+    description: 'Cria um novo sistema vinculado a uma empresa',
   })
   @ApiBody({ type: CreateSistemaDto })
   @ApiResponse({
@@ -59,26 +63,26 @@ export class SistemasController {
   }
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Listar todos os sistemas',
-    description: 'Lista todos os sistemas com filtros opcionais'
+    description: 'Lista todos os sistemas com filtros opcionais',
   })
-  @ApiQuery({ 
-    name: 'ativo', 
-    required: false, 
+  @ApiQuery({
+    name: 'ativo',
+    required: false,
     enum: StatusRegistro,
-    description: 'Filtrar por status ativo/inativo'
+    description: 'Filtrar por status ativo/inativo',
   })
-  @ApiQuery({ 
-    name: 'empresaId', 
-    required: false, 
+  @ApiQuery({
+    name: 'empresaId',
+    required: false,
     type: 'number',
-    description: 'Filtrar por empresa específica'
+    description: 'Filtrar por empresa específica',
   })
-  @ApiQuery({ 
-    name: 'nome', 
-    required: false, 
-    description: 'Filtrar por nome do sistema (busca parcial)'
+  @ApiQuery({
+    name: 'nome',
+    required: false,
+    description: 'Filtrar por nome do sistema (busca parcial)',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -87,21 +91,22 @@ export class SistemasController {
   })
   findAll(
     @Query('ativo') ativo?: StatusRegistro,
-    @Query('empresaId', new ParseIntPipe({ optional: true })) empresaId?: number,
+    @Query('empresaId', new ParseIntPipe({ optional: true }))
+    empresaId?: number,
     @Query('nome') nome?: string,
   ): Promise<SistemaResponseDto[]> {
     return this.sistemasService.findAll({ ativo, empresaId, nome });
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar sistema por ID',
-    description: 'Retorna os dados de um sistema específico'
+    description: 'Retorna os dados de um sistema específico',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do sistema',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -117,14 +122,14 @@ export class SistemasController {
   }
 
   @Get('empresa/:empresaId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Buscar sistemas por empresa',
-    description: 'Lista todos os sistemas de uma empresa específica'
+    description: 'Lista todos os sistemas de uma empresa específica',
   })
-  @ApiParam({ 
-    name: 'empresaId', 
+  @ApiParam({
+    name: 'empresaId',
     description: 'ID da empresa',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -132,20 +137,20 @@ export class SistemasController {
     type: [SistemaResponseDto],
   })
   findByEmpresa(
-    @Param('empresaId', ParseIntPipe) empresaId: number
+    @Param('empresaId', ParseIntPipe) empresaId: number,
   ): Promise<SistemaResponseDto[]> {
     return this.sistemasService.findByEmpresa(BigInt(empresaId));
   }
 
   @Patch(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar sistema',
-    description: 'Atualiza os dados de um sistema existente'
+    description: 'Atualiza os dados de um sistema existente',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do sistema',
-    type: 'number'
+    type: 'number',
   })
   @ApiBody({ type: UpdateSistemaDto })
   @ApiResponse({
@@ -163,20 +168,20 @@ export class SistemasController {
   })
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateSistemaDto
+    @Body() dto: UpdateSistemaDto,
   ): Promise<SistemaResponseDto> {
     return this.sistemasService.update(BigInt(id), dto);
   }
 
   @Delete(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Excluir sistema',
-    description: 'Exclui um sistema do sistema'
+    description: 'Exclui um sistema do sistema',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do sistema',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -195,14 +200,14 @@ export class SistemasController {
   }
 
   @Patch(':id/activate')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Ativar sistema',
-    description: 'Ativa um sistema inativo'
+    description: 'Ativa um sistema inativo',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do sistema',
-    type: 'number'
+    type: 'number',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -213,15 +218,15 @@ export class SistemasController {
     return this.sistemasService.activate(BigInt(id));
   }
 
-  @Patch(':id/deactivate')
-  @ApiOperation({ 
+  @Patch(':id/desactivate')
+  @ApiOperation({
     summary: 'Desativar sistema',
-    description: 'Desativa um sistema ativo'
+    description: 'Desativa um sistema ativo',
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'ID do sistema',
-    type: 'number'
+    type: 'number',
   })
   @ApiBody({
     schema: {
@@ -230,11 +235,11 @@ export class SistemasController {
         motivo: {
           type: 'string',
           description: 'Motivo da desativação',
-          maxLength: 500
-        }
+          maxLength: 500,
+        },
       },
-      required: ['motivo']
-    }
+      required: ['motivo'],
+    },
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -243,8 +248,8 @@ export class SistemasController {
   })
   deactivate(
     @Param('id', ParseIntPipe) id: number,
-    @Body('motivo') motivo: string
+    @Body('motivo') motivo: string,
   ): Promise<SistemaResponseDto> {
-    return this.sistemasService.deactivate(BigInt(id), motivo);
+    return this.sistemasService.desactivate(BigInt(id), motivo);
   }
 }
