@@ -42,12 +42,7 @@ export class AuthController {
 
     console.log('Login realizado. Cookie definido para:', user.login);
     return {
-      user: {
-        id: user.id,
-        login: user.login,
-        email: user.email,
-      },
-      message: 'Login realizado com sucesso',
+      user,
     };
   }
 
