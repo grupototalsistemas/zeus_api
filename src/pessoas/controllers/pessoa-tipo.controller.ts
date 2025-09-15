@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -15,13 +7,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Public } from '../../auth/decorators/public.decorator';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreatePessoaTipoDto } from '../dto/create-pessoa-tipo.dto';
 import { PessoaTipoService } from '../services/pessoa-tipo.service';
 
 @ApiTags('Pessoa Tipo')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('pessoa-tipos')
 export class PessoaTipoController {
   constructor(private readonly pessoaTipoService: PessoaTipoService) {}

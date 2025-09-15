@@ -10,7 +10,6 @@ import {
   Post,
   Redirect,
   UploadedFiles,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -24,7 +23,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { GetUsuario } from '../../common/decorators/get-usuario.decorator';
 import { BlobStorageService } from '../../common/services/blob-storage.service';
 import { CreateChamadoDto } from '../dto/create-chamado.dto';
@@ -34,7 +32,6 @@ import { ChamadosService } from '../services/chamados.service';
 
 @ApiTags('Chamados')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('chamados')
 export class ChamadosController {
   constructor(
