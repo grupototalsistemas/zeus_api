@@ -12,7 +12,6 @@ import { PessoaTipoService } from '../services/pessoa-tipo.service';
 
 @ApiTags('Pessoa Tipo')
 @ApiBearerAuth()
-// @UseGuards(JwtAuthGuard)
 @Controller('pessoa-tipos')
 export class PessoaTipoController {
   constructor(private readonly pessoaTipoService: PessoaTipoService) {}
