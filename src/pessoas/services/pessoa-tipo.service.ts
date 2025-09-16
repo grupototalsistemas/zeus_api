@@ -49,4 +49,8 @@ export class PessoaTipoService {
   async remove(id: bigint) {
     return this.prisma.pessoaTipo.delete({ where: { id } });
   }
+
+  async findByEmpresa(empresaId: bigint) {
+    return this.prisma.pessoaTipo.findMany({ where: { empresaId } });
+  }
 }

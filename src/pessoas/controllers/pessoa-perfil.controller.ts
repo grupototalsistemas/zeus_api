@@ -80,4 +80,16 @@ export class PessoaPerfilController {
   remove(@Param('id') id: string) {
     return this.pessoaPerfilService.remove(BigInt(id));
   }
+
+  @Get('empresa/:id')
+  @ApiOperation({
+    summary: 'Lista todos os Perfils de pessoa da mesma empresa',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de Perfils de pessoa retornada com sucesso.',
+  })
+  findByEmpresa(@Param('id') id: string) {
+    return this.pessoaPerfilService.findByEmpresa(BigInt(id));
+  }
 }

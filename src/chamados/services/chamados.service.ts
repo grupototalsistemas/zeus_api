@@ -386,12 +386,15 @@ export class ChamadosService {
   async update(id: bigint, data: UpdateChamadoDto) {
     const { movimento, ...chamadoData } = data;
 
-    // 1. Atualizar dados básicos do chamado
+    // 1. Buscar chamado atual (antes de atualizar)
+    const oldChamado = await this.buscarChamado(id);
+
+    // 2. Atualizar dados básicos do chamado
     await this.atualizarChamado(id, chamadoData);
 
-    // 2. Se houver novo movimento, criar
+    // 3. Se vier movimento do chamado cria ele com base no movimento passado
     if (movimento) {
-      // 2.1 Criar o movimento
+      // Criar o movimento
       const novoMovimento = await this.criarMovimento({
         chamadoId: Number(id),
         usuarioId: data.usuarioId!,
@@ -402,7 +405,7 @@ export class ChamadosService {
         ativo: StatusRegistro.ATIVO,
       });
 
-      // 2.2 Se houver anexos, criar
+      // Criar anexos (se houver)
       if (movimento.anexos?.length) {
         await this.criarAnexos({
           movimentoId: Number(novoMovimento.id),
@@ -410,17 +413,90 @@ export class ChamadosService {
         });
       }
 
-      // 2.3 Se houver mensagens, criar
+      // Criar mensagens (se houver)
       if (movimento.mensagens?.length) {
         await this.criarMensagens({
           movimentoId: Number(novoMovimento.id),
           mensagens: movimento.mensagens,
         });
       }
+    } else {
+      // 3. Se não vier movimento no chamado, cria com base na atualização do chamado
+      const descricao = this.verificaQualFoiAAtualizacaoDoChamado(
+        oldChamado,
+        chamadoData,
+      );
+
+      await this.criarMovimento({
+        chamadoId: Number(id),
+        usuarioId: data.usuarioId!,
+        etapaId: Number(oldChamado?.movimentos.slice(-1)[0]?.etapaId || 0),
+        ordem: 0,
+        descricaoAcao: descricao,
+        observacaoTec: '',
+        ativo: StatusRegistro.ATIVO,
+      });
     }
 
-    // 3. Retornar chamado atualizado
+    // 4. Retornar chamado atualizado
     return this.buscarChamado(id);
+  }
+
+  verificaQualFoiAAtualizacaoDoChamado(
+    oldChamado: any,
+    chamadoData: any,
+  ): string {
+    const alteracoes: string[] = [];
+
+    if (chamadoData.titulo && chamadoData.titulo !== oldChamado.titulo) {
+      alteracoes.push('título');
+    }
+    if (
+      chamadoData.descricao &&
+      chamadoData.descricao !== oldChamado.descricao
+    ) {
+      alteracoes.push('descrição');
+    }
+    if (
+      chamadoData.observacao &&
+      chamadoData.observacao !== oldChamado.observacao
+    ) {
+      alteracoes.push('observação');
+    }
+    if (
+      chamadoData.usuarioId &&
+      chamadoData.usuarioId !== Number(oldChamado.usuarioId)
+    ) {
+      alteracoes.push('responsável');
+    }
+    if (
+      chamadoData.prioridadeId &&
+      chamadoData.prioridadeId !== Number(oldChamado.prioridadeId)
+    ) {
+      alteracoes.push('prioridade');
+    }
+    if (
+      chamadoData.ocorrenciaId &&
+      chamadoData.ocorrenciaId !== Number(oldChamado.ocorrenciaId)
+    ) {
+      alteracoes.push('ocorrência');
+    }
+    if (
+      chamadoData.sistemaId &&
+      chamadoData.sistemaId !== Number(oldChamado.sistemaId)
+    ) {
+      alteracoes.push('sistema');
+    }
+    if (
+      chamadoData.empresaId &&
+      chamadoData.empresaId !== Number(oldChamado.empresaId)
+    ) {
+      alteracoes.push('empresa');
+    }
+    // Juntar as alterações em uma string com virgula, caso seja a ultima com a letra e
+    return alteracoes.length > 0
+      ? alteracoes.join(' , ').slice(0, -1).concat('e')
+      : 'nenhum campo';
   }
 
   async remove(id: bigint) {

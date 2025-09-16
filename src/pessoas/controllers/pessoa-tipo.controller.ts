@@ -71,4 +71,14 @@ export class PessoaTipoController {
   remove(@Param('id') id: string) {
     return this.pessoaTipoService.remove(BigInt(id));
   }
+
+  @Get('empresa/:id')
+  @ApiOperation({ summary: 'Lista todos os tipos de pessoa da mesma empresa' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de tipos de pessoa retornada com sucesso.',
+  })
+  findByEmpresa(@Param('id') id: string) {
+    return this.pessoaTipoService.findByEmpresa(BigInt(id));
+  }
 }

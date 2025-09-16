@@ -50,4 +50,8 @@ export class PessoaPerfilService {
   async remove(id: bigint) {
     return this.prisma.perfil.delete({ where: { id } });
   }
+
+  async findByEmpresa(empresaId: bigint) {
+    return this.prisma.perfil.findMany({ where: { empresaId } });
+  }
 }

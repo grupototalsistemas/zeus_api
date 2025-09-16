@@ -96,6 +96,25 @@ export class PessoasController {
     return this.pessoasService.update(BigInt(id), dto);
   }
 
+  @Get('empresa/:id')
+  @ApiOperation({ summary: 'Buscar pessoas da mesma empresa' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da empresa',
+    type: Number,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Pessoas encontradas com sucesso',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Pessoas não encontradas',
+  })
+  findByEmpresa(@Param('id', ParseIntPipe) id: number) {
+    return this.pessoasService.findByEmpresa(BigInt(id));
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Excluir pessoa por ID' })
   @ApiParam({

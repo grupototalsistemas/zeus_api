@@ -6,8 +6,10 @@ import {
   MaxFileSizeValidator,
   Param,
   ParseFilePipe,
+  ParseIntPipe,
   Patch,
   Post,
+  Query,
   Redirect,
   UploadedFiles,
   UseInterceptors,
@@ -233,13 +235,33 @@ export class ChamadosController {
 
   @Get()
   @ApiOperation({ summary: 'Lista todos os chamados' })
+  @ApiParam({
+    name: 'usuarioId',
+    type: String,
+    description: 'ID da usuario que criou o chamado',
+    required: false,
+  })
+  @ApiParam({
+    name: 'empresaId',
+    type: String,
+    description: 'ID da empresa',
+    required: false,
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de chamados retornada com sucesso.',
   })
   @ApiResponse({ status: 401, description: 'Não autorizado.' })
-  findAll() {
-    return this.chamadosService.findAll({});
+  findAll(
+    @Query('empresaId', new ParseIntPipe({ optional: true }))
+    empresaId?: number,
+    @Query('usuarioId', new ParseIntPipe({ optional: true }))
+    usuarioId?: number,
+  ) {
+    return this.chamadosService.findAll({
+      empresaId,
+      usuarioId,
+    });
   }
 
   @Get(':id')
