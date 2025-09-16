@@ -18,13 +18,12 @@ export class EmpresaTipoService {
 
   async create(data: CreateEmpresaTipoDto): Promise<EmpresaTipoResponseDto> {
     await this.validateEmpresaExists(data.empresaId);
-    await this.validateDescricaoUnique(data.descricao, data.empresaId);
+    await this.validateDescricaoUnique(data.descricao);
 
     try {
       const tipo = await this.prisma.empresaTipo.create({
         data: {
           ...data,
-          empresaId: BigInt(data.empresaId),
         },
       });
 
@@ -68,7 +67,6 @@ export class EmpresaTipoService {
 
     const tipos = await this.prisma.empresaTipo.findMany({
       where: {
-        empresaId,
         ativo: StatusRegistro.ATIVO,
       },
       orderBy: { descricao: 'asc' },
@@ -90,16 +88,15 @@ export class EmpresaTipoService {
     if (data.descricao) {
       const current = await this.prisma.empresaTipo.findUnique({
         where: { id },
-        select: { empresaId: true },
       });
 
       const empresaIdToCheck = data.empresaId
         ? BigInt(data.empresaId)
-        : current?.empresaId;
+        : current?.id;
 
       await this.validateDescricaoUnique(
         data.descricao,
-        Number(empresaIdToCheck),
+
         id,
       );
     }
@@ -182,12 +179,11 @@ export class EmpresaTipoService {
 
   private async validateDescricaoUnique(
     descricao: string,
-    empresaId: number,
+
     excludeId?: bigint,
   ): Promise<void> {
     const where: any = {
       descricao: { equals: descricao, mode: 'insensitive' },
-      empresaId: BigInt(empresaId),
     };
 
     if (excludeId) {

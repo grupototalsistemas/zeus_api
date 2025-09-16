@@ -1,16 +1,15 @@
 import { PrismaClient } from '@prisma/client';
-import * as xlsx from 'xlsx';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('📂 Lendo arquivo Excel...');
 
-  const workbook = xlsx.readFile('data/EMPRESAS.xlsx');
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const rows: any[] = xlsx.utils.sheet_to_json(sheet);
+  // const workbook = xlsx.readFile('data/EMPRESAS.xlsx');
+  // const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  // const rows: any[] = xlsx.utils.sheet_to_json(sheet);
 
-  console.log(`📊 Total de registros encontrados: ${rows.length}`);
+  // console.log(`📊 Total de registros encontrados: ${rows.length}`);
 
   // for (const row of rows) {
   //   try {
@@ -49,7 +48,7 @@ async function main() {
 
   const sistema = await prisma.sistema.create({
     data: {
-      empresaId: 510,
+      empresaId: 1,
       nome: 'Sistema Exemplo',
       descricao: 'Descrição do Sistema Exemplo',
       ativo: 'ATIVO',
@@ -60,7 +59,7 @@ async function main() {
 
   const tipoPessoa = await prisma.pessoaTipo.create({
     data: {
-      empresaId: 510,
+      empresaId: 1,
       descricao: 'Funcionario',
       ativo: 'ATIVO',
       createdAt: new Date(),
@@ -70,7 +69,7 @@ async function main() {
   // Criar pessoas
   const pessoa = await prisma.pessoa.create({
     data: {
-      empresaId: 510,
+      empresaId: 1,
       tipoId: 1, // Supondo que você tenha um tipo de pessoa com ID 1
       genero: 'MASCULINO',
       nome: 'João da Silva',
@@ -83,7 +82,7 @@ async function main() {
   // Criar prioridades
   const prioridade = await prisma.prioridade.create({
     data: {
-      empresaId: 510,
+      empresaId: 1,
       descricao: 'Alta',
       cor: 'Red',
       tempo: 24,
@@ -96,7 +95,7 @@ async function main() {
   // Criar ocorrências
   const ocorrenciaTipo = await prisma.ocorrenciaTipo.create({
     data: {
-      empresaId: 510,
+      empresaId: 1,
       descricao: 'Ocorrência Exemplo',
       ativo: 'ATIVO',
       createdAt: new Date(),
@@ -107,7 +106,7 @@ async function main() {
   const ocorrencia = await prisma.ocorrencia.create({
     data: {
       tipoId: ocorrenciaTipo.id,
-      empresaId: 510,
+      empresaId: 1,
       descricao: 'Descrição da Ocorrência Exemplo',
       ativo: 'ATIVO',
       createdAt: new Date(),
@@ -118,7 +117,7 @@ async function main() {
   // Criar chamados
   const chamado = await prisma.chamado.create({
     data: {
-      empresaId: 510,
+      empresaId: 1,
       sistemaId: sistema.id,
       pessoaId: pessoa.id,
       usuarioId: 1, // Supondo que você tenha um usuário com ID 1

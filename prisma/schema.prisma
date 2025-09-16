@@ -35,7 +35,7 @@ model Empresa {
   chamadosMovimentos ChamadoMovimentoEtapa[]
   categorias         EmpresaCategoria[]      @relation("EmpresaCategorias")
   empresaSistemas    EmpresaSistema[]
-  tipos              EmpresaTipo[]           @relation("EmpresaTipos")
+  // REMOVIDO: tipos              EmpresaTipo[]           @relation("EmpresaTipos")
   ocorrencias        Ocorrencia[]
   ocorrenciasTipos   OcorrenciaTipo[]
   perfis             Perfil[]
@@ -49,12 +49,12 @@ model Empresa {
 
 model EmpresaTipo {
   id        BigInt         @id @default(autoincrement()) @map("id_empresa_tipo")
-  empresaId BigInt         @map("id_empresa")
+  // REMOVIDO: empresaId BigInt         @map("id_empresa")
   descricao String         @db.VarChar(100)
   ativo     StatusRegistro
   createdAt DateTime       @default(now()) @map("created_at")
   updatedAt DateTime?      @map("updated_at")
-  empresa   Empresa        @relation("EmpresaTipos", fields: [empresaId], references: [id])
+  // REMOVIDO: empresa   Empresa        @relation("EmpresaTipos", fields: [empresaId], references: [id])
 
   @@map("empresas_tipos")
 }

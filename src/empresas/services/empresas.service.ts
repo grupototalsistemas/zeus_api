@@ -40,7 +40,6 @@ export class EmpresasService {
           categoriaId: BigInt(data.categoriaId),
         },
         include: {
-          tipos: true,
           categorias: true,
         },
       });
@@ -72,7 +71,6 @@ export class EmpresasService {
     const empresas = await this.prisma.empresa.findMany({
       where,
       include: {
-        tipos: true,
         categorias: true,
       },
       orderBy: {
@@ -87,7 +85,6 @@ export class EmpresasService {
     const empresa = await this.prisma.empresa.findUnique({
       where: { id },
       include: {
-        tipos: true,
         categorias: true,
       },
     });
@@ -103,9 +100,6 @@ export class EmpresasService {
     const empresa = await this.prisma.empresa.findUnique({
       where: { id },
       include: {
-        tipos: {
-          where: { ativo: StatusRegistro.ATIVO },
-        },
         categorias: {
           where: { ativo: StatusRegistro.ATIVO },
         },
@@ -173,7 +167,6 @@ export class EmpresasService {
         where: { id },
         data: updateData,
         include: {
-          tipos: true,
           categorias: true,
         },
       });
@@ -210,7 +203,6 @@ export class EmpresasService {
         updatedAt: new Date(),
       },
       include: {
-        tipos: true,
         categorias: true,
       },
     });
@@ -235,7 +227,6 @@ export class EmpresasService {
         updatedAt: new Date(),
       },
       include: {
-        tipos: true,
         categorias: true,
       },
     });
