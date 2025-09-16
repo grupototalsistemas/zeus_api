@@ -21,6 +21,7 @@ import {
   ApiConsumes,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -235,15 +236,15 @@ export class ChamadosController {
 
   @Get()
   @ApiOperation({ summary: 'Lista todos os chamados' })
-  @ApiParam({
+  @ApiQuery({
     name: 'usuarioId',
-    type: String,
-    description: 'ID da usuario que criou o chamado',
+    type: Number,
+    description: 'ID do usuário que criou o chamado',
     required: false,
   })
-  @ApiParam({
+  @ApiQuery({
     name: 'empresaId',
-    type: String,
+    type: Number,
     description: 'ID da empresa',
     required: false,
   })
