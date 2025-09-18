@@ -65,8 +65,8 @@ export class AuthController {
     // Configurações do cookie mais robustas
     res.cookie('token', accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
       maxAge: 24 * 60 * 60 * 1000, // 1 dia
       path: '/',
     });
