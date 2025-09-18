@@ -65,11 +65,10 @@ export class AuthController {
     // Configurações do cookie mais robustas
     res.cookie('token', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      secure: false,
+      sameSite: 'lax',
       maxAge: 24 * 60 * 60 * 1000, // 1 dia
       path: '/',
-      domain: process.env.NODE_ENV === 'production' ? undefined : 'localhost',
     });
 
     console.log('Login realizado. Cookie definido para:', user.login);
