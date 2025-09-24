@@ -56,7 +56,9 @@ export class ChamadosService {
           usuarioId: BigInt(dados.usuarioId),
           ocorrenciaId: BigInt(dados.ocorrenciaId),
           prioridadeId: BigInt(dados.prioridadeId),
-          protocolo: dados.protocolo ? String(dados.protocolo) : undefined,
+          protocolo: dados.protocolo
+            ? String(dados.protocolo)
+            : new Date().getTime().toString(),
           titulo: dados.titulo,
           descricao: dados.descricao,
           observacao: dados.observacao,
