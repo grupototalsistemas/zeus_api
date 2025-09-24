@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiOperation } from '@nestjs/swagger';
 import { Response } from 'express';
+import { Public } from '../common/decorators/public.decorator';
 import { AuthService } from './auth.service';
-import { Public } from './decorators/public.decorator';
 import { RegisterRecibeDto } from './dto/register.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 

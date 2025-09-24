@@ -6,7 +6,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Public } from '../../auth/decorators/public.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { CreatePessoaTipoDto } from '../dto/create-pessoa-tipo.dto';
 import { PessoaTipoService } from '../services/pessoa-tipo.service';
 
