@@ -47,7 +47,17 @@ export class SistemasService {
         },
       });
 
-      return this.mapToResponseDto(sistema);
+      // Criar vinculo com empresa
+      const empresaSistema = await this.prisma.empresaSistema.create({
+        data: {
+          empresaId: BigInt(data.empresaId),
+          sistemaId: sistema.id,
+          versao: '1.0.0',
+          ativo: StatusRegistro.ATIVO,
+        },
+      });
+
+      return sistema && empresaSistema && this.mapToResponseDto(sistema);
     } catch (error) {
       throw new BadRequestException('Erro ao criar sistema: ' + error.message);
     }

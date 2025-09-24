@@ -158,12 +158,11 @@ export class EmpresaSistemaController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Sistemas da empresa encontrados',
-    type: [EmpresaSistemaResponseDto],
   })
   findByEmpresa(
     @Param('empresaId', ParseIntPipe) empresaId: number,
     @Query('ativo') ativo?: StatusRegistro,
-  ): Promise<EmpresaSistemaResponseDto[]> {
+  ) {
     return this.empresaSistemaService.findByEmpresa(BigInt(empresaId), ativo);
   }
 

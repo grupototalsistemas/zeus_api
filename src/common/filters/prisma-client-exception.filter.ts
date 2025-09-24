@@ -15,11 +15,13 @@ export class PrismaClientExceptionFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Erro interno do banco de dados';
-
+    console.log('verificando o meta: ', exception.meta);
+    console.log('verificando a message: ', exception.message);
+    console.log('verificando o code: ', exception.code);
     switch (exception.code) {
       case 'P2000':
         status = HttpStatus.BAD_REQUEST;
-        message = `O valor fornecido para o campo "${exception.meta?.column_name}" é muito longo`;
+        message = `O valor fornecido para um dos campos de texto é muito longo`;
         break;
 
       case 'P2001':

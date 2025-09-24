@@ -50,6 +50,28 @@ export class EmpresasService {
     }
   }
 
+  async findByName(nome: string): Promise<CreateEmpresaDto[]> {
+    // Buscar empresas com o nome contendo o termo
+    const empresas = await this.prisma.empresa.findMany({
+      where: {
+        razaoSocial: {
+          contains: nome,
+          mode: 'insensitive',
+        },
+        nomeFantasia: {
+          contains: nome,
+          mode: 'insensitive',
+        },
+        ativo: StatusRegistro.ATIVO,
+      },
+      include: {
+        categorias: true,
+      },
+    });
+
+    return empresas.map((empresa) => this.mapToResponseDto(empresa));
+  }
+
   async findAll(filters: FindAllFilters = {}): Promise<CreateEmpresaDto[]> {
     const where: any = {};
 

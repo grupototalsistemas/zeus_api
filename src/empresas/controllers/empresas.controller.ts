@@ -141,6 +141,34 @@ export class EmpresasController {
     return this.empresasService.findOneComplete(BigInt(id));
   }
 
+  @Get('name/empresas')
+  @ApiOperation({
+    summary: 'Buscar empresa por nome',
+    description:
+      'Retorna os dados de uma empresa específica incluindo relacionamentos',
+  })
+  @ApiQuery({
+    name: 'nome',
+    description: 'Nome da empresa',
+    type: 'string',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Empresa encontrada',
+    type: CreateEmpresaDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Empresa não encontrada',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Nome inválido',
+  })
+  findByName(@Query('nome') nome: string): Promise<CreateEmpresaDto[]> {
+    return this.empresasService.findByName(nome);
+  }
+
   @Patch(':id')
   @ApiOperation({
     summary: 'Atualizar empresa',

@@ -139,10 +139,8 @@ export class EmpresaSistemaService {
     return this.mapToResponseDto(vinculo);
   }
 
-  async findByEmpresa(
-    empresaId: bigint,
-    ativo?: StatusRegistro,
-  ): Promise<EmpresaSistemaResponseDto[]> {
+  async findByEmpresa(empresaId: bigint, ativo?: StatusRegistro) {
+    console.log('empresaId', empresaId);
     await this.validateEmpresaExists(Number(empresaId));
 
     const where: any = { empresaId };
@@ -169,7 +167,8 @@ export class EmpresaSistemaService {
       orderBy: { sistema: { nome: 'asc' } },
     });
 
-    return vinculos.map((vinculo) => this.mapToResponseDto(vinculo));
+    // return vinculos.map((vinculo) => this.mapToResponseDto(vinculo));
+    return vinculos;
   }
 
   async findBySistema(

@@ -47,7 +47,7 @@ export class ChamadosService {
         },
       });
     } else {
-      console.log('Criando novo chamado:', dados);
+      // console.log('Criando novo chamado:', dados);
       return this.prisma.chamado.create({
         data: {
           empresaId: BigInt(dados.empresaId),
