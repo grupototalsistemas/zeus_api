@@ -30,6 +30,7 @@ async function bootstrap() {
       'http://localhost:3001',
       'http://localhost:5173', // Vite
       'http://localhost:4200', // Angular
+      'http://192.168.0.21:3001', // frontend rodando no celular
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

@@ -15,9 +15,9 @@ export class PrismaClientExceptionFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Erro interno do banco de dados';
-    console.log('verificando o meta: ', exception.meta);
-    console.log('verificando a message: ', exception.message);
-    console.log('verificando o code: ', exception.code);
+    // console.log('verificando o meta: ', exception.meta);
+    // console.log('verificando a message: ', exception.message);
+    // console.log('verificando o code: ', exception.code);
     switch (exception.code) {
       case 'P2000':
         status = HttpStatus.BAD_REQUEST;

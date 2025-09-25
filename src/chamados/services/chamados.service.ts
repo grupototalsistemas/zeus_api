@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
 import { BlobStorageService } from '../../common/services/blob-storage.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -163,6 +163,7 @@ export class ChamadosService {
   // =================== OPERAÇÕES DE MOVIMENTO ===================
 
   async criarMovimento(dados: CreateMovimentoDto) {
+    console.log('Criando movimento:', dados);
     return this.prisma.chamadoMovimento.create({
       data: {
         ...(() => {
@@ -292,6 +293,20 @@ export class ChamadosService {
   // =================== MÉTODOS PRINCIPAIS ===================
 
   async create(data: CreateChamadoDto) {
+    // Antes de criar o chamado informa ao usuario que é necessário criar etapa inicial de movimento
+    const etapa = await this.prisma.chamadoMovimentoEtapa.findFirst({
+      where: {
+        empresaId: data.empresaId,
+        ativo: StatusRegistro.ATIVO,
+      },
+    });
+
+    if (!etapa) {
+      throw new BadRequestException(
+        'Etapa de movimento inicial não encontrada. Crie uma etapa de movimento inicial.',
+      );
+    }
+
     // 1. Criar o chamado
     const chamado = await this.criarChamado({
       empresaId: data.empresaId,
@@ -346,6 +361,7 @@ export class ChamadosService {
 
     // Construir where com os filtros
     const where = {
+      ...{ ativo: StatusRegistro.ATIVO },
       ...(filters.empresaId && { empresaId: filters.empresaId }),
       ...(filters.sistemaId && { sistemaId: filters.sistemaId }),
       ...(filters.pessoaId && { pessoaId: filters.pessoaId }),
@@ -392,6 +408,7 @@ export class ChamadosService {
   }
 
   async update(id: bigint, data: UpdateChamadoDto) {
+    console.log('parte a ser atualizada: ', data);
     const { movimento, ...chamadoData } = data;
 
     // 1. Buscar chamado atual (antes de atualizar)
@@ -434,16 +451,47 @@ export class ChamadosService {
         oldChamado,
         chamadoData,
       );
+      const verificaEtapaExist =
+        await this.prisma.chamadoMovimentoEtapa.findFirst({
+          where: {
+            empresaId: data.empresaId,
+            descricao: descricao,
+            ativo: StatusRegistro.ATIVO,
+          },
+        });
 
-      await this.criarMovimento({
-        chamadoId: Number(id),
-        usuarioId: data.usuarioId!,
-        etapaId: Number(oldChamado?.movimentos.slice(-1)[0]?.etapaId || 0),
-        ordem: 0,
-        descricaoAcao: descricao,
-        observacaoTec: '',
-        ativo: StatusRegistro.ATIVO,
-      });
+      if (!verificaEtapaExist) {
+        const etapa = await this.prisma.chamadoMovimentoEtapa.create({
+          data: {
+            empresaId: id,
+            descricao: descricao,
+            ativo: StatusRegistro.ATIVO,
+          },
+        });
+        if (etapa) {
+          await this.criarMovimento({
+            chamadoId: Number(id),
+            usuarioId: data.usuarioId!,
+            etapaId: Number(etapa.id),
+            ordem: 0,
+            descricaoAcao: descricao,
+            observacaoTec: '',
+            ativo: StatusRegistro.ATIVO,
+          });
+        } else {
+          throw new BadRequestException('Erro ao criar etapa');
+        }
+      } else {
+        await this.criarMovimento({
+          chamadoId: Number(id),
+          usuarioId: data.usuarioId!,
+          etapaId: Number(verificaEtapaExist.id),
+          ordem: 0,
+          descricaoAcao: descricao,
+          observacaoTec: '',
+          ativo: StatusRegistro.ATIVO,
+        });
+      }
     }
 
     // 4. Retornar chamado atualizado
@@ -475,7 +523,7 @@ export class ChamadosService {
       chamadoData.usuarioId &&
       chamadoData.usuarioId !== Number(oldChamado.usuarioId)
     ) {
-      alteracoes.push('responsável');
+      alteracoes.push('responsavel');
     }
     if (
       chamadoData.prioridadeId &&

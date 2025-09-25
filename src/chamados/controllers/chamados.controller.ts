@@ -26,6 +26,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { StatusRegistro } from '@prisma/client';
 import { GetUsuario } from '../../common/decorators/get-usuario.decorator';
 import { BlobStorageService } from '../../common/services/blob-storage.service';
 import { CreateChamadoDto } from '../dto/create-chamado.dto';
@@ -286,10 +287,30 @@ export class ChamadosController {
   update(
     @Param('id') id: string,
     @Body() dto: UpdateChamadoDto,
+    // @GetUsuario() usuarioId: { userId: number },
+  ) {
+    return this.chamadosService.update(BigInt(id), {
+      ...dto,
+    });
+  }
+
+  @Patch(':id/conclude')
+  @ApiOperation({ summary: 'Finaliza um chamado' })
+  @ApiParam({ name: 'id', type: String, description: 'ID do chamado' })
+  @ApiBody({ type: UpdateChamadoDto })
+  @ApiResponse({ status: 200, description: 'Chamado concluido com sucesso.' })
+  @ApiResponse({ status: 400, description: 'Dados inválidos.' })
+  @ApiResponse({ status: 404, description: 'Chamado não encontrado.' })
+  @ApiResponse({ status: 401, description: 'Não autorizado.' })
+  conclude(
+    @Param('id') id: string,
+    @Body() dto: UpdateChamadoDto,
     @GetUsuario() usuarioId: { userId: number },
   ) {
     return this.chamadosService.update(BigInt(id), {
       ...dto,
+      ativo: StatusRegistro.INATIVO,
+
       usuarioId: usuarioId.userId,
     });
   }
