@@ -103,7 +103,7 @@ export class ChamadosMetricasService {
     });
 
     return chamados.reduce((acc, chamado) => {
-      const status = chamado.movimentos[0]?.etapa.descricao || 'NOVO';
+      const status = chamado.movimentos[0]?.etapa.descricao || 'ABERTO';
       acc[status] = (acc[status] || 0) + 1;
       return acc;
     }, {});

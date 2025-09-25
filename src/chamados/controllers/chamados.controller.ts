@@ -26,7 +26,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { StatusRegistro } from '@prisma/client';
 import { GetUsuario } from '../../common/decorators/get-usuario.decorator';
 import { BlobStorageService } from '../../common/services/blob-storage.service';
 import { CreateChamadoDto } from '../dto/create-chamado.dto';
@@ -249,6 +248,18 @@ export class ChamadosController {
     description: 'ID da empresa',
     required: false,
   })
+  @ApiQuery({
+    name: 'sistemaId',
+    type: Number,
+    description: 'ID do sistema',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'ativo',
+    type: Number,
+    description: 'Status do chamado',
+    required: false,
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de chamados retornada com sucesso.',
@@ -259,10 +270,14 @@ export class ChamadosController {
     empresaId?: number,
     @Query('usuarioId', new ParseIntPipe({ optional: true }))
     usuarioId?: number,
+    @Query('ativo', new ParseIntPipe({ optional: true })) ativo?: number,
+    @Query('sistemaId', new ParseIntPipe({ optional: true }))
+    sistemaId?: number,
   ) {
     return this.chamadosService.findAll({
       empresaId,
       usuarioId,
+      sistemaId,
     });
   }
 
@@ -297,22 +312,12 @@ export class ChamadosController {
   @Patch(':id/conclude')
   @ApiOperation({ summary: 'Finaliza um chamado' })
   @ApiParam({ name: 'id', type: String, description: 'ID do chamado' })
-  @ApiBody({ type: UpdateChamadoDto })
   @ApiResponse({ status: 200, description: 'Chamado concluido com sucesso.' })
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
   @ApiResponse({ status: 404, description: 'Chamado não encontrado.' })
   @ApiResponse({ status: 401, description: 'Não autorizado.' })
-  conclude(
-    @Param('id') id: string,
-    @Body() dto: UpdateChamadoDto,
-    @GetUsuario() usuarioId: { userId: number },
-  ) {
-    return this.chamadosService.update(BigInt(id), {
-      ...dto,
-      ativo: StatusRegistro.INATIVO,
-
-      usuarioId: usuarioId.userId,
-    });
+  conclude(@Param('id') id: string) {
+    return this.chamadosService.concluirChamado(BigInt(id));
   }
 
   @Delete(':id')

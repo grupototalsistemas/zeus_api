@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
+import { EventsGateway } from 'src/events/events.gateway';
 import { BlobStorageService } from '../../common/services/blob-storage.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateChamadoDto } from '../dto/create-chamado.dto';
@@ -12,6 +13,7 @@ export class ChamadosService {
   constructor(
     private prisma: PrismaService,
     private blobStorageService: BlobStorageService,
+    private eventsGateway: EventsGateway,
   ) {}
 
   // =================== OPERAÇÕES DE CHAMADO ===================
@@ -300,11 +302,17 @@ export class ChamadosService {
         ativo: StatusRegistro.ATIVO,
       },
     });
-
+    let id_etapa = etapa?.id || 0;
+    // Caso não tenha etapa de movimento, cria
     if (!etapa) {
-      throw new BadRequestException(
-        'Etapa de movimento inicial não encontrada. Crie uma etapa de movimento inicial.',
-      );
+      const etapa = await this.prisma.chamadoMovimentoEtapa.create({
+        data: {
+          empresaId: data.empresaId,
+          descricao: 'ABERTO',
+          ativo: StatusRegistro.ATIVO,
+        },
+      });
+      id_etapa = Number(etapa.id);
     }
 
     // 1. Criar o chamado
@@ -321,13 +329,13 @@ export class ChamadosService {
       observacao: data.observacao || '',
     });
 
-    // 2. Se houver movimento inicial, criar
+    // 2. Se houver movimento inicial, criar com base no repassado. Se não, cria com etapa aberta
     if (data.movimento) {
       // 2.1 Criar o movimento
       const movimento = await this.criarMovimento({
         chamadoId: Number(chamado.id),
         usuarioId: data.usuarioId,
-        etapaId: data.movimento.etapaId,
+        etapaId: Number(id_etapa),
         ordem: data.movimento.ordem || 0,
         descricaoAcao: data.movimento.descricaoAcao,
         observacaoTec: data.movimento.observacaoTec || '',
@@ -349,6 +357,17 @@ export class ChamadosService {
           mensagens: data.movimento.mensagens,
         });
       }
+    } else {
+      // 2.1 Criar o movimento
+      await this.criarMovimento({
+        chamadoId: Number(chamado.id),
+        usuarioId: data.usuarioId,
+        etapaId: Number(id_etapa),
+        ordem: 0,
+        descricaoAcao: '',
+        observacaoTec: '',
+        ativo: StatusRegistro.ATIVO,
+      });
     }
 
     // 3. Retornar chamado com todos os relacionamentos
@@ -400,6 +419,7 @@ export class ChamadosService {
       this.prisma.chamado.count({ where }),
     ]);
 
+    this.eventsGateway.server.emit('chamados', { total });
     return chamados;
   }
 
@@ -496,6 +516,56 @@ export class ChamadosService {
 
     // 4. Retornar chamado atualizado
     return this.buscarChamado(id);
+  }
+
+  async concluirChamado(id: bigint) {
+    // 1. verificar se o chamado existe e se ele nao esta concluido
+    const chamado = await this.buscarChamado(id);
+    if (!chamado) {
+      throw new BadRequestException('Chamado nao encontrado');
+    }
+    if (chamado.ativo === StatusRegistro.INATIVO) {
+      throw new BadRequestException('Chamado ja concluido');
+    }
+    // 2. Verifica se existe etapa de conclusao de movimento
+    const etapa = await this.prisma.chamadoMovimentoEtapa.findFirst({
+      where: {
+        empresaId: chamado.empresaId,
+        descricao: 'CONCLUIDO',
+        ativo: StatusRegistro.ATIVO,
+      },
+    });
+
+    let id_etapa = etapa?.id || 0;
+    // 3. Se não tiver, cria etapa de movimento com base na etapa de conclusao
+    if (!etapa) {
+      const etapa = await this.prisma.chamadoMovimentoEtapa.create({
+        data: {
+          empresaId: chamado.empresaId,
+          descricao: 'CONCLUIDO',
+          ativo: StatusRegistro.ATIVO,
+        },
+      });
+      id_etapa = Number(etapa.id);
+    }
+
+    // 4. Altera o chamado para inativo e com base na etapa de conclusao
+    return this.prisma.chamado.update({
+      where: { id },
+      data: {
+        ativo: StatusRegistro.INATIVO,
+        movimentos: {
+          create: {
+            ativo: StatusRegistro.INATIVO,
+            usuarioId: Number(chamado.usuarioId),
+            etapaId: Number(id_etapa),
+            ordem: 0,
+            descricaoAcao: 'CONCLUIDO',
+            observacaoTec: '',
+          },
+        },
+      },
+    });
   }
 
   verificaQualFoiAAtualizacaoDoChamado(

@@ -50,9 +50,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Mensagem recebida de ${data.userId}: ${data.message}`);
 
     // Broadcast para todos os clientes
-    this.server.emit('newMessage', {
+    this.server.emit('response', {
       userId: data.userId,
-      message: data.message,
+      response: data.message,
       timestamp: new Date(),
     });
   }

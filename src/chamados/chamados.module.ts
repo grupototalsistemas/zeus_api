@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { EventsModule } from 'src/events/events.module';
 import { CommonServicesModule } from '../common/services/common-services.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ChamadoMovimentoMensagemController } from './controllers/chamado-movimento-mensagem.controller';
@@ -22,7 +23,7 @@ import { ChamadoOcorrenciaService } from './services/ocorrencia.service';
 import { ChamadoPrioridadeService } from './services/prioridade.service';
 
 @Module({
-  imports: [PrismaModule, CommonServicesModule],
+  imports: [PrismaModule, CommonServicesModule, EventsModule],
   controllers: [
     ChamadosController,
     ChamadosMetricasController,
