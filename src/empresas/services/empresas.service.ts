@@ -207,7 +207,10 @@ export class EmpresasService {
     await this.validateCanDelete(id);
 
     try {
-      await this.prisma.empresa.delete({ where: { id } });
+      await this.prisma.empresa.update({
+        where: { id },
+        data: { ativo: StatusRegistro.INATIVO },
+      });
       return { message: 'Empresa excluída com sucesso' };
     } catch (error) {
       throw new ConflictException(

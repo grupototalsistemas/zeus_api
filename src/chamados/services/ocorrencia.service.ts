@@ -329,8 +329,11 @@ export class ChamadoOcorrenciaService {
         });
       } else {
         // Se não existem chamados vinculados, pode deletar fisicamente
-        await this.prisma.ocorrencia.delete({
+        await this.prisma.ocorrencia.update({
           where: { id },
+          data: {
+            ativo: StatusRegistro.INATIVO,
+          },
         });
 
         return { message: 'Ocorrência removida com sucesso' };

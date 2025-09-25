@@ -217,8 +217,11 @@ export class SistemasService {
     await this.validateCanDelete(id);
 
     try {
-      await this.prisma.sistema.delete({
+      await this.prisma.sistema.update({
         where: { id },
+        data: {
+          ativo: StatusRegistro.INATIVO,
+        },
       });
     } catch (error) {
       throw new ConflictException(

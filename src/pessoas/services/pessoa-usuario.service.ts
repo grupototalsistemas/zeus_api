@@ -1,4 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common';
+import { StatusRegistro } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePessoaUsuarioDto } from '../dto/create-pessoa-usuario.dto';
@@ -86,11 +87,15 @@ export class PessoaUsuarioService {
 
     // Se essa pessoa só tiver esse usuário
     if (usuario.pessoa.usuarios.length === 1) {
-      await this.prisma.pessoa.delete({
+      await this.prisma.pessoa.update({
         where: { id: usuario.pessoaId },
+        data: { ativo: StatusRegistro.INATIVO },
       });
     }
 
-    return this.prisma.pessoaUsuario.delete({ where: { id } });
+    return this.prisma.pessoaUsuario.update({
+      where: { id },
+      data: { ativo: StatusRegistro.INATIVO },
+    });
   }
 }

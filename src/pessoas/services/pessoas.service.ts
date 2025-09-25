@@ -4,6 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { StatusRegistro } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePessoaDto } from '../dto/create-pessoa.dto';
 import { UpdatePessoaDto } from '../dto/update-pessoa.dto';
@@ -84,7 +85,10 @@ export class PessoasService {
       );
     }
 
-    return this.prisma.pessoa.delete({ where: { id } });
+    return this.prisma.pessoa.update({
+      where: { id },
+      data: { ativo: StatusRegistro.INATIVO },
+    });
   }
 
   async findByEmpresa(empresaId: bigint) {

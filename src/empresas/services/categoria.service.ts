@@ -144,7 +144,10 @@ export class EmpresaCategoriaService {
     await this.validateCanDelete(id);
 
     try {
-      await this.prisma.empresaCategoria.delete({ where: { id } });
+      await this.prisma.empresaCategoria.update({
+        where: { id },
+        data: { ativo: StatusRegistro.INATIVO },
+      });
     } catch (error) {
       throw new ConflictException('Não foi possível excluir a categoria.');
     }

@@ -340,8 +340,11 @@ export class ChamadoPrioridadeService {
         });
       } else {
         // Se não existem chamados vinculados, pode deletar fisicamente
-        await this.prisma.prioridade.delete({
+        await this.prisma.prioridade.update({
           where: { id },
+          data: {
+            ativo: StatusRegistro.INATIVO,
+          },
         });
 
         return { message: 'Prioridade removida com sucesso' };

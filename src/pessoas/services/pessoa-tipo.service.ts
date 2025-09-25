@@ -1,4 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common';
+import { StatusRegistro } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePessoaTipoDto } from '../dto/create-pessoa-tipo.dto';
 
@@ -47,7 +48,10 @@ export class PessoaTipoService {
   }
 
   async remove(id: bigint) {
-    return this.prisma.pessoaTipo.delete({ where: { id } });
+    return this.prisma.pessoaTipo.update({
+      where: { id },
+      data: { ativo: StatusRegistro.INATIVO },
+    });
   }
 
   async findByEmpresa(empresaId: bigint) {

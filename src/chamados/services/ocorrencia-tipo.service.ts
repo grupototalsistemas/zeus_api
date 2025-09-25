@@ -239,8 +239,11 @@ export class ChamadoOcorrenciaTipoService {
         });
       } else {
         // Se não existem ocorrências vinculadas, pode deletar fisicamente
-        await this.prisma.ocorrenciaTipo.delete({
+        await this.prisma.ocorrenciaTipo.update({
           where: { id },
+          data: {
+            ativo: StatusRegistro.INATIVO,
+          },
         });
 
         return { message: 'Tipo de ocorrência removido com sucesso' };

@@ -1,9 +1,9 @@
 import {
-    BadRequestException,
-    ConflictException,
-    Injectable,
-    NotFoundException,
-    ServiceUnavailableException,
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -232,11 +232,13 @@ export class ChamadoMovimentoEtapaService {
       }
 
       // Verifica se existem movimentos vinculados a esta etapa
-      const movimentosVinculados = await this.prisma.chamadoMovimento.findFirst({
-        where: {
-          etapaId: id,
+      const movimentosVinculados = await this.prisma.chamadoMovimento.findFirst(
+        {
+          where: {
+            etapaId: id,
+          },
         },
-      });
+      );
 
       if (movimentosVinculados) {
         // Se existem movimentos vinculados, fazer soft delete
@@ -249,8 +251,11 @@ export class ChamadoMovimentoEtapaService {
         });
       } else {
         // Se não existem movimentos vinculados, pode deletar fisicamente
-        await this.prisma.chamadoMovimentoEtapa.delete({
+        await this.prisma.chamadoMovimentoEtapa.update({
           where: { id },
+          data: {
+            ativo: StatusRegistro.INATIVO,
+          },
         });
 
         return { message: 'Etapa removida com sucesso' };

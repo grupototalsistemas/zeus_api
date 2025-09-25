@@ -152,9 +152,11 @@ export class ChamadosService {
     });
   }
 
+  // exclusão logica
   async excluirChamado(id: bigint) {
-    return this.prisma.chamado.delete({
+    return this.prisma.chamado.update({
       where: { id },
+      data: { ativo: StatusRegistro.INATIVO },
     });
   }
 
@@ -173,8 +175,9 @@ export class ChamadosService {
   }
 
   async excluirMovimentos(chamadoId: number) {
-    return this.prisma.chamadoMovimento.deleteMany({
+    return this.prisma.chamadoMovimento.updateMany({
       where: { chamadoId },
+      data: { ativo: StatusRegistro.INATIVO },
     });
   }
 
@@ -237,9 +240,10 @@ export class ChamadosService {
       }
     }
 
-    // Deletar registros do banco
-    return this.prisma.chamadoMovimentoAnexo.deleteMany({
+    // Deletar logicamente os registros do banco
+    return this.prisma.chamadoMovimentoAnexo.updateMany({
       where: { movimentoId },
+      data: { ativo: StatusRegistro.INATIVO },
     });
   }
 
@@ -251,8 +255,9 @@ export class ChamadosService {
       await this.blobStorageService.deleteFile(anexo.pathname);
     }
 
-    return this.prisma.chamadoMovimentoAnexo.delete({
+    return this.prisma.chamadoMovimentoAnexo.update({
       where: { id },
+      data: { ativo: StatusRegistro.INATIVO },
     });
   }
 
@@ -278,8 +283,9 @@ export class ChamadosService {
   }
 
   async excluirMensagens(movimentoId: number) {
-    return this.prisma.chamadoMovimentoMensagem.deleteMany({
+    return this.prisma.chamadoMovimentoMensagem.updateMany({
       where: { movimentoId },
+      data: { ativo: StatusRegistro.INATIVO },
     });
   }
 
