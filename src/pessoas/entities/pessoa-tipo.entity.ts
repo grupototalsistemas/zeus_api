@@ -1,6 +1,7 @@
 // src/entities/pessoa-tipo.entity.ts
 
 import { StatusRegistro } from 'src/common/enums/status-registro.enum';
+import { Empresa } from 'src/empresas/entity/empresa.entity';
 import { Pessoa } from './pessoa.entity';
 
 export class PessoaTipo {

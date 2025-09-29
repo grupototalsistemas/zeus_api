@@ -1,8 +1,8 @@
 // src/entities/pessoa.entity.ts
 
-import { Empresa } from '@prisma/client';
 import { StatusGenero } from 'src/common/enums/status-genero.enum';
 import { StatusRegistro } from 'src/common/enums/status-registro.enum';
+import { Empresa } from 'src/empresas/entity/empresa.entity';
 import { PessoaTipo } from './pessoa-tipo.entity';
 import { PessoaUsuario } from './pessoa-usuario.entity';
 

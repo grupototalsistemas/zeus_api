@@ -2,6 +2,7 @@
 
 import { StatusRegistro } from 'src/common/enums/status-registro.enum';
 
+import { Empresa } from 'src/empresas/entity/empresa.entity';
 import { PessoaUsuario } from './pessoa-usuario.entity';
 
 export class Perfil {
