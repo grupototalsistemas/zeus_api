@@ -29,7 +29,7 @@ import {
 } from '../dto/create-empresa-tipo.dto';
 import { EmpresaTipoService } from '../services/empresa-tipo.service';
 
-@ApiTags('Empresa Tipos')
+@ApiTags('Tipos de Empresas')
 @ApiBearerAuth()
 @Controller('empresas-tipos')
 export class EmpresaTipoController {

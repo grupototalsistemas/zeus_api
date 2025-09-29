@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -7,7 +7,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
-import { CreatePessoaTipoDto } from '../dto/create-pessoa-tipo.dto';
+import { CreatePessoaTipoDto } from '../dto/pessoa-tipo.dto';
 import { PessoaTipoService } from '../services/pessoa-tipo.service';
 
 @ApiTags('Pessoa Tipo')
@@ -49,9 +49,9 @@ export class PessoaTipoController {
     return this.pessoaTipoService.findOne(BigInt(id));
   }
 
-  @Post(':id')
-  @ApiOperation({ summary: 'Cria um novo tipo de pessoa' })
-  @ApiBody({ type: CreatePessoaTipoDto })
+  @Patch(':id')
+  @ApiOperation({ summary: 'Editar tipo de pessoa' })
+  @ApiBody({ type:  })
   @ApiResponse({
     status: 201,
     description: 'Tipo de pessoa criado com sucesso.',

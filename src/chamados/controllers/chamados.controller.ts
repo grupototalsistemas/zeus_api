@@ -299,11 +299,7 @@ export class ChamadosController {
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
   @ApiResponse({ status: 404, description: 'Chamado não encontrado.' })
   @ApiResponse({ status: 401, description: 'Não autorizado.' })
-  update(
-    @Param('id') id: string,
-    @Body() dto: UpdateChamadoDto,
-    // @GetUsuario() usuarioId: { userId: number },
-  ) {
+  update(@Param('id') id: string, @Body() dto: UpdateChamadoDto) {
     return this.chamadosService.update(BigInt(id), {
       ...dto,
     });

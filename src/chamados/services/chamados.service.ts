@@ -440,6 +440,7 @@ export class ChamadosService {
     // 3. Se vier movimento do chamado cria ele com base no movimento passado
     if (movimento) {
       // Criar o movimento
+      console.log('Criando movimento com base no update: ', movimento);
       const novoMovimento = await this.criarMovimento({
         chamadoId: Number(id),
         usuarioId: data.usuarioId!,
@@ -471,6 +472,7 @@ export class ChamadosService {
         oldChamado,
         chamadoData,
       );
+      console.log('Descrição da atualização: ', descricao);
       const verificaEtapaExist =
         await this.prisma.chamadoMovimentoEtapa.findFirst({
           where: {
@@ -481,6 +483,8 @@ export class ChamadosService {
         });
 
       if (!verificaEtapaExist) {
+        console.log('Criando nova etapa de movimento: ', descricao);
+        // Criar nova etapa de movimento
         const etapa = await this.prisma.chamadoMovimentoEtapa.create({
           data: {
             empresaId: id,
@@ -489,6 +493,7 @@ export class ChamadosService {
           },
         });
         if (etapa) {
+          console.log('Etapa criada com sucesso: ', etapa);
           await this.criarMovimento({
             chamadoId: Number(id),
             usuarioId: data.usuarioId!,
@@ -502,6 +507,7 @@ export class ChamadosService {
           throw new BadRequestException('Erro ao criar etapa');
         }
       } else {
+        console.log('Etapa já existe: ', verificaEtapaExist);
         await this.criarMovimento({
           chamadoId: Number(id),
           usuarioId: data.usuarioId!,
@@ -593,7 +599,7 @@ export class ChamadosService {
       chamadoData.usuarioId &&
       chamadoData.usuarioId !== Number(oldChamado.usuarioId)
     ) {
-      alteracoes.push('responsavel');
+      alteracoes.push('responsável');
     }
     if (
       chamadoData.prioridadeId &&
@@ -619,10 +625,13 @@ export class ChamadosService {
     ) {
       alteracoes.push('empresa');
     }
-    // Juntar as alterações em uma string com virgula, caso seja a ultima com a letra e
-    return alteracoes.length > 0
-      ? alteracoes.join(' , ').slice(0, -1).concat('e')
-      : 'nenhum campo';
+
+    if (alteracoes.length === 0) return 'nenhum campo';
+
+    if (alteracoes.length === 1) return alteracoes[0];
+
+    const ultima = alteracoes.pop();
+    return `${alteracoes.join(', ')} e ${ultima}`;
   }
 
   async remove(id: bigint) {

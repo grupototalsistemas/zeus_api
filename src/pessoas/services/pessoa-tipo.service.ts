@@ -1,7 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreatePessoaTipoDto } from '../dto/create-pessoa-tipo.dto';
+import { CreatePessoaTipoDto } from '../dto/pessoa-tipo.dto';
 
 @Injectable()
 export class PessoaTipoService {

@@ -4,21 +4,12 @@ import { StatusRegistro } from '@prisma/client';
 import {
   IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsString,
   MaxLength,
   MinLength,
 } from 'class-validator';
 
 export class CreateEmpresaTipoDto {
-  @ApiProperty({
-    description: 'ID da empresa vinculada ao tipo',
-    example: 1,
-  })
-  @IsNotEmpty({ message: 'O campo empresaId é obrigatório.' })
-  @IsNumber({}, { message: 'O campo empresaId deve ser um número.' })
-  empresaId: number;
-
   @ApiProperty({
     description: 'Descrição do tipo de empresa',
     example: 'Matriz',

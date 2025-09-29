@@ -27,7 +27,7 @@ import {
   EmpresaCategoriaResponseDto,
   UpdateEmpresaCategoriaDto,
 } from '../dto/create-empresa-categoria.dto';
-import { EmpresaCategoriaService } from '../services/categoria.service';
+import { EmpresaCategoriaService } from '../services/empresa-categoria.service';
 
 @ApiTags('Empresa Categorias')
 @ApiBearerAuth()

@@ -17,16 +17,13 @@ export class EmpresaTipoService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreateEmpresaTipoDto): Promise<EmpresaTipoResponseDto> {
-    await this.validateEmpresaExists(data.empresaId);
     await this.validateDescricaoUnique(data.descricao);
-
+    console.log('criando tipo', data);
     try {
       const tipo = await this.prisma.empresaTipo.create({
-        data: {
-          ...data,
-        },
+        data,
       });
-
+      console.log('criou tipo', tipo);
       return this.mapToResponseDto(tipo);
     } catch (error) {
       throw new BadRequestException('Erro ao criar tipo: ' + error.message);
@@ -81,18 +78,10 @@ export class EmpresaTipoService {
   ): Promise<EmpresaTipoResponseDto> {
     await this.findOne(id);
 
-    if (data.empresaId) {
-      await this.validateEmpresaExists(data.empresaId);
-    }
-
     if (data.descricao) {
       const current = await this.prisma.empresaTipo.findUnique({
         where: { id },
       });
-
-      const empresaIdToCheck = data.empresaId
-        ? BigInt(data.empresaId)
-        : current?.id;
 
       await this.validateDescricaoUnique(
         data.descricao,
@@ -103,9 +92,7 @@ export class EmpresaTipoService {
 
     try {
       const updateData: any = { ...data };
-      if (data.empresaId) {
-        updateData.empresaId = BigInt(data.empresaId);
-      }
+
       updateData.updatedAt = new Date();
 
       const tipo = await this.prisma.empresaTipo.update({
@@ -182,9 +169,9 @@ export class EmpresaTipoService {
 
   private async validateDescricaoUnique(
     descricao: string,
-
     excludeId?: bigint,
   ): Promise<void> {
+    console.log('validando descricao unica', descricao, excludeId);
     const where: any = {
       descricao: { equals: descricao, mode: 'insensitive' },
     };
@@ -194,7 +181,7 @@ export class EmpresaTipoService {
     }
 
     const existing = await this.prisma.empresaTipo.findFirst({ where });
-
+    console.log('existing', existing);
     if (existing) {
       throw new ConflictException(
         'Tipo com esta descrição já existe para esta empresa',

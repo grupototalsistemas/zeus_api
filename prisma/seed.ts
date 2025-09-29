@@ -1,50 +1,51 @@
 import { PrismaClient } from '@prisma/client';
+import * as xlsx from 'xlsx';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('📂 Lendo arquivo Excel...');
 
-  // const workbook = xlsx.readFile('data/EMPRESAS.xlsx');
-  // const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  // const rows: any[] = xlsx.utils.sheet_to_json(sheet);
+  const workbook = xlsx.readFile('data/EMPRESAS.xlsx');
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const rows: any[] = xlsx.utils.sheet_to_json(sheet);
 
-  // console.log(`📊 Total de registros encontrados: ${rows.length}`);
+  console.log(`📊 Total de registros encontrados: ${rows.length}`);
 
-  // for (const row of rows) {
-  //   try {
-  //     await prisma.empresa.create({
-  //       data: {
-  //         parentId: Number(row.ID_PARENT_EMPRESA) ?? -1,
-  //         tipoId: Number(row.ID_EMPRESA_TIPO),
-  //         categoriaId: Number(row.ID_EMPRESA_CATEGORIA),
-  //         cnpj: String(row.CNPJ),
-  //         codigo: row.CODIGO ? String(row.CODIGO) : null,
-  //         razaoSocial: String(row.RAZAO_SOCIAL),
-  //         nomeFantasia: String(row.NOME_FANTASIA),
-  //         logradouro: row.LOGRADOURO ?? null,
-  //         endereco: row.ENDERECO ?? null,
-  //         numero: row.NUMERO ? String(row.NUMERO) : null,
-  //         complemento: row.COMPLEMENTO ?? null,
-  //         bairro: row.BAIRRO ?? null,
-  //         cidade: row.CIDADE ?? null,
-  //         estado: row.ESTADO ?? null,
-  //         cep: row.CEP ? String(row.CEP) : null,
-  //         contato: row.RESPONSAVEL ?? row.CONTATO ?? null,
-  //         email: row.EMAIL ?? null,
-  //         observacao: row.OBSERVACAO ?? null,
-  //         ativo: row.BLOQUEADO === 1 ? 'INATIVO' : 'ATIVO',
-  //         motivo: null,
-  //       },
-  //     });
+  for (const row of rows) {
+    try {
+      await prisma.empresa.create({
+        data: {
+          parentId: Number(row.ID_PARENT_EMPRESA) ?? -1,
+          tipoId: Number(row.ID_EMPRESA_TIPO),
+          categoriaId: Number(row.ID_EMPRESA_CATEGORIA),
+          cnpj: String(row.CNPJ),
+          codigo: row.CODIGO ? String(row.CODIGO) : null,
+          razaoSocial: String(row.RAZAO_SOCIAL),
+          nomeFantasia: String(row.NOME_FANTASIA),
+          logradouro: row.LOGRADOURO ?? null,
+          endereco: row.ENDERECO ?? null,
+          numero: row.NUMERO ? String(row.NUMERO) : null,
+          complemento: row.COMPLEMENTO ?? null,
+          bairro: row.BAIRRO ?? null,
+          cidade: row.CIDADE ?? null,
+          estado: row.ESTADO ?? null,
+          cep: row.CEP ? String(row.CEP) : null,
+          contato: row.RESPONSAVEL ?? row.CONTATO ?? null,
+          email: row.EMAIL ?? null,
+          observacao: row.OBSERVACAO ?? null,
+          ativo: row.BLOQUEADO === 1 ? 'INATIVO' : 'ATIVO',
+          motivo: null,
+        },
+      });
 
-  //     console.log(`✅ Empresa inserida: ${row.RAZAO_SOCIAL}`);
-  //   } catch (error: any) {
-  //     console.error(
-  //       `❌ Erro ao inserir empresa ${row.RAZAO_SOCIAL}: ${error.message}`,
-  //     );
-  //   }
-  // }
+      console.log(`✅ Empresa inserida: ${row.RAZAO_SOCIAL}`);
+    } catch (error: any) {
+      console.error(
+        `❌ Erro ao inserir empresa ${row.RAZAO_SOCIAL}: ${error.message}`,
+      );
+    }
+  }
 
   const sistema = await prisma.sistema.create({
     data: {
@@ -114,6 +115,25 @@ async function main() {
     },
   });
 
+  const etapa_abertura = await prisma.chamadoMovimentoEtapa.create({
+    data: {
+      empresaId: 1,
+      descricao: 'ABERTO',
+      ativo: 'ATIVO',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  const etapa_conclusao = await prisma.chamadoMovimentoEtapa.create({
+    data: {
+      empresaId: 1,
+      descricao: 'CONCLUIDO',
+      ativo: 'ATIVO',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
   // Criar chamados
   const chamado = await prisma.chamado.create({
     data: {
@@ -133,6 +153,19 @@ async function main() {
     },
   });
 
+  const movimento = await prisma.chamadoMovimento.create({
+    data: {
+      chamadoId: chamado.id,
+      etapaId: etapa_abertura.id,
+      descricaoAcao: 'Chamado Aberto',
+      observacaoTec: 'Nenhuma',
+      usuarioId: 1,
+      ativo: 'ATIVO',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
   console.log({
     sistema,
     pessoa,
@@ -141,6 +174,7 @@ async function main() {
     ocorrencia,
     chamado,
     tipoPessoa,
+    movimento,
   });
 }
 

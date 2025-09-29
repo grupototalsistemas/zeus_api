@@ -34,11 +34,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(EventsGateway.name);
 
   handleConnection(client: Socket) {
-    this.logger.log(`🔌 Cliente conectado: ${client.id}`);
+    // this.logger.log(`🔌 Cliente conectado: ${client.id}`);
   }
 
   handleDisconnect(client: Socket) {
-    this.logger.log(`❌ Cliente desconectado: ${client.id}`);
+    // this.logger.log(`❌ Cliente desconectado: ${client.id}`);
   }
 
   @UsePipes(new ValidationPipe({ whitelist: true }))
