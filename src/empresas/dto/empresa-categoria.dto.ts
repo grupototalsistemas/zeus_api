@@ -1,24 +1,18 @@
-// src/dtos/ocorrencia-tipo/create-ocorrencia-tipo.dto.ts
+// src/dtos/empresa-categoria/create-empresa-categoria.dto.ts
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import {
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { StatusRegistro } from 'src/common/enums/status-registro.enum';
 
-export class CreateOcorrenciaTipoDto {
+export class CreateEmpresaCategoriaDto {
   @ApiProperty({ description: 'ID da empresa', example: '1' })
   @IsNotEmpty({ message: 'ID da empresa é obrigatório' })
   @Transform(({ value }) => BigInt(value))
   empresaId: bigint;
 
   @ApiProperty({
-    description: 'Descrição do tipo de ocorrência',
-    example: 'Bug',
+    description: 'Descrição da categoria',
+    example: 'Tecnologia',
     maxLength: 100,
   })
   @IsNotEmpty({ message: 'Descrição é obrigatória' })
@@ -34,27 +28,16 @@ export class CreateOcorrenciaTipoDto {
   })
   @IsEnum(StatusRegistro, { message: 'Status deve ser um valor válido' })
   ativo: StatusRegistro = StatusRegistro.ATIVO;
-
-  @ApiProperty({
-    description: 'Motivo da inativação',
-    example: 'Tipo descontinuado',
-    maxLength: 500,
-    required: false,
-  })
-  @IsOptional()
-  @IsString({ message: 'Motivo deve ser uma string' })
-  @MaxLength(500, { message: 'Motivo deve ter no máximo 500 caracteres' })
-  motivo?: string;
 }
 
-// src/dtos/ocorrencia-tipo/update-ocorrencia-tipo.dto.ts
-export class UpdateOcorrenciaTipoDto extends PartialType(
-  OmitType(CreateOcorrenciaTipoDto, ['empresaId'] as const),
+// src/dtos/empresa-categoria/update-empresa-categoria.dto.ts
+export class UpdateEmpresaCategoriaDto extends PartialType(
+  OmitType(CreateEmpresaCategoriaDto, ['empresaId'] as const),
 ) {}
 
-// src/dtos/ocorrencia-tipo/ocorrencia-tipo-response.dto.ts
-export class OcorrenciaTipoResponseDto {
-  @ApiProperty({ description: 'ID único do tipo de ocorrência', example: '1' })
+// src/dtos/empresa-categoria/empresa-categoria-response.dto.ts
+export class EmpresaCategoriaResponseDto {
+  @ApiProperty({ description: 'ID único da categoria', example: '1' })
   @Transform(({ value }) => value.toString())
   id: string;
 
@@ -62,10 +45,7 @@ export class OcorrenciaTipoResponseDto {
   @Transform(({ value }) => value.toString())
   empresaId: string;
 
-  @ApiProperty({
-    description: 'Descrição do tipo de ocorrência',
-    example: 'Bug',
-  })
+  @ApiProperty({ description: 'Descrição da categoria', example: 'Tecnologia' })
   descricao: string;
 
   @ApiProperty({
@@ -74,13 +54,6 @@ export class OcorrenciaTipoResponseDto {
     example: StatusRegistro.ATIVO,
   })
   ativo: StatusRegistro;
-
-  @ApiProperty({
-    description: 'Motivo da inativação',
-    example: 'Tipo descontinuado',
-    required: false,
-  })
-  motivo?: string;
 
   @ApiProperty({ description: 'Data de criação' })
   createdAt: Date;

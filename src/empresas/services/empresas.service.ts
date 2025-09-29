@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateEmpresaDto, UpdateEmpresaDto } from '../dto/create-empresa.dto';
+import { CreateEmpresaDto, UpdateEmpresaDto } from '../dto/empresa.dto';
 
 interface FindAllFilters {
   ativo?: StatusRegistro;

@@ -1,22 +1,22 @@
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    Param,
-    Patch,
-    Post,
-    UseGuards,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
-    ApiBearerAuth,
-    ApiOperation,
-    ApiParam,
-    ApiResponse,
-    ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { CreateMovimentoEtapaDto } from '../dto/create-movimento-etapa.dto';
+import { CreateMovimentoEtapaDto } from '../dto/movimento-etapa.dto';
 import { UpdateMovimentoEtapaDto } from '../dto/update-movimento-etapa.dto';
 import { ChamadoMovimentoEtapaService } from '../services/movimento-etapa.service';
 

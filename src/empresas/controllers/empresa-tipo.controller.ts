@@ -26,7 +26,7 @@ import {
   CreateEmpresaTipoDto,
   EmpresaTipoResponseDto,
   UpdateEmpresaTipoDto,
-} from '../dto/create-empresa-tipo.dto';
+} from '../dto/empresa-tipo.dto';
 import { EmpresaTipoService } from '../services/empresa-tipo.service';
 
 @ApiTags('Tipos de Empresas')

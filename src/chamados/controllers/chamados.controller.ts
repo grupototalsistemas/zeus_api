@@ -28,9 +28,9 @@ import {
 
 import { GetUsuario } from '../../common/decorators/get-usuario.decorator';
 import { BlobStorageService } from '../../common/services/blob-storage.service';
+import { UpdateChamadoDto } from '../dto/chamado.dto';
 import { CreateChamadoDto } from '../dto/create-chamado.dto';
-import { CreateMovimentoDto } from '../dto/create-movimento.dto';
-import { UpdateChamadoDto } from '../dto/update-chamado.dto';
+import { CreateMovimentoDto } from '../dto/movimento.dto';
 import { ChamadosService } from '../services/chamados.service';
 
 @ApiTags('Chamados')

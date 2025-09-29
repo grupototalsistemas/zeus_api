@@ -1,5 +1,4 @@
-// src/dtos/ocorrencia/create-ocorrencia.dto.ts
-import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   IsEnum,
@@ -10,26 +9,27 @@ import {
 } from 'class-validator';
 import { StatusRegistro } from 'src/common/enums/status-registro.enum';
 
-export class CreateOcorrenciaDto {
-  @ApiProperty({ description: 'ID do tipo de ocorrência', example: '1' })
-  @IsNotEmpty({ message: 'ID do tipo de ocorrência é obrigatório' })
-  @Transform(({ value }) => BigInt(value))
-  tipoId: bigint;
-
+// src/dtos/empresa-sistema/create-empresa-sistema.dto.ts
+export class CreateEmpresaSistemaDto {
   @ApiProperty({ description: 'ID da empresa', example: '1' })
   @IsNotEmpty({ message: 'ID da empresa é obrigatório' })
   @Transform(({ value }) => BigInt(value))
   empresaId: bigint;
 
+  @ApiProperty({ description: 'ID do sistema', example: '1' })
+  @IsNotEmpty({ message: 'ID do sistema é obrigatório' })
+  @Transform(({ value }) => BigInt(value))
+  sistemaId: bigint;
+
   @ApiProperty({
-    description: 'Descrição da ocorrência',
-    example: 'Erro na tela de login',
-    maxLength: 100,
+    description: 'Versão do sistema',
+    example: '1.0.0',
+    maxLength: 50,
   })
-  @IsNotEmpty({ message: 'Descrição é obrigatória' })
-  @IsString({ message: 'Descrição deve ser uma string' })
-  @MaxLength(100, { message: 'Descrição deve ter no máximo 100 caracteres' })
-  descricao: string;
+  @IsNotEmpty({ message: 'Versão é obrigatória' })
+  @IsString({ message: 'Versão deve ser uma string' })
+  @MaxLength(50, { message: 'Versão deve ter no máximo 50 caracteres' })
+  versao: string;
 
   @ApiProperty({
     description: 'Status',
@@ -42,7 +42,7 @@ export class CreateOcorrenciaDto {
 
   @ApiProperty({
     description: 'Motivo da inativação',
-    example: 'Ocorrência resolvida permanentemente',
+    example: 'Versão descontinuada',
     maxLength: 500,
     required: false,
   })
@@ -52,30 +52,29 @@ export class CreateOcorrenciaDto {
   motivo?: string;
 }
 
-// src/dtos/ocorrencia/update-ocorrencia.dto.ts
-export class UpdateOcorrenciaDto extends PartialType(
-  OmitType(CreateOcorrenciaDto, ['empresaId'] as const),
+// src/dtos/empresa-sistema/update-empresa-sistema.dto.ts
+
+export class UpdateEmpresaSistemaDto extends PartialType(
+  CreateEmpresaSistemaDto,
 ) {}
 
-// src/dtos/ocorrencia/ocorrencia-response.dto.ts
-export class OcorrenciaResponseDto {
-  @ApiProperty({ description: 'ID único da ocorrência', example: '1' })
+// src/dtos/empresa-sistema/empresa-sistema-response.dto.ts
+
+export class EmpresaSistemaResponseDto {
+  @ApiProperty({ description: 'ID único da relação', example: '1' })
   @Transform(({ value }) => value.toString())
   id: string;
-
-  @ApiProperty({ description: 'ID do tipo de ocorrência', example: '1' })
-  @Transform(({ value }) => value.toString())
-  tipoId: string;
 
   @ApiProperty({ description: 'ID da empresa', example: '1' })
   @Transform(({ value }) => value.toString())
   empresaId: string;
 
-  @ApiProperty({
-    description: 'Descrição da ocorrência',
-    example: 'Erro na tela de login',
-  })
-  descricao: string;
+  @ApiProperty({ description: 'ID do sistema', example: '1' })
+  @Transform(({ value }) => value.toString())
+  sistemaId: string;
+
+  @ApiProperty({ description: 'Versão do sistema', example: '1.0.0' })
+  versao: string;
 
   @ApiProperty({
     description: 'Status',
@@ -86,7 +85,7 @@ export class OcorrenciaResponseDto {
 
   @ApiProperty({
     description: 'Motivo da inativação',
-    example: 'Ocorrência resolvida permanentemente',
+    example: 'Versão descontinuada',
     required: false,
   })
   motivo?: string;

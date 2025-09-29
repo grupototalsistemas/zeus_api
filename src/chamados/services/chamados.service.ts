@@ -3,10 +3,10 @@ import { StatusRegistro } from '@prisma/client';
 import { EventsGateway } from 'src/events/events.gateway';
 import { BlobStorageService } from '../../common/services/blob-storage.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { UpdateChamadoDto } from '../dto/chamado.dto';
 import { CreateChamadoDto } from '../dto/create-chamado.dto';
-import { CreateMovimentoDto } from '../dto/create-movimento.dto';
-import { FindChamadosDto } from '../dto/find-chamados.dto';
-import { UpdateChamadoDto } from '../dto/update-chamado.dto';
+import { FindChamadosDto } from '../dto/movimento-anexo.dto';
+import { CreateMovimentoDto } from '../dto/movimento.dto';
 
 @Injectable()
 export class ChamadosService {

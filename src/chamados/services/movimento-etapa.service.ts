@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateMovimentoEtapaDto } from '../dto/create-movimento-etapa.dto';
+import { CreateMovimentoEtapaDto } from '../dto/movimento-etapa.dto';
 import { UpdateMovimentoEtapaDto } from '../dto/update-movimento-etapa.dto';
 
 @Injectable()

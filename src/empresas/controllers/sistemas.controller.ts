@@ -26,7 +26,7 @@ import {
   CreateSistemaDto,
   SistemaResponseDto,
   UpdateSistemaDto,
-} from '../dto/create-sistema.dto';
+} from '../dto/sistema.dto';
 import { SistemasService } from '../services/sistemas.service';
 
 @ApiTags('Sistemas')

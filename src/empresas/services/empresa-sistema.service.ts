@@ -11,7 +11,7 @@ import {
   CreateEmpresaSistemaDto,
   EmpresaSistemaResponseDto,
   UpdateEmpresaSistemaDto,
-} from '../dto/create-empresa-sistema.dto';
+} from '../dto/empresa-sistema.dto';
 
 interface FindAllFilters {
   ativo?: StatusRegistro;

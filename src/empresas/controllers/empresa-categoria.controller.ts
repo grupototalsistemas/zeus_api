@@ -26,7 +26,7 @@ import {
   CreateEmpresaCategoriaDto,
   EmpresaCategoriaResponseDto,
   UpdateEmpresaCategoriaDto,
-} from '../dto/create-empresa-categoria.dto';
+} from '../dto/empresa-categoria.dto';
 import { EmpresaCategoriaService } from '../services/empresa-categoria.service';
 
 @ApiTags('Empresa Categorias')

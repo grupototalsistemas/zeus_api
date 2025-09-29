@@ -10,7 +10,7 @@ import {
   CreateEmpresaTipoDto,
   EmpresaTipoResponseDto,
   UpdateEmpresaTipoDto,
-} from '../dto/create-empresa-tipo.dto';
+} from '../dto/empresa-tipo.dto';
 
 @Injectable()
 export class EmpresaTipoService {

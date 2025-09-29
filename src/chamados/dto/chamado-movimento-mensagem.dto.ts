@@ -1,262 +1,187 @@
-import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { StatusRegistro } from '@prisma/client';
+// src/dtos/chamado-movimento-mensagem/create-chamado-movimento-mensagem.dto.ts
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
-  IsDate,
+  IsDateString,
   IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
-  IsPositive,
   IsString,
   MaxLength,
-  Min,
 } from 'class-validator';
+import { StatusRegistro } from 'src/common/enums/status-registro.enum';
 
 export class CreateChamadoMovimentoMensagemDto {
-  @ApiProperty({
-    description: 'ID do movimento do chamado',
-    example: 1,
-  })
+  @ApiProperty({ description: 'ID do movimento', example: '1' })
   @IsNotEmpty({ message: 'ID do movimento é obrigatório' })
   @Transform(({ value }) => BigInt(value))
   movimentoId: bigint;
 
-  @ApiProperty({
-    description: 'ID do usuário que enviou a mensagem',
-    example: 1,
-  })
+  @ApiProperty({ description: 'ID do usuário que envia', example: '1' })
   @IsNotEmpty({ message: 'ID do usuário de envio é obrigatório' })
   @Transform(({ value }) => BigInt(value))
   usuarioEnvioId: bigint;
 
-  @ApiProperty({
-    description: 'ID do usuário que leu a mensagem',
-    example: 2,
-  })
+  @ApiProperty({ description: 'ID do usuário que lê', example: '2' })
   @IsNotEmpty({ message: 'ID do usuário de leitura é obrigatório' })
   @Transform(({ value }) => BigInt(value))
   usuarioLeituraId: bigint;
 
-  @ApiPropertyOptional({
-    description: 'Ordem da mensagem na sequência',
+  @ApiProperty({
+    description: 'Ordem da mensagem',
     example: 1,
-    minimum: 1,
+    required: false,
   })
   @IsOptional()
-  @IsInt({ message: 'Ordem deve ser um número inteiro' })
-  @Min(1, { message: 'Ordem deve ser maior que zero' })
   @Type(() => Number)
+  @IsInt({ message: 'Ordem deve ser um número inteiro' })
   ordem?: number;
 
   @ApiProperty({
-    description: 'Descrição/conteúdo da mensagem',
-    example: 'Mensagem de retorno sobre o atendimento do chamado',
+    description: 'Descrição da mensagem',
+    example: 'Problema foi identificado e será corrigido',
     maxLength: 500,
   })
   @IsNotEmpty({ message: 'Descrição é obrigatória' })
-  @IsString({ message: 'Descrição deve ser um texto' })
+  @IsString({ message: 'Descrição deve ser uma string' })
   @MaxLength(500, { message: 'Descrição deve ter no máximo 500 caracteres' })
   descricao: string;
 
-  @ApiPropertyOptional({
-    description: 'Data e hora do envio da mensagem',
-    example: '2024-01-15T10:30:00.000Z',
+  @ApiProperty({
+    description: 'Data e hora de envio',
+    example: '2024-01-01T10:00:00.000Z',
+    required: false,
   })
   @IsOptional()
-  @IsDate({ message: 'Data de envio deve ser uma data válida' })
-  @Type(() => Date)
+  @IsDateString({}, { message: 'Data de envio deve ser uma data válida' })
   envio?: Date;
 
-  @ApiPropertyOptional({
-    description: 'Data e hora da leitura da mensagem',
-    example: '2024-01-15T11:00:00.000Z',
+  @ApiProperty({
+    description: 'Data e hora de leitura',
+    example: '2024-01-01T10:15:00.000Z',
+    required: false,
   })
   @IsOptional()
-  @IsDate({ message: 'Data de leitura deve ser uma data válida' })
-  @Type(() => Date)
+  @IsDateString({}, { message: 'Data de leitura deve ser uma data válida' })
   leitura?: Date;
 
-  @ApiPropertyOptional({
-    description: 'Status do registro',
+  @ApiProperty({
+    description: 'Status',
     enum: StatusRegistro,
     example: StatusRegistro.ATIVO,
     default: StatusRegistro.ATIVO,
   })
-  @IsOptional()
   @IsEnum(StatusRegistro, { message: 'Status deve ser um valor válido' })
-  ativo?: StatusRegistro = StatusRegistro.ATIVO;
+  ativo: StatusRegistro = StatusRegistro.ATIVO;
 
-  @ApiPropertyOptional({
-    description: 'Motivo de alteração do status',
-    example: 'Mensagem arquivada por conclusão do chamado',
+  @ApiProperty({
+    description: 'Motivo da inativação',
+    example: 'Mensagem deletada',
     maxLength: 500,
+    required: false,
   })
   @IsOptional()
-  @IsString({ message: 'Motivo deve ser um texto' })
+  @IsString({ message: 'Motivo deve ser uma string' })
   @MaxLength(500, { message: 'Motivo deve ter no máximo 500 caracteres' })
   motivo?: string;
 }
 
+// src/dtos/chamado-movimento-mensagem/update-chamado-movimento-mensagem.dto.ts
 export class UpdateChamadoMovimentoMensagemDto extends PartialType(
   CreateChamadoMovimentoMensagemDto,
-) {
-  @ApiPropertyOptional({
-    description: 'ID do movimento do chamado',
-    example: 1,
-  })
-  @IsOptional()
-  @Transform(({ value }) => (value ? BigInt(value) : undefined))
-  movimentoId?: bigint;
+) {}
 
-  @ApiPropertyOptional({
-    description: 'ID do usuário que enviou a mensagem',
-    example: 1,
-  })
-  @IsOptional()
-  @Transform(({ value }) => (value ? BigInt(value) : undefined))
-  usuarioEnvioId?: bigint;
-
-  @ApiPropertyOptional({
-    description: 'ID do usuário que leu a mensagem',
-    example: 2,
-  })
-  @IsOptional()
-  @Transform(({ value }) => (value ? BigInt(value) : undefined))
-  usuarioLeituraId?: bigint;
-}
-
+// src/dtos/chamado-movimento-mensagem/chamado-movimento-mensagem-response.dto.ts
 export class ChamadoMovimentoMensagemResponseDto {
-  @ApiProperty({
-    description: 'ID único da mensagem',
-    example: 1,
-  })
-  id: bigint;
+  @ApiProperty({ description: 'ID único da mensagem', example: '1' })
+  @Transform(({ value }) => value.toString())
+  id: string;
+
+  @ApiProperty({ description: 'ID do movimento', example: '1' })
+  @Transform(({ value }) => value.toString())
+  movimentoId: string;
+
+  @ApiProperty({ description: 'ID do usuário que envia', example: '1' })
+  @Transform(({ value }) => value.toString())
+  usuarioEnvioId: string;
+
+  @ApiProperty({ description: 'ID do usuário que lê', example: '2' })
+  @Transform(({ value }) => value.toString())
+  usuarioLeituraId: string;
 
   @ApiProperty({
-    description: 'ID do movimento do chamado',
+    description: 'Ordem da mensagem',
     example: 1,
-  })
-  movimentoId: bigint;
-
-  @ApiProperty({
-    description: 'ID do usuário que enviou a mensagem',
-    example: 1,
-  })
-  usuarioEnvioId: bigint;
-
-  @ApiProperty({
-    description: 'ID do usuário que leu a mensagem',
-    example: 2,
-  })
-  usuarioLeituraId: bigint;
-
-  @ApiPropertyOptional({
-    description: 'Ordem da mensagem na sequência',
-    example: 1,
+    required: false,
   })
   ordem?: number;
 
   @ApiProperty({
-    description: 'Descrição/conteúdo da mensagem',
-    example: 'Mensagem de retorno sobre o atendimento do chamado',
+    description: 'Descrição da mensagem',
+    example: 'Problema foi identificado e será corrigido',
   })
   descricao: string;
 
-  @ApiPropertyOptional({
-    description: 'Data e hora do envio da mensagem',
-    example: '2024-01-15T10:30:00.000Z',
+  @ApiProperty({
+    description: 'Data e hora de envio',
+    example: '2024-01-01T10:00:00.000Z',
+    required: false,
   })
   envio?: Date;
 
-  @ApiPropertyOptional({
-    description: 'Data e hora da leitura da mensagem',
-    example: '2024-01-15T11:00:00.000Z',
+  @ApiProperty({
+    description: 'Data e hora de leitura',
+    example: '2024-01-01T10:15:00.000Z',
+    required: false,
   })
   leitura?: Date;
 
   @ApiProperty({
-    description: 'Status do registro',
+    description: 'Status',
     enum: StatusRegistro,
     example: StatusRegistro.ATIVO,
   })
   ativo: StatusRegistro;
 
-  @ApiPropertyOptional({
-    description: 'Motivo de alteração do status',
-    example: 'Mensagem arquivada por conclusão do chamado',
+  @ApiProperty({
+    description: 'Motivo da inativação',
+    example: 'Mensagem deletada',
+    required: false,
   })
   motivo?: string;
 
-  @ApiProperty({
-    description: 'Data de criação do registro',
-    example: '2024-01-15T10:00:00.000Z',
-  })
+  @ApiProperty({ description: 'Data de criação' })
   createdAt: Date;
 
-  @ApiPropertyOptional({
-    description: 'Data de última atualização do registro',
-    example: '2024-01-15T12:00:00.000Z',
-  })
+  @ApiProperty({ description: 'Data de atualização', required: false })
   updatedAt?: Date;
-}
 
-export class ChamadoMovimentoMensagemQueryDto {
-  @ApiPropertyOptional({
-    description: 'ID do movimento para filtrar mensagens',
-    example: 1,
-  })
   @IsOptional()
-  @Transform(({ value }) => (value ? BigInt(value) : undefined))
-  movimentoId?: bigint;
+  @IsDateString({}, { message: 'Data de fim deve ser uma data válida' })
+  fim?: Date;
 
-  @ApiPropertyOptional({
-    description: 'ID do usuário de envio para filtrar mensagens',
-    example: 1,
+  @ApiProperty({
+    description: 'Descrição da ação',
+    example: 'Análise inicial do problema',
+    maxLength: 500,
   })
-  @IsOptional()
-  @Transform(({ value }) => (value ? BigInt(value) : undefined))
-  usuarioEnvioId?: bigint;
+  @IsNotEmpty({ message: 'Descrição da ação é obrigatória' })
+  @IsString({ message: 'Descrição da ação deve ser uma string' })
+  @MaxLength(500, {
+    message: 'Descrição da ação deve ter no máximo 500 caracteres',
+  })
+  descricaoAcao: string;
 
-  @ApiPropertyOptional({
-    description: 'ID do usuário de leitura para filtrar mensagens',
-    example: 2,
+  @ApiProperty({
+    description: 'Observação técnica',
+    example: 'Verificados logs do sistema',
+    maxLength: 500,
   })
-  @IsOptional()
-  @Transform(({ value }) => (value ? BigInt(value) : undefined))
-  usuarioLeituraId?: bigint;
-
-  @ApiPropertyOptional({
-    description: 'Status do registro para filtro',
-    enum: StatusRegistro,
-    example: StatusRegistro.ATIVO,
+  @IsNotEmpty({ message: 'Observação técnica é obrigatória' })
+  @IsString({ message: 'Observação técnica deve ser uma string' })
+  @MaxLength(500, {
+    message: 'Observação técnica deve ter no máximo 500 caracteres',
   })
-  @IsOptional()
-  @IsEnum(StatusRegistro, { message: 'Status deve ser um valor válido' })
-  ativo?: StatusRegistro;
-
-  @ApiPropertyOptional({
-    description: 'Página para paginação',
-    example: 1,
-    minimum: 1,
-    default: 1,
-  })
-  @IsOptional()
-  @IsInt({ message: 'Página deve ser um número inteiro' })
-  @IsPositive({ message: 'Página deve ser maior que zero' })
-  @Type(() => Number)
-  page?: number = 1;
-
-  @ApiPropertyOptional({
-    description: 'Quantidade de itens por página',
-    example: 10,
-    minimum: 1,
-    maximum: 100,
-    default: 10,
-  })
-  @IsOptional()
-  @IsInt({ message: 'Limite deve ser um número inteiro' })
-  @Min(1, { message: 'Limite deve ser maior que zero' })
-  @Type(() => Number)
-  limit?: number = 10;
+  observacaoTec: string;
 }

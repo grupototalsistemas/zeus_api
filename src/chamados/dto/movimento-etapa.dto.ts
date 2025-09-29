@@ -1,4 +1,5 @@
-// src/dtos/ocorrencia/create-ocorrencia.dto.ts
+// src/dtos/chamado-movimento-etapa/create-chamado-movimento-etapa.dto.ts
+
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
@@ -10,20 +11,15 @@ import {
 } from 'class-validator';
 import { StatusRegistro } from 'src/common/enums/status-registro.enum';
 
-export class CreateOcorrenciaDto {
-  @ApiProperty({ description: 'ID do tipo de ocorrência', example: '1' })
-  @IsNotEmpty({ message: 'ID do tipo de ocorrência é obrigatório' })
-  @Transform(({ value }) => BigInt(value))
-  tipoId: bigint;
-
+export class CreateChamadoMovimentoEtapaDto {
   @ApiProperty({ description: 'ID da empresa', example: '1' })
   @IsNotEmpty({ message: 'ID da empresa é obrigatório' })
   @Transform(({ value }) => BigInt(value))
   empresaId: bigint;
 
   @ApiProperty({
-    description: 'Descrição da ocorrência',
-    example: 'Erro na tela de login',
+    description: 'Descrição da etapa',
+    example: 'Análise inicial',
     maxLength: 100,
   })
   @IsNotEmpty({ message: 'Descrição é obrigatória' })
@@ -42,7 +38,7 @@ export class CreateOcorrenciaDto {
 
   @ApiProperty({
     description: 'Motivo da inativação',
-    example: 'Ocorrência resolvida permanentemente',
+    example: 'Etapa descontinuada',
     maxLength: 500,
     required: false,
   })
@@ -52,28 +48,24 @@ export class CreateOcorrenciaDto {
   motivo?: string;
 }
 
-// src/dtos/ocorrencia/update-ocorrencia.dto.ts
-export class UpdateOcorrenciaDto extends PartialType(
-  OmitType(CreateOcorrenciaDto, ['empresaId'] as const),
+// src/dtos/chamado-movimento-etapa/update-chamado-movimento-etapa.dto.ts
+export class UpdateChamadoMovimentoEtapaDto extends PartialType(
+  OmitType(CreateChamadoMovimentoEtapaDto, ['empresaId'] as const),
 ) {}
 
-// src/dtos/ocorrencia/ocorrencia-response.dto.ts
-export class OcorrenciaResponseDto {
-  @ApiProperty({ description: 'ID único da ocorrência', example: '1' })
+// src/dtos/chamado-movimento-etapa/chamado-movimento-etapa-response.dto.ts
+export class ChamadoMovimentoEtapaResponseDto {
+  @ApiProperty({ description: 'ID único da etapa', example: '1' })
   @Transform(({ value }) => value.toString())
   id: string;
-
-  @ApiProperty({ description: 'ID do tipo de ocorrência', example: '1' })
-  @Transform(({ value }) => value.toString())
-  tipoId: string;
 
   @ApiProperty({ description: 'ID da empresa', example: '1' })
   @Transform(({ value }) => value.toString())
   empresaId: string;
 
   @ApiProperty({
-    description: 'Descrição da ocorrência',
-    example: 'Erro na tela de login',
+    description: 'Descrição da etapa',
+    example: 'Análise inicial',
   })
   descricao: string;
 
@@ -86,7 +78,7 @@ export class OcorrenciaResponseDto {
 
   @ApiProperty({
     description: 'Motivo da inativação',
-    example: 'Ocorrência resolvida permanentemente',
+    example: 'Etapa descontinuada',
     required: false,
   })
   motivo?: string;

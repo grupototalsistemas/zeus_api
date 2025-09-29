@@ -22,7 +22,7 @@ import {
 } from '@nestjs/swagger';
 import { StatusRegistro } from '@prisma/client';
 import { Public } from '../../common/decorators/public.decorator';
-import { CreateEmpresaDto, UpdateEmpresaDto } from '../dto/create-empresa.dto';
+import { CreateEmpresaDto, UpdateEmpresaDto } from '../dto/empresa.dto';
 import { EmpresasService } from '../services/empresas.service';
 
 @ApiTags('Empresas')

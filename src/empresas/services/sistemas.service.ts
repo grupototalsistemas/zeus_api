@@ -11,7 +11,7 @@ import {
   CreateSistemaDto,
   SistemaResponseDto,
   UpdateSistemaDto,
-} from '../dto/create-sistema.dto';
+} from '../dto/sistema.dto';
 
 interface FindAllFilters {
   ativo?: StatusRegistro;

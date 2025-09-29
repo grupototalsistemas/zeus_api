@@ -26,7 +26,7 @@ import {
   CreateEmpresaSistemaDto,
   EmpresaSistemaResponseDto,
   UpdateEmpresaSistemaDto,
-} from '../dto/create-empresa-sistema.dto';
+} from '../dto/empresa-sistema.dto';
 import { EmpresaSistemaService } from '../services/empresa-sistema.service';
 
 @ApiTags('Empresa Sistemas')
