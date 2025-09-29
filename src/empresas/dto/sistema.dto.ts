@@ -1,5 +1,5 @@
 // src/dtos/sistema/create-sistema.dto.ts
-import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   IsEnum,
@@ -9,6 +9,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { StatusRegistro } from 'src/common/enums/status-registro.enum';
+import { Sistema } from '../entity/sistema.entity';
 
 export class CreateSistemaDto {
   @ApiProperty({ description: 'ID da empresa', example: '1' })
@@ -58,9 +59,7 @@ export class CreateSistemaDto {
 }
 
 // src/dtos/sistema/update-sistema.dto.ts
-export class UpdateSistemaDto extends PartialType(
-  OmitType(CreateSistemaDto, ['empresaId'] as const),
-) {}
+export class UpdateSistemaDto extends PartialType(Sistema) {}
 
 // src/dtos/sistema/sistema-response.dto.ts
 export class SistemaResponseDto {

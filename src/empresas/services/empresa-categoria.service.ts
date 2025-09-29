@@ -26,8 +26,8 @@ export class EmpresaCategoriaService {
   async create(
     data: CreateEmpresaCategoriaDto,
   ): Promise<EmpresaCategoriaResponseDto> {
-    await this.validateEmpresaExists(data.empresaId);
-    await this.validateDescricaoUnique(data.descricao, data.empresaId);
+    await this.validateEmpresaExists(Number(data.empresaId));
+    await this.validateDescricaoUnique(data.descricao, Number(data.empresaId));
 
     try {
       const categoria = await this.prisma.empresaCategoria.create({
@@ -99,7 +99,7 @@ export class EmpresaCategoriaService {
     await this.findOne(id);
 
     if (data.empresaId) {
-      await this.validateEmpresaExists(data.empresaId);
+      await this.validateEmpresaExists(Number(data.empresaId));
     }
 
     if (data.descricao) {
@@ -237,8 +237,8 @@ export class EmpresaCategoriaService {
 
   private mapToResponseDto(categoria: any): EmpresaCategoriaResponseDto {
     return {
-      id: Number(categoria.id),
-      empresaId: Number(categoria.empresaId),
+      id: String(categoria.id),
+      empresaId: String(categoria.empresaId),
       descricao: categoria.descricao,
       ativo: categoria.ativo,
       createdAt: categoria.createdAt,

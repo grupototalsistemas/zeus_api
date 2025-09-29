@@ -7,7 +7,11 @@ import {
 } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateEmpresaDto, UpdateEmpresaDto } from '../dto/empresa.dto';
+import {
+  CreateEmpresaDto,
+  EmpresaResponseDto,
+  UpdateEmpresaDto,
+} from '../dto/empresa.dto';
 
 interface FindAllFilters {
   ativo?: StatusRegistro;
@@ -19,15 +23,15 @@ interface FindAllFilters {
 export class EmpresasService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateEmpresaDto): Promise<CreateEmpresaDto> {
+  async create(data: CreateEmpresaDto): Promise<EmpresaResponseDto> {
     // Validar se CNPJ já existe
     await this.validateCnpjUnique(data.cnpj);
 
     // Validar se tipo existe
-    await this.validateEmpresaTipoExists(data.tipoId);
+    await this.validateEmpresaTipoExists(Number(data.tipoId));
 
     // Validar se categoria existe
-    await this.validateEmpresaCategoriaExists(data.categoriaId);
+    await this.validateEmpresaCategoriaExists(Number(data.categoriaId));
 
     // Validar CNPJ format (básico)
     this.validateCnpjFormat(data.cnpj);
@@ -50,7 +54,7 @@ export class EmpresasService {
     }
   }
 
-  async findByName(nome: string): Promise<CreateEmpresaDto[]> {
+  async findByName(nome: string): Promise<EmpresaResponseDto[]> {
     // Buscar empresas com o nome contendo o termo
     const empresas = await this.prisma.empresa.findMany({
       where: {
@@ -72,7 +76,7 @@ export class EmpresasService {
     return empresas.map((empresa) => this.mapToResponseDto(empresa));
   }
 
-  async findAll(filters: FindAllFilters = {}): Promise<CreateEmpresaDto[]> {
+  async findAll(filters: FindAllFilters = {}): Promise<EmpresaResponseDto[]> {
     const where: any = {};
 
     if (filters.ativo) {
@@ -103,7 +107,7 @@ export class EmpresasService {
     return empresas.map((empresa) => this.mapToResponseDto(empresa));
   }
 
-  async findOne(id: bigint): Promise<CreateEmpresaDto> {
+  async findOne(id: bigint): Promise<EmpresaResponseDto> {
     const empresa = await this.prisma.empresa.findUnique({
       where: { id },
       include: {
@@ -152,7 +156,10 @@ export class EmpresasService {
     return empresa;
   }
 
-  async update(id: bigint, data: UpdateEmpresaDto): Promise<CreateEmpresaDto> {
+  async update(
+    id: bigint,
+    data: UpdateEmpresaDto,
+  ): Promise<EmpresaResponseDto> {
     // Verificar se empresa existe
     await this.findOne(id);
 
@@ -164,12 +171,12 @@ export class EmpresasService {
 
     // Validar tipo se foi alterado
     if (data.tipoId) {
-      await this.validateEmpresaTipoExists(data.tipoId);
+      await this.validateEmpresaTipoExists(Number(data.tipoId));
     }
 
     // Validar categoria se foi alterado
     if (data.categoriaId) {
-      await this.validateEmpresaCategoriaExists(data.categoriaId);
+      await this.validateEmpresaCategoriaExists(Number(data.categoriaId));
     }
 
     try {
@@ -219,7 +226,7 @@ export class EmpresasService {
     }
   }
 
-  async activate(id: bigint): Promise<CreateEmpresaDto> {
+  async activate(id: bigint): Promise<EmpresaResponseDto> {
     const empresa = await this.prisma.empresa.update({
       where: { id },
       data: {
@@ -239,7 +246,7 @@ export class EmpresasService {
     return this.mapToResponseDto(empresa);
   }
 
-  async deactivate(id: bigint, motivo: string): Promise<CreateEmpresaDto> {
+  async deactivate(id: bigint, motivo: string): Promise<EmpresaResponseDto> {
     if (!motivo || motivo.trim().length === 0) {
       throw new BadRequestException('Motivo da desativação é obrigatório');
     }
@@ -362,12 +369,12 @@ export class EmpresasService {
     }
   }
 
-  private mapToResponseDto(empresa: any): CreateEmpresaDto {
+  private mapToResponseDto(empresa: any): EmpresaResponseDto {
     return {
-      id: Number(empresa.id),
-      parentId: Number(empresa.parentId),
-      tipoId: Number(empresa.tipoId),
-      categoriaId: Number(empresa.categoriaId),
+      id: String(empresa.id),
+      parentId: String(empresa.parentId),
+      tipoId: String(empresa.tipoId),
+      categoriaId: String(empresa.categoriaId),
       cnpj: empresa.cnpj,
       codigo: empresa.codigo,
       razaoSocial: empresa.razaoSocial,

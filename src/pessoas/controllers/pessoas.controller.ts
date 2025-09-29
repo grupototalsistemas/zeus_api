@@ -18,8 +18,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
-import { CreatePessoaDto } from '../dto/pessoa.dto';
-import { UpdatePessoaDto } from '../dto/update-pessoa.dto';
+import { CreatePessoaDto, UpdatePessoaDto } from '../dto/pessoa.dto';
+
 import { PessoasService } from '../services/pessoas.service';
 
 @ApiTags('Pessoas')

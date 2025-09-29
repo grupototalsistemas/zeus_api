@@ -8,6 +8,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { StatusRegistro } from 'src/common/enums/status-registro.enum';
+import { EmpresaSistema } from '../entity/empresa-sistema.entity';
 
 // src/dtos/empresa-sistema/create-empresa-sistema.dto.ts
 export class CreateEmpresaSistemaDto {
@@ -54,9 +55,7 @@ export class CreateEmpresaSistemaDto {
 
 // src/dtos/empresa-sistema/update-empresa-sistema.dto.ts
 
-export class UpdateEmpresaSistemaDto extends PartialType(
-  CreateEmpresaSistemaDto,
-) {}
+export class UpdateEmpresaSistemaDto extends PartialType(EmpresaSistema) {}
 
 // src/dtos/empresa-sistema/empresa-sistema-response.dto.ts
 

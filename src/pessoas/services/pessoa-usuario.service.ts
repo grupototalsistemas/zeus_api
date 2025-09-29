@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -9,35 +9,16 @@ export class PessoaUsuarioService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreatePessoaUsuarioDto) {
-    let pessoa;
     // Verifica se tem a pessoa no banco, se nao tiver cria
-    const aux_pessoa = await this.prisma.pessoa.findFirst({
+    const pessoa = await this.prisma.pessoa.findFirst({
       where: {
-        nomeSocial: data.pessoa.nomeSocial,
-        nome: data.pessoa.nome,
-        empresaId: data.pessoa.empresaId,
+        id: data.pessoaId,
       },
     });
 
-    if (!aux_pessoa) {
-      try {
-        pessoa = await this.prisma.pessoa.create({
-          data: {
-            empresaId: data.pessoa.empresaId,
-            tipoId: data.pessoa.tipoId,
-            genero: data.pessoa.genero,
-            nome: data.pessoa.nome,
-            nomeSocial: data.pessoa.nomeSocial,
-            ativo: 'ATIVO',
-          },
-        });
-      } catch (error) {
-        throw new ConflictException('Erro ao salvar pessoa');
-      }
-    } else {
-      pessoa = aux_pessoa;
+    if (!pessoa) {
+      throw new BadRequestException('Necessario criar pessoa primeiro');
     }
-
     const hashedPassword = await bcrypt.hash(data.senha, 10);
     const usuario = await this.prisma.pessoaUsuario.create({
       data: {

@@ -15,7 +15,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { CreatePessoaPerfilDto } from '../dto/pessoa-perfil.dto';
+
+import { CreatePerfilDto } from '../dto/pessoa-perfil.dto';
 import { PessoaPerfilService } from '../services/pessoa-perfil.service';
 
 @ApiTags('Pessoa Perfil')
@@ -27,13 +28,13 @@ export class PessoaPerfilController {
 
   @Post()
   @ApiOperation({ summary: 'Cria um novo perfil de pessoa' })
-  @ApiBody({ type: CreatePessoaPerfilDto })
+  @ApiBody({ type: CreatePerfilDto })
   @ApiResponse({
     status: 201,
     description: 'Perfil de pessoa criado com sucesso.',
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
-  create(@Body() dto: CreatePessoaPerfilDto) {
+  create(@Body() dto: CreatePerfilDto) {
     return this.pessoaPerfilService.create(dto);
   }
 
@@ -59,19 +60,19 @@ export class PessoaPerfilController {
 
   @Post(':id')
   @ApiOperation({ summary: 'Cria um novo perfil de pessoa' })
-  @ApiBody({ type: CreatePessoaPerfilDto })
+  @ApiBody({ type: CreatePerfilDto })
   @ApiResponse({
     status: 201,
     description: 'Perfil de pessoa criado com sucesso.',
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
-  update(@Param('id') id: string, @Body() dto: CreatePessoaPerfilDto) {
+  update(@Param('id') id: string, @Body() dto: CreatePerfilDto) {
     return this.pessoaPerfilService.update(BigInt(id), dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'remover um perfil de pessoa' })
-  @ApiBody({ type: CreatePessoaPerfilDto })
+  @ApiBody({ type: CreatePerfilDto })
   @ApiResponse({
     status: 201,
     description: 'Perfil de pessoa removido com sucesso.',

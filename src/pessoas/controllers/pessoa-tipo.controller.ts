@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -7,7 +15,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
-import { CreatePessoaTipoDto } from '../dto/pessoa-tipo.dto';
+import {
+  CreatePessoaTipoDto,
+  UpdatePessoaTipoDto,
+} from '../dto/pessoa-tipo.dto';
 import { PessoaTipoService } from '../services/pessoa-tipo.service';
 
 @ApiTags('Pessoa Tipo')
@@ -51,13 +62,13 @@ export class PessoaTipoController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Editar tipo de pessoa' })
-  @ApiBody({ type:  })
+  @ApiBody({ type: UpdatePessoaTipoDto })
   @ApiResponse({
     status: 201,
     description: 'Tipo de pessoa criado com sucesso.',
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
-  update(@Param('id') id: string, @Body() dto: CreatePessoaTipoDto) {
+  update(@Param('id') id: string, @Body() dto: UpdatePessoaTipoDto) {
     return this.pessoaTipoService.update(BigInt(id), dto);
   }
 

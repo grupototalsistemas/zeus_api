@@ -130,7 +130,7 @@ export class SistemasService {
 
   async findByEmpresa(empresaId: bigint): Promise<SistemaResponseDto[]> {
     // Validar se empresa existe
-    await this.validateEmpresaExists(Number(empresaId));
+    await this.validateEmpresaExists(empresaId);
 
     const sistemas = await this.prisma.sistema.findMany({
       where: {
@@ -175,7 +175,7 @@ export class SistemasService {
         ? BigInt(data.empresaId)
         : currentSistema?.empresaId;
 
-      await this.validateNomeUnique(data.nome, Number(empresaIdToCheck), id);
+      await this.validateNomeUnique(data.nome, empresaIdToCheck as bigint, id);
     }
 
     try {
@@ -288,10 +288,10 @@ export class SistemasService {
   }
 
   // Métodos de validação privados
-  private async validateEmpresaExists(empresaId: number): Promise<void> {
+  private async validateEmpresaExists(empresaId: BigInt): Promise<void> {
     const empresa = await this.prisma.empresa.findFirst({
       where: {
-        id: BigInt(empresaId),
+        id: empresaId as bigint,
         ativo: StatusRegistro.ATIVO,
       },
     });
@@ -305,12 +305,12 @@ export class SistemasService {
 
   private async validateNomeUnique(
     nome: string,
-    empresaId: number,
+    empresaId: BigInt,
     excludeId?: bigint,
   ): Promise<void> {
     const where: any = {
       nome: { equals: nome, mode: 'insensitive' },
-      empresaId: BigInt(empresaId),
+      empresaId: empresaId,
     };
 
     if (excludeId) {
@@ -352,8 +352,8 @@ export class SistemasService {
 
   private mapToResponseDto(sistema: any): SistemaResponseDto {
     return {
-      id: Number(sistema.id),
-      empresaId: Number(sistema.empresaId),
+      id: String(sistema.id),
+      empresaId: String(sistema.empresaId),
       nome: sistema.nome,
       descricao: sistema.descricao,
       ativo: sistema.ativo,

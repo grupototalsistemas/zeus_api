@@ -8,7 +8,6 @@ import {
 import { StatusRegistro } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
-  CreateEmpresaSistemaDto,
   EmpresaSistemaResponseDto,
   UpdateEmpresaSistemaDto,
 } from '../dto/empresa-sistema.dto';
@@ -25,22 +24,25 @@ export class EmpresaSistemaService {
   constructor(private prisma: PrismaService) {}
 
   async create(
-    data: CreateEmpresaSistemaDto,
+    data: UpdateEmpresaSistemaDto,
   ): Promise<EmpresaSistemaResponseDto> {
     // Validar se empresa e sistema existem
-    await this.validateEmpresaExists(data.empresaId);
-    await this.validateSistemaExists(data.sistemaId);
+    await this.validateEmpresaExists(Number(data.empresaId));
+    await this.validateSistemaExists(Number(data.sistemaId));
 
     // Validar se o vínculo já existe
-    await this.validateVinculoUnique(data.empresaId, data.sistemaId);
+    await this.validateVinculoUnique(
+      Number(data.empresaId),
+      Number(data.sistemaId),
+    );
 
     try {
       const empresaSistema = await this.prisma.empresaSistema.create({
         data: {
-          empresaId: BigInt(data.empresaId),
-          sistemaId: BigInt(data.sistemaId),
-          versao: data.versao,
-          ativo: data.ativo,
+          empresaId: data.empresaId || 0,
+          sistemaId: data.sistemaId || 0,
+          versao: data.versao || '1.0.0',
+          ativo: data.ativo || StatusRegistro.ATIVO,
           motivo: data.motivo,
         },
         include: {
@@ -213,12 +215,12 @@ export class EmpresaSistemaService {
 
     // Validar empresa se foi alterada
     if (data.empresaId) {
-      await this.validateEmpresaExists(data.empresaId);
+      await this.validateEmpresaExists(Number(data.empresaId));
     }
 
     // Validar sistema se foi alterado
     if (data.sistemaId) {
-      await this.validateSistemaExists(data.sistemaId);
+      await this.validateSistemaExists(Number(data.sistemaId));
     }
 
     // Verificar se não criará duplicata
@@ -497,9 +499,9 @@ export class EmpresaSistemaService {
 
   private mapToResponseDto(vinculo: any): EmpresaSistemaResponseDto {
     return {
-      id: Number(vinculo.id),
-      empresaId: Number(vinculo.empresaId),
-      sistemaId: Number(vinculo.sistemaId),
+      id: vinculo.id,
+      empresaId: vinculo.empresaId,
+      sistemaId: vinculo.sistemaId,
       versao: vinculo.versao,
       ativo: vinculo.ativo,
       motivo: vinculo.motivo,

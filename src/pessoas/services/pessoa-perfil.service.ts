@@ -1,13 +1,13 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreatePessoaPerfilDto } from '../dto/pessoa-perfil.dto';
+import { CreatePerfilDto } from '../dto/pessoa-perfil.dto';
 
 @Injectable()
 export class PessoaPerfilService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreatePessoaPerfilDto) {
+  async create(data: CreatePerfilDto) {
     const perfil = await this.prisma.perfil.findFirst({
       where: {
         empresaId: data.empresaId,
@@ -41,7 +41,7 @@ export class PessoaPerfilService {
     return this.prisma.perfil.findUnique({ where: { id } });
   }
 
-  async update(id: bigint, data: CreatePessoaPerfilDto) {
+  async update(id: bigint, data: CreatePerfilDto) {
     return this.prisma.perfil.update({
       where: { id },
       data: data,

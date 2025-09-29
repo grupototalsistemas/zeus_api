@@ -203,8 +203,8 @@ export class EmpresaTipoService {
 
   private mapToResponseDto(tipo: any): EmpresaTipoResponseDto {
     return {
-      id: Number(tipo.id),
-      empresaId: Number(tipo.empresaId),
+      id: String(tipo.id),
+
       descricao: tipo.descricao,
       ativo: tipo.ativo,
       createdAt: tipo.createdAt,

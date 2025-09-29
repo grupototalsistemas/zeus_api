@@ -1,8 +1,9 @@
 // src/dtos/empresa-categoria/create-empresa-categoria.dto.ts
-import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { StatusRegistro } from 'src/common/enums/status-registro.enum';
+import { EmpresaCategoria } from '../entity/empresa-categoria.entity';
 
 export class CreateEmpresaCategoriaDto {
   @ApiProperty({ description: 'ID da empresa', example: '1' })
@@ -31,9 +32,7 @@ export class CreateEmpresaCategoriaDto {
 }
 
 // src/dtos/empresa-categoria/update-empresa-categoria.dto.ts
-export class UpdateEmpresaCategoriaDto extends PartialType(
-  OmitType(CreateEmpresaCategoriaDto, ['empresaId'] as const),
-) {}
+export class UpdateEmpresaCategoriaDto extends PartialType(EmpresaCategoria) {}
 
 // src/dtos/empresa-categoria/empresa-categoria-response.dto.ts
 export class EmpresaCategoriaResponseDto {

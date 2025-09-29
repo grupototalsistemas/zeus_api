@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { StatusRegistro } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreatePessoaDto } from '../dto/pessoa.dto';
-import { UpdatePessoaDto } from '../dto/update-pessoa.dto';
+import { CreatePessoaDto, UpdatePessoaDto } from '../dto/pessoa.dto';
+
 import { PessoaTipoService } from './pessoa-tipo.service';
 
 @Injectable()
