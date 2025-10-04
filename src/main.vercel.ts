@@ -1,11 +1,28 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import * as cookieParser from 'cookie-parser';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import cookieParser from 'cookie-parser';
+import express from 'express';
 import * as net from 'net';
+import { join } from 'path';
 import { AppModule } from './app.module';
 import { PrismaClientExceptionFilter } from './common/filters/prisma-client-exception.filter';
 import { BigIntInterceptor } from './common/interceptors/bigint.interceptor';
 import { setupSwagger } from './config/swagger.config';
+
+// const cookieParser = require('cookie-parser');
+
+const server = express();
+
+server.get('/', (req, res) => {
+  res.redirect('/api');
+});
+
+// Servir arquivos estáticos do Swagger UI
+server.use(
+  '/swagger-ui',
+  express.static(join(__dirname, '..', 'node_modules', 'swagger-ui-dist')),
+);
 
 async function findAvailablePort(startPort: number): Promise<number> {
   return new Promise((resolve) => {
@@ -14,23 +31,22 @@ async function findAvailablePort(startPort: number): Promise<number> {
       tmpServer.close(() => resolve(startPort));
     });
     tmpServer.on('error', () => {
-      resolve(findAvailablePort(startPort + 1));
+      resolve(findAvailablePort(startPort + 1)); // tenta próxima porta
     });
   });
 }
 
 async function bootstrap() {
-  // Para desenvolvimento local, usar o método padrão do NestJS
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
 
   // CORS para cookies
   app.enableCors({
     origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:5173', // Vite
-      'http://localhost:4200', // Angular
-      'http://192.168.0.21:3001', // frontend rodando no celular
+      'https://zeus-front-swart.vercel.app',
+      /^https:\/\/.*\.vercel\.app$/, // Permite qualquer subdomínio .vercel.app
+      /^https:\/\/zeus-front-swart.*\.vercel\.app$/, // Permite subdominios específicos do projeto
+      'http://localhost:3000', // Para desenvolvimento local
+      'http://localhost:3001', // Para desenvolvimento local
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -61,12 +77,18 @@ async function bootstrap() {
 
   setupSwagger(app);
 
-  const port = await findAvailablePort(Number(process.env.PORT) || 3000);
-  await app.listen(port);
+  await app.init();
 
-  console.log(`🚀 Servidor rodando em http://localhost:${port}`);
-  console.log(`📜 Swagger em http://localhost:${port}/api`);
-  console.log(`📁 Prisma Studio: npx prisma studio`);
+  // 👉 Se rodando localmente, sobe servidor normal
+  if (!process.env.VERCEL) {
+    const port = await findAvailablePort(Number(process.env.PORT) || 3000);
+    await app.listen(port);
+    console.log(`🚀 Servidor rodando em http://localhost:${port}`);
+    console.log(`📜 Swagger em http://localhost:${port}/api`);
+  }
+
+  // 👉 Retorna o express server para Vercel
+  return server;
 }
 
-bootstrap();
+export default bootstrap();
