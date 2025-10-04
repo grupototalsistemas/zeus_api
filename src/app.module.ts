@@ -1,15 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AuthModule } from './auth/auth.module';
-import { ChamadosModule } from './chamados/chamados.module';
-import { PrismaModule } from './prisma/prisma.module';
-
 import { APP_GUARD } from '@nestjs/core';
+import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { ChamadosModule } from './chamados/chamados.module';
 import { CommonServicesModule } from './common/services/common-services.module';
-import { EmpresasModule } from './empresas/empresas.module';
-import { ImportModule } from './import/import.module';
 import { PessoasModule } from './pessoas/pessoas.module';
+import { PrismaModule } from './prisma/prisma.module';
 @Module({
   imports: [
     // EventsModule,
@@ -26,8 +23,6 @@ import { PessoasModule } from './pessoas/pessoas.module';
     AuthModule,
     PessoasModule,
     ChamadosModule,
-    EmpresasModule,
-    ImportModule,
   ],
   controllers: [],
   providers: [
