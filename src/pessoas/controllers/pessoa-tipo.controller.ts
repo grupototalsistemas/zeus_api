@@ -1,24 +1,6 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
-import { Public } from '../../common/decorators/public.decorator';
-import {
-  CreatePessoaTipoDto,
-  UpdatePessoaTipoDto,
-} from '../dto/pessoa-tipo.dto';
+import { Controller } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+
 import { PessoaTipoService } from '../services/pessoa-tipo.service';
 
 @ApiTags('Pessoa Tipo')
@@ -26,70 +8,4 @@ import { PessoaTipoService } from '../services/pessoa-tipo.service';
 @Controller('pessoa-tipos')
 export class PessoaTipoController {
   constructor(private readonly pessoaTipoService: PessoaTipoService) {}
-
-  @Post()
-  @ApiOperation({ summary: 'Cria um novo tipo de pessoa' })
-  @ApiBody({ type: CreatePessoaTipoDto })
-  @ApiResponse({
-    status: 201,
-    description: 'Tipo de pessoa criado com sucesso.',
-  })
-  @ApiResponse({ status: 400, description: 'Dados inválidos.' })
-  create(@Body() dto: CreatePessoaTipoDto) {
-    return this.pessoaTipoService.create(dto);
-  }
-
-  @Public()
-  @Get()
-  @ApiOperation({ summary: 'Lista todos os tipos de pessoa' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de tipos de pessoa retornada com sucesso.',
-  })
-  findAll() {
-    return this.pessoaTipoService.findAll();
-  }
-
-  @Get(':id')
-  @ApiOperation({ summary: 'Lista todos os tipos de pessoa' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de tipos de pessoa retornada com sucesso.',
-  })
-  findUnique(@Param('id') id: string) {
-    return this.pessoaTipoService.findOne(BigInt(id));
-  }
-
-  @Patch(':id')
-  @ApiOperation({ summary: 'Editar tipo de pessoa' })
-  @ApiBody({ type: UpdatePessoaTipoDto })
-  @ApiResponse({
-    status: 201,
-    description: 'Tipo de pessoa criado com sucesso.',
-  })
-  @ApiResponse({ status: 400, description: 'Dados inválidos.' })
-  update(@Param('id') id: string, @Body() dto: UpdatePessoaTipoDto) {
-    return this.pessoaTipoService.update(BigInt(id), dto);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'remover um tipo de pessoa' })
-  @ApiResponse({
-    status: 200,
-    description: 'Tipo de pessoa removido com sucesso.',
-  })
-  @ApiResponse({ status: 400, description: 'Dados inválidos.' })
-  remove(@Param('id') id: string) {
-    return this.pessoaTipoService.remove(BigInt(id));
-  }
-
-  @Get('empresa/:id')
-  @ApiOperation({ summary: 'Lista todos os tipos de pessoa da mesma empresa' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de tipos de pessoa retornada com sucesso.',
-  })
-  findByEmpresa(@Param('id') id: string) {
-    return this.pessoaTipoService.findByEmpresa(BigInt(id));
-  }
 }
