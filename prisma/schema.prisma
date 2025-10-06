@@ -3,26 +3,30 @@ generator client {
   previewFeatures = ["multiSchema"]
 }
 
-generator nestjsDto {
-  provider = "prisma-generator-nestjs-dto"
-  output   = "../src/common/dto" // onde ele vai gerar os DTOs
-  outputToNestJsResourceStructure = "false"
-  exportRelationModifierClasses   = "true"
-  reExport                        = "false"
-  createDtoPrefix                 = "Create"
-  updateDtoPrefix                 = "Update"
-  dtoSuffix                       = "Dto"
-  entityPrefix                    = ""
-  entitySuffix                    = ""
-  fileNamingStyle                 = "camel"
+// generator nestjsDto {
+//   provider = "prisma-generator-nestjs-dto"
+//   output   = "../src/common/dto" // onde ele vai gerar os DTOs
+//   outputToNestJsResourceStructure = "false"
+//   exportRelationModifierClasses   = "true"
+//   reExport                        = "false"
+//   createDtoPrefix                 = "Create"
+//   updateDtoPrefix                 = "Update"
+//   dtoSuffix                       = "Dto"
+//   entityPrefix                    = ""
+//   entitySuffix                    = ""
+//   fileNamingStyle                 = "camel"
 
-}
+// }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
   schemas  = ["global"]
 }
+
+// ============================================
+// SISTEMA DE USUÁRIOS E AUTENTICAÇÃO
+// ============================================
 
 model Modulos {
   id              BigInt      @id @default(autoincrement()) @map("id_modulo")
@@ -65,12 +69,51 @@ model ModulosPerfisPermissoes {
   // Relacionamentos
   modulo Modulos       @relation(fields: [id_modulo], references: [id])
   perfil PessoasJuridicasPerfis @relation(fields: [id_pessoa_juridica_perfil], references: [id])
-
+  PessoasJuridicasSistemas PessoasJuridicasSistemas[]
 
   @@map("modulos_perfis_permissoes")
   @@schema("global")
-  PessoasJuridicasSistemas PessoasJuridicasSistemas[]
 }
+
+model Sistemas {
+  id                     BigInt   @id @default(autoincrement()) @map("id_sistema")
+  id_pessoa_juridica_base BigInt
+  sistema                String   @db.VarChar(50)
+  descricao              String   @db.VarChar(200)
+  status_web             Int      @default(1)
+  situacao               Int      @default(1)
+  motivo                 String?  @db.VarChar(500)
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime? @map("updated_at")
+
+  // Relacionamentos
+  pessoaJuridicaBase PessoasJuridicas @relation(fields: [id_pessoa_juridica_base], references: [id])
+  sistemasModulos    SistemasModulos[]
+
+  @@map("sistemas")
+  @@schema("global")
+}
+
+model SistemasModulos {
+  id                  BigInt   @id @default(autoincrement()) @map("id_sistema_modulo")
+  id_sistema          BigInt
+  id_modulo_principal BigInt   @map("id_modulo_primcipal")
+  situacao            Int      @default(1)
+  motivo              String?  @db.VarChar(500)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime? @map("updated_at")
+
+  // Relacionamentos
+  sistema         Sistemas @relation(fields: [id_sistema], references: [id])
+  moduloPrincipal Modulos  @relation(fields: [id_modulo_principal], references: [id])
+
+  @@map("sistemas_modulos")
+  @@schema("global")
+}
+
+// ============================================
+// PESSOAS
+// ============================================
 
 model Pessoas {
   id                      BigInt   @id @default(autoincrement()) @map("id_pessoa")
@@ -173,7 +216,7 @@ model PessoasEnderecos {
   id                        BigInt   @id @default(autoincrement()) @map("id_pessoa_endereco")
   id_pessoa                 BigInt
   id_pessoa_endereco_tipo   BigInt
-  logradouro                String
+  logradouro                String   @db.VarChar(50)
   endereco                  String   @db.VarChar(150)
   numero                    String?  @db.VarChar(50)
   complemento               String?  @db.VarChar(50)
@@ -237,11 +280,11 @@ model PessoasFisica {
   genero          PessoasFisicasGenero       @relation(fields: [id_pessoa_genero], references: [id])
   estadoCivil     PessoasFisicasEstadoCivil  @relation(fields: [id_pessoa_estado_civil], references: [id])
   pessoasUsuarios PessoasUsuarios[]
+  
+  PessoasJuridicasFisicas PessoasJuridicasFisicas[]
 
   @@map("pessoas_fisicas")
   @@schema("global")
-  PessoasJuridicas PessoasJuridicas[]
-  PessoasJuridicasFisicas PessoasJuridicasFisicas[]
 }
 
 model PessoasFisicasEstadoCivil {
@@ -278,11 +321,10 @@ model PessoasFisicasGenero {
 model PessoasJuridicas {
   id                   BigInt   @id @default(autoincrement()) @map("id_pessoa_juridica")
   id_pessoa            BigInt
-  id_pessoa_responsavel BigInt
-  id_pessoa_fisica     BigInt
+  id_pessoa_fisica_responsavel BigInt
   cnpj                 String   @db.VarChar(50)
-  razao_social         String   @db.VarChar(150)
-  nome_fantasia        String?  @db.VarChar(150)
+  razao_social         String   @db.VarChar(250)
+  nome_fantasia        String?  @db.VarChar(250)
   inscricao_estadual   String?  @db.VarChar(50) @map("insc_estadual")
   inscricao_municipal  String?  @db.VarChar(50) @map("insc_municipal")
   filial_principal     Int?     @default(0)
@@ -294,23 +336,21 @@ model PessoasJuridicas {
   // Relacionamentos
   pessoa        Pessoas         @relation(fields: [id_pessoa], references: [id])
   sistemas      Sistemas[]
-  
-  
-  pessoaFisica      PessoasFisica @relation(fields: [id_pessoa_fisica], references: [id])
   pessoasJuridicasFisicas PessoasJuridicasFisicas[]
-
-  @@map("pessoas_juridicas")
-  @@schema("global")
   PessoasJuridicasJuridicas PessoasJuridicasJuridicas[]
   PessoasJuridicasSistemas PessoasJuridicasSistemas[]
   PessoasJuridicasPerfis PessoasJuridicasPerfis[]
+
+  @@map("pessoas_juridicas")
+  @@schema("global")
 }
 
 model PessoasJuridicasFisicas {
   id                   BigInt   @id @default(autoincrement()) @map("id_pessoa_juridica_fisica")
-  id_pessoa_juridica            BigInt
-  id_pessoa_fisica BigInt
+  id_pessoa_juridica   BigInt
+  id_pessoa_fisica     BigInt
   id_pessoa_juridica_perfil     BigInt
+  juridica_principal   Int?
   situacao             Int      @default(1)
   motivo               String?  @db.VarChar(500)
   createdAt            DateTime @default(now()) @map("created_at")
@@ -320,17 +360,17 @@ model PessoasJuridicasFisicas {
   pessoaJuridica   PessoasJuridicas   @relation(fields: [id_pessoa_juridica], references: [id])
   pessoaFisica     PessoasFisica      @relation(fields: [id_pessoa_fisica], references: [id])
   pessoaJuridicaPerfil PessoasJuridicasPerfis @relation(fields: [id_pessoa_juridica_perfil], references: [id])
+  PessoasJuridicasJuridicas PessoasJuridicasJuridicas[]
+  PessoasJuridicasSistemas PessoasJuridicasSistemas[]
 
   @@map("pessoas_juridicas_fisicas")
   @@schema("global")
-  PessoasJuridicasJuridicas PessoasJuridicasJuridicas[]
-  PessoasJuridicasSistemas PessoasJuridicasSistemas[]
 }
 
 model PessoasJuridicasJuridicas {
   id            BigInt   @id @default(autoincrement()) @map("id_pessoa_juridica_juridica")
   id_pessoa_juridica_empresa        BigInt
-  descricao     String   @db.VarChar(100)
+  id_pessoa_juridica_filial BigInt
   situacao      Int      @default(1)
   motivo        String?  @db.VarChar(500)
   createdAt     DateTime @default(now()) @map("created_at")
@@ -358,10 +398,10 @@ model PessoasJuridicasPerfis {
   pessoasJuridicasFisicas PessoasJuridicasFisicas[]
   perfisPermissoes         ModulosPerfisPermissoes[]
   pessoaJuridica          PessoasJuridicas @relation(fields: [id_pessoa_juridica], references: [id])
+  LogSystem LogSystem[]
 
   @@map("pessoas_juridicas_perfis")
   @@schema("global")
-  LogSystem LogSystem[]
 }
 
 model PessoasJuridicasSistemas {
@@ -432,47 +472,16 @@ model PessoasUsuarios {
   @@schema("global")
 }
 
-model Sistemas {
-  id                     BigInt   @id @default(autoincrement()) @map("id_sistema")
-  id_pessoa_juridica_base BigInt
-  sistema                String   @db.VarChar(20)
-  descricao              String   @db.VarChar(100)
-  status_web             Int      @default(1)
-  situacao               Int      @default(1)
-  motivo                 String?  @db.VarChar(500)
-  createdAt              DateTime @default(now()) @map("created_at")
-  updatedAt              DateTime? @map("updated_at")
-
-  // Relacionamentos
-  pessoaJuridicaBase PessoasJuridicas @relation(fields: [id_pessoa_juridica_base], references: [id])
-  sistemasModulos    SistemasModulos[]
-
-  @@map("sistemas")
-  @@schema("global")
-}
-
-model SistemasModulos {
-  id                  BigInt   @id @default(autoincrement()) @map("id_sistema_modulo")
-  id_sistema          BigInt
-  id_modulo_principal BigInt   @map("id_modulo_primcipal")
-  situacao            Int      @default(1)
-  motivo              String?  @db.VarChar(500)
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime? @map("updated_at")
-
-  // Relacionamentos
-  sistema         Sistemas @relation(fields: [id_sistema], references: [id])
-  moduloPrincipal Modulos  @relation(fields: [id_modulo_principal], references: [id])
-
-  @@map("sistemas_modulos")
-  @@schema("global")
-}
+// ============================================
+// SISTEMA DE LOG
+// ============================================
 
 model LogSystem {
   id                 BigInt   @id @default(autoincrement()) @map("id_log_system")
-  id_usuario         BigInt
-  id_perfil          BigInt
-  id_modulo          BigInt
+  id_pessoa_juridica_empresa BigInt
+  id_pessoa_fisica_usuario BigInt
+  id_pessoa_juridica_fisica_perfil BigInt
+  id_modulo_perfil_permissao BigInt
   endpoint_name      String   @db.VarChar(50)
   device             String   @db.VarChar(50)
   user_win           String?  @db.VarChar(50)
@@ -486,13 +495,14 @@ model LogSystem {
   table_data_after   Json?
   error_status       Int?     @default(0)
   error_message      String?  @db.VarChar(500) @map("error_menssage")
+  situacao           Int
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime? @map("updated_at")
 
   // Relacionamentos
-  usuario PessoasUsuarios @relation(fields: [id_usuario], references: [id])
-  modulo  Modulos         @relation(fields: [id_modulo], references: [id])
-  perfil  PessoasJuridicasPerfis @relation(fields: [id_perfil], references: [id])
+  usuario PessoasUsuarios @relation(fields: [id_pessoa_fisica_usuario], references: [id])
+  modulo  Modulos         @relation(fields: [id_modulo_perfil_permissao], references: [id])
+  perfil  PessoasJuridicasPerfis @relation(fields: [id_pessoa_juridica_fisica_perfil], references: [id])
 
   @@map("log_system")
   @@schema("global")
