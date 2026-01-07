@@ -317,8 +317,6 @@ export class AuthController {
     @Body() loginSenhaDto: LoginSenhaDto,
     @Res({ passthrough: true }) res: express.Response,
   ): Promise<LoginResponseDto> {
-    console.log(loginSenhaDto);
-
     const loginResponse = await this.authService.login(loginSenhaDto);
 
     // Configura o cookie HttpOnly com o token

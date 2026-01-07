@@ -169,7 +169,7 @@ export class AuthService {
       loginDto.login,
       loginDto.sistema,
     );
-
+    console.log(userData);
     // Valida login
     if (!userData) {
       throw new UnauthorizedException('Credenciais inválidas');

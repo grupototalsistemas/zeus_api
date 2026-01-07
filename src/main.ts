@@ -25,13 +25,7 @@ async function bootstrap() {
 
   // CORS para cookies
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:5173', // Vite
-      'http://localhost:4200', // Angular
-      'http://192.168.0.21:3001', // frontend rodando no celular
-    ],
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [

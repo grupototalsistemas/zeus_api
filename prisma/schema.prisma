@@ -71,9 +71,10 @@ model Sistemas {
   updatedAt               DateTime? @map("updated_at")
 
   // Relacionamentos
-  pessoaJuridicaBase PessoasJuridicas  @relation(fields: [id_pessoa_juridica_base], references: [id])
-  sistemasModulos    SistemasModulos[]
-  chamados           Chamado[]
+  pessoaJuridicaBase       PessoasJuridicas           @relation(fields: [id_pessoa_juridica_base], references: [id])
+  sistemasModulos          SistemasModulos[]
+  chamados                 Chamado[]
+  pessoasJuridicasSistemas PessoasJuridicasSistemas[]
 
   @@map("sistemas")
   @@schema("global")
@@ -263,12 +264,11 @@ model PessoasFisica {
   updatedAt              DateTime? @map("updated_at")
 
   // Relacionamentos
-  pessoa          Pessoas                   @relation(fields: [id_pessoa], references: [id])
-  genero          PessoasFisicasGenero      @relation(fields: [id_pessoa_genero], references: [id])
-  estadoCivil     PessoasFisicasEstadoCivil @relation(fields: [id_pessoa_estado_civil], references: [id])
-  pessoasUsuarios PessoasUsuarios[]
-
-  PessoasJuridicasFisicas PessoasJuridicasFisicas[]
+  pessoa                  Pessoas                   @relation(fields: [id_pessoa], references: [id])
+  genero                  PessoasFisicasGenero      @relation(fields: [id_pessoa_genero], references: [id])
+  estadoCivil             PessoasFisicasEstadoCivil @relation(fields: [id_pessoa_estado_civil], references: [id])
+  pessoasUsuarios         PessoasUsuarios[]
+  pessoasJuridicasFisicas PessoasJuridicasFisicas[]
 
   @@map("pessoas_fisicas")
   @@schema("global")
@@ -321,17 +321,20 @@ model PessoasJuridicas {
   updatedAt                    DateTime? @map("updated_at")
 
   // Relacionamentos
-  pessoa                    Pessoas                     @relation(fields: [id_pessoa], references: [id])
-  sistemas                  Sistemas[]
-  pessoasJuridicasFisicas   PessoasJuridicasFisicas[]
-  PessoasJuridicasJuridicas PessoasJuridicasJuridicas[]
-  PessoasJuridicasSistemas  PessoasJuridicasSistemas[]
-  PessoasJuridicasPerfis    PessoasJuridicasPerfis[]
+  pessoa                           Pessoas                     @relation(fields: [id_pessoa], references: [id])
+  sistemas                         Sistemas[]
+  pessoasJuridicasFisicas          PessoasJuridicasFisicas[]
+  pessoasJuridicasJuridicasEmpresa PessoasJuridicasJuridicas[] @relation("PessoasJuridicasJuridicasEmpresa")
+  pessoasJuridicasJuridicasFilial  PessoasJuridicasJuridicas[] @relation("PessoasJuridicasJuridicasFilial")
+  pessoasJuridicasSistemas         PessoasJuridicasSistemas[]
+  pessoasJuridicasPerfis           PessoasJuridicasPerfis[]
+
   chamados                  Chamado[]
   chamadoMovimentoEtapas    ChamadoMovimentoEtapa[]
   ocorrencias               Ocorrencia[]
   ocorrenciaTipos           OcorrenciaTipo[]
   prioridades               Prioridade[]
+  pessoasJuridicasJuridicas PessoasJuridicasJuridicas[]
 
   @@map("pessoas_juridicas")
   @@schema("global")
@@ -349,11 +352,9 @@ model PessoasJuridicasFisicas {
   updatedAt                 DateTime? @map("updated_at")
 
   // Relacionamentos
-  pessoaJuridica            PessoasJuridicas            @relation(fields: [id_pessoa_juridica], references: [id])
-  pessoaFisica              PessoasFisica               @relation(fields: [id_pessoa_fisica], references: [id])
-  pessoaJuridicaPerfil      PessoasJuridicasPerfis      @relation(fields: [id_pessoa_juridica_perfil], references: [id])
-  PessoasJuridicasJuridicas PessoasJuridicasJuridicas[]
-  PessoasJuridicasSistemas  PessoasJuridicasSistemas[]
+  pessoaJuridica       PessoasJuridicas       @relation(fields: [id_pessoa_juridica], references: [id])
+  pessoaFisica         PessoasFisica          @relation(fields: [id_pessoa_fisica], references: [id])
+  pessoaJuridicaPerfil PessoasJuridicasPerfis @relation(fields: [id_pessoa_juridica_perfil], references: [id])
 
   @@map("pessoas_juridicas_fisicas")
   @@schema("global")
@@ -369,8 +370,10 @@ model PessoasJuridicasJuridicas {
   updatedAt                  DateTime? @map("updated_at")
 
   // Relacionamentos
-  pessoasJuridicasFisicas PessoasJuridicasFisicas[]
-  pessoaJuridicaEmpresa   PessoasJuridicas          @relation(fields: [id_pessoa_juridica_empresa], references: [id])
+  pessoaJuridicaEmpresa PessoasJuridicas  @relation("PessoasJuridicasJuridicasEmpresa", fields: [id_pessoa_juridica_empresa], references: [id])
+  pessoaJuridicaFilial  PessoasJuridicas  @relation("PessoasJuridicasJuridicasFilial", fields: [id_pessoa_juridica_filial], references: [id])
+  pessoasJuridicas      PessoasJuridicas? @relation(fields: [pessoasJuridicasId], references: [id])
+  pessoasJuridicasId    BigInt?
 
   @@map("pessoas_juridicas_juridicas")
   @@schema("global")
@@ -390,7 +393,7 @@ model PessoasJuridicasPerfis {
   pessoasJuridicasFisicas PessoasJuridicasFisicas[]
   perfisPermissoes        ModulosPerfisPermissoes[]
   pessoaJuridica          PessoasJuridicas          @relation(fields: [id_pessoa_juridica], references: [id])
-  LogSystem               LogSystem[]
+  logSystem               LogSystem[]
 
   @@map("pessoas_juridicas_perfis")
   @@schema("global")
@@ -406,9 +409,9 @@ model PessoasJuridicasSistemas {
   updatedAt          DateTime? @map("updated_at")
 
   // Relacionamentos
-  pessoasJuridicasFisicas PessoasJuridicasFisicas[]
-  perfisPermissoes        ModulosPerfisPermissoes[]
-  pessoaJuridica          PessoasJuridicas          @relation(fields: [id_pessoa_juridica], references: [id])
+  perfisPermissoes ModulosPerfisPermissoes[]
+  sistema          Sistemas                 @relation(fields: [id_sistema], references: [id])
+  pessoaJuridica   PessoasJuridicas         @relation(fields: [id_pessoa_juridica], references: [id])
 
   @@map("pessoas_juridicas_sistemas")
   @@schema("global")
