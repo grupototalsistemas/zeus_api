@@ -1,0 +1,187 @@
+export const modulosPerfisPermissoesExamples = {
+  create: {
+    summary: 'Criar múltiplas permissões de módulos para perfis',
+    description:
+      'Exemplo de requisição para criar múltiplas permissões de acesso',
+    value: {
+      permissoes: [
+        {
+          id_modulo: 1,
+          id_pessoa_juridica_perfil: 1,
+          action_insert: 1,
+          action_update: 1,
+          action_search: 1,
+          action_delete: 1,
+          action_print: 1,
+        },
+        {
+          id_modulo: 2,
+          id_pessoa_juridica_perfil: 1,
+          action_insert: 0,
+          action_update: 0,
+          action_search: 1,
+          action_delete: 0,
+          action_print: 1,
+        },
+        {
+          id_modulo: 3,
+          id_pessoa_juridica_perfil: 1,
+          action_insert: 1,
+          action_update: 1,
+          action_search: 1,
+          action_delete: 0,
+          action_print: 1,
+        },
+      ],
+    },
+  },
+  createResponse: {
+    summary: 'Resposta de criação bem-sucedida',
+    description: 'Exemplo de resposta ao criar permissões',
+    value: {
+      message: '3 permissão(ões) criada(s) com sucesso',
+      sucessos: 3,
+      falhas: 0,
+      data: [
+        {
+          id: 1,
+          id_modulo: 1,
+          id_pessoa_juridica_perfil: 1,
+          action_insert: 1,
+          action_update: 1,
+          action_search: 1,
+          action_delete: 1,
+          action_print: 1,
+          situacao: 1,
+          motivo: null,
+          created_at: '2024-01-01T10:00:00.000Z',
+          modulo: {
+            id: 1,
+            component_name: 'usuarios',
+            component_text: 'Usuários',
+          },
+          perfil: {
+            id: 1,
+            perfil: 'Administrador',
+          },
+        },
+        {
+          id: 2,
+          id_modulo: 2,
+          id_pessoa_juridica_perfil: 1,
+          action_insert: 0,
+          action_update: 0,
+          action_search: 1,
+          action_delete: 0,
+          action_print: 1,
+          situacao: 1,
+          motivo: null,
+          created_at: '2024-01-01T10:00:01.000Z',
+          modulo: {
+            id: 2,
+            component_name: 'relatorios',
+            component_text: 'Relatórios',
+          },
+          perfil: {
+            id: 1,
+            perfil: 'Administrador',
+          },
+        },
+      ],
+    },
+  },
+  findAll: {
+    summary: 'Listar todas as permissões',
+    description: 'Exemplo de resposta ao listar permissões',
+    value: [
+      {
+        id: 1,
+        id_modulo: 1,
+        id_pessoa_juridica_perfil: 1,
+        action_insert: 1,
+        action_update: 1,
+        action_search: 1,
+        action_delete: 1,
+        action_print: 1,
+        situacao: 1,
+        motivo: null,
+        created_at: '2024-01-01T10:00:00.000Z',
+        updated_at: null,
+        modulo: {
+          id: 1,
+          component_name: 'usuarios',
+          component_text: 'Usuários',
+          component_index: '1.1',
+        },
+        perfil: {
+          id: 1,
+          perfil: 'Administrador',
+          id_pessoa_juridica: 1,
+        },
+      },
+    ],
+  },
+  update: {
+    summary: 'Atualizar permissões',
+    description: 'Exemplo de requisição para atualizar permissões de um módulo',
+    value: {
+      action_insert: 0,
+      action_update: 0,
+      action_search: 1,
+      action_delete: 0,
+      action_print: 1,
+      situacao: 1,
+      motivo: 'Permissões ajustadas conforme política de segurança',
+    },
+  },
+  updateResponse: {
+    summary: 'Resposta de atualização bem-sucedida',
+    description: 'Exemplo de resposta ao atualizar permissões',
+    value: {
+      message: 'Permissão atualizada com sucesso',
+      data: {
+        id: 1,
+        id_modulo: 1,
+        id_pessoa_juridica_perfil: 1,
+        action_insert: 0,
+        action_update: 0,
+        action_search: 1,
+        action_delete: 0,
+        action_print: 1,
+        situacao: 1,
+        motivo: 'Permissões ajustadas conforme política de segurança',
+        updated_at: '2024-01-01T11:00:00.000Z',
+        modulo: {
+          id: 1,
+          component_name: 'usuarios',
+          component_text: 'Usuários',
+        },
+        perfil: {
+          id: 1,
+          perfil: 'Administrador',
+        },
+      },
+    },
+  },
+  delete: {
+    summary: 'Remover permissão',
+    description:
+      'Exemplo de requisição para remover uma permissão (exclusão lógica)',
+    value: {
+      motivo: 'Perfil não necessita mais desta permissão',
+    },
+  },
+  deleteResponse: {
+    summary: 'Resposta de remoção bem-sucedida',
+    description: 'Exemplo de resposta ao remover uma permissão',
+    value: {
+      message: 'Permissão removida com sucesso (exclusão lógica)',
+      data: {
+        id: 1,
+        situacao: 0,
+        motivo: 'Perfil não necessita mais desta permissão',
+        updated_at: '2024-01-01T10:30:00.000Z',
+      },
+    },
+  },
+};

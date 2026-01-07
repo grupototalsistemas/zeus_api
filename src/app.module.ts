@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { CommonServicesModule } from './common/services/common-services.module';
 import { PessoasModule } from './pessoas/pessoas.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { SistemasModule } from './sistemas/sistemas.module';
 @Module({
   imports: [
     // EventsModule,
@@ -19,6 +20,7 @@ import { PrismaModule } from './prisma/prisma.module';
     CommonServicesModule,
     AuthModule,
     PessoasModule,
+    SistemasModule,
   ],
   controllers: [],
 })

@@ -14,20 +14,19 @@ datasource db {
 // ============================================
 
 model Modulos {
-  id              BigInt    @id @default(autoincrement()) @map("id_modulo")
-  id_parent       BigInt    @default(-1)
-  name_form_page  String    @db.VarChar(100)
-  component_index String    @map("component_indx") @db.VarChar(100)
-  component_name  String    @db.VarChar(100)
-  component_text  String    @db.VarChar(100)
-  component_event String?   @db.VarChar(100)
-  shortcutkeys    String?   @db.VarChar(100)
-  status_visible  Int?      @default(1)
-  situacao        Int       @default(1)
-  motivo          String?   @db.VarChar(500)
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime? @map("updated_at")
-
+  id               BigInt                    @id @default(autoincrement()) @map("id_modulo")
+  id_parent        BigInt                    @default(-1)
+  name_form_page   String                    @db.VarChar(100)
+  component_index  String                    @map("component_indx") @db.VarChar(100)
+  component_name   String                    @db.VarChar(100)
+  component_text   String                    @db.VarChar(100)
+  component_event  String?                   @db.VarChar(100)
+  shortcutkeys     String?                   @db.VarChar(100)
+  status_visible   Int?                      @default(1)
+  situacao         Int                       @default(1)
+  motivo           String?                   @db.VarChar(500)
+  createdAt        DateTime                  @default(dbgenerated("now()")) @map("created_at")
+  updatedAt        DateTime?                 @map("updated_at")
   // Relacionamentos
   perfisPermissoes ModulosPerfisPermissoes[]
   sistemasModulos  SistemasModulos[]
@@ -48,7 +47,7 @@ model ModulosPerfisPermissoes {
   action_print              Int?      @default(1)
   situacao                  Int       @default(1)
   motivo                    String?   @db.VarChar(500)
-  createdAt                 DateTime  @default(now()) @map("created_at")
+  createdAt                 DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt                 DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -68,7 +67,7 @@ model Sistemas {
   status_web              Int       @default(1)
   situacao                Int       @default(1)
   motivo                  String?   @db.VarChar(500)
-  createdAt               DateTime  @default(now()) @map("created_at")
+  createdAt               DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt               DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -86,7 +85,7 @@ model SistemasModulos {
   id_modulo_principal BigInt    @map("id_modulo_primcipal")
   situacao            Int       @default(1)
   motivo              String?   @db.VarChar(500)
-  createdAt           DateTime  @default(now()) @map("created_at")
+  createdAt           DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt           DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -106,10 +105,12 @@ model Pessoas {
   id_pessoa_tipo   BigInt
   id_pessoa_origem BigInt
   pessoa           Int
+  chave            String?   @db.VarChar(150)
+  senha            String?   @db.VarChar(100)
   codigo           String?   @db.VarChar(20)
   situacao         Int       @default(1)
   motivo           String?   @db.VarChar(500)
-  createdAt        DateTime  @default(now()) @map("created_at")
+  createdAt        DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt        DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -135,7 +136,7 @@ model PessoasContatos {
   descricao              String    @db.VarChar(50)
   situacao               Int       @default(1)
   motivo                 String?   @db.VarChar(500)
-  createdAt              DateTime  @default(now()) @map("created_at")
+  createdAt              DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt              DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -152,7 +153,7 @@ model PessoasContatosTipo {
   descricao String    @db.VarChar(50)
   situacao  Int       @default(1)
   motivo    String?   @db.VarChar(500)
-  createdAt DateTime  @default(now()) @map("created_at")
+  createdAt DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -170,7 +171,7 @@ model PessoasDadosAdicionais {
   descricao                     String    @db.VarChar(50)
   situacao                      Int       @default(1)
   motivo                        String?   @db.VarChar(500)
-  createdAt                     DateTime  @default(now()) @map("created_at")
+  createdAt                     DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt                     DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -187,7 +188,7 @@ model PessoasDadosAdicionaisTipo {
   descricao String    @db.VarChar(50)
   situacao  Int       @default(1)
   motivo    String?   @db.VarChar(500)
-  createdAt DateTime  @default(now()) @map("created_at")
+  createdAt DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -213,7 +214,7 @@ model PessoasEnderecos {
   cep                     String    @db.VarChar(10)
   situacao                Int       @default(1)
   motivo                  String?   @db.VarChar(500)
-  createdAt               DateTime  @default(now()) @map("created_at")
+  createdAt               DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt               DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -230,7 +231,7 @@ model PessoasEnderecosTipo {
   descricao String    @db.VarChar(50)
   situacao  Int       @default(1)
   motivo    String?   @db.VarChar(500)
-  createdAt DateTime  @default(now()) @map("created_at")
+  createdAt DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -258,7 +259,7 @@ model PessoasFisica {
   data_nascimento        DateTime?
   situacao               Int       @default(1)
   motivo                 String?   @db.VarChar(500)
-  createdAt              DateTime  @default(now()) @map("created_at")
+  createdAt              DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt              DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -278,7 +279,7 @@ model PessoasFisicasEstadoCivil {
   descricao String?   @db.VarChar(50)
   situacao  Int       @default(1)
   motivo    String?   @db.VarChar(500)
-  createdAt DateTime  @default(now()) @map("created_at")
+  createdAt DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -294,7 +295,7 @@ model PessoasFisicasGenero {
   descricao String?   @db.VarChar(100)
   situacao  Int       @default(1)
   motivo    String?   @db.VarChar(500)
-  createdAt DateTime  @default(now()) @map("created_at")
+  createdAt DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -307,16 +308,16 @@ model PessoasFisicasGenero {
 model PessoasJuridicas {
   id                           BigInt    @id @default(autoincrement()) @map("id_pessoa_juridica")
   id_pessoa                    BigInt
-  id_pessoa_fisica_responsavel BigInt
+  id_pessoa_fisica_responsavel Int?
   cnpj                         String    @db.VarChar(50)
   razao_social                 String    @db.VarChar(250)
   nome_fantasia                String?   @db.VarChar(250)
-  inscricao_estadual           String?   @map("insc_estadual") @db.VarChar(50)
-  inscricao_municipal          String?   @map("insc_municipal") @db.VarChar(50)
+  insc_estadual                String?   @map("insc_estadual") @db.VarChar(50)
+  insc_municipal               String?   @map("insc_municipal") @db.VarChar(50)
   filial_principal             Int?      @default(0)
   situacao                     Int       @default(1)
   motivo                       String?   @db.VarChar(500)
-  createdAt                    DateTime  @default(now()) @map("created_at")
+  createdAt                    DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt                    DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -344,7 +345,7 @@ model PessoasJuridicasFisicas {
   juridica_principal        Int?
   situacao                  Int       @default(1)
   motivo                    String?   @db.VarChar(500)
-  createdAt                 DateTime  @default(now()) @map("created_at")
+  createdAt                 DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt                 DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -364,7 +365,7 @@ model PessoasJuridicasJuridicas {
   id_pessoa_juridica_filial  BigInt
   situacao                   Int       @default(1)
   motivo                     String?   @db.VarChar(500)
-  createdAt                  DateTime  @default(now()) @map("created_at")
+  createdAt                  DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt                  DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -382,7 +383,7 @@ model PessoasJuridicasPerfis {
   status_view        Int?      @default(1)
   situacao           Int       @default(1)
   motivo             String?   @db.VarChar(500)
-  createdAt          DateTime  @default(now()) @map("created_at")
+  createdAt          DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt          DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -401,7 +402,7 @@ model PessoasJuridicasSistemas {
   id_sistema         BigInt
   situacao           Int       @default(1)
   motivo             String?   @db.VarChar(500)
-  createdAt          DateTime  @default(now()) @map("created_at")
+  createdAt          DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt          DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -418,7 +419,7 @@ model PessoasOrigens {
   descricao String    @db.VarChar(50)
   situacao  Int       @default(1)
   motivo    String?   @db.VarChar(500)
-  createdAt DateTime  @default(now()) @map("created_at")
+  createdAt DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -433,7 +434,7 @@ model PessoasTipo {
   descricao String    @db.VarChar(50)
   situacao  Int       @default(1)
   motivo    String?   @db.VarChar(500)
-  createdAt DateTime  @default(now()) @map("created_at")
+  createdAt DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -448,12 +449,12 @@ model PessoasUsuarios {
   id_pessoa_fisica BigInt
   nome_login       String    @db.VarChar(20)
   login            String    @db.VarChar(50)
-  senha            String    @db.VarChar(20)
-  senha_master     String    @db.VarChar(20)
+  senha            String?   @db.VarChar(20)
+  senha_master     String?   @db.VarChar(20)
   first_access     Int       @default(1)
   situacao         Int       @default(1)
   motivo           String?   @db.VarChar(500)
-  createdAt        DateTime  @default(now()) @map("created_at")
+  createdAt        DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt        DateTime? @map("updated_at")
 
   // Relacionamentos
@@ -494,7 +495,7 @@ model LogSystem {
   error_status                     Int?      @default(0)
   error_message                    String?   @map("error_menssage") @db.VarChar(500)
   situacao                         Int
-  createdAt                        DateTime  @default(now()) @map("created_at")
+  createdAt                        DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt                        DateTime? @map("updated_at")
 
   // Relacionamentos

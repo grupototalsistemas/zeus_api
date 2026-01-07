@@ -1,36 +1,59 @@
-// pessoas/pessoas.module.ts
 import { Module } from '@nestjs/common';
+import { DateUtils } from 'src/common/utils/date.utils';
 
-import { PrismaModule } from '../prisma/prisma.module';
-
-import { PessoaPerfilController } from './controllers/pessoa-perfil.controller';
-import { PessoaTipoController } from './controllers/pessoa-tipo.controller';
-import { PessoaUsuarioController } from './controllers/pessoa-usuario.controller';
+import { FuncionariosAdicionaisController } from './controllers/adicionais.controller';
+import { CartorioController } from './controllers/cartorio.controller';
+import { FornecedoresController } from './controllers/fornecedores.controller';
+import { FuncionariosController } from './controllers/funcionarios.controller';
+import { PessoasEnderecosTiposController } from './controllers/pessoas-enderecos-tipos.controller';
+import { PessoasEnderecosController } from './controllers/pessoas-enderecos.controller';
+import { PessoasFisicasEstadosCivisController } from './controllers/pessoas-fisicas-estados-civis.controller';
+import { PessoasFisicasGenerosController } from './controllers/pessoas-fisicas-generos.controller';
+import { PessoasJuridicasPerfisController } from './controllers/pessoas-juridicas-perfis.controller';
+import { PessoasUsuariosController } from './controllers/pessoas-usuarios.controller';
 import { PessoasController } from './controllers/pessoas.controller';
-import { PessoaPerfilService } from './services/pessoa-perfil.service';
-import { PessoaTipoService } from './services/pessoa-tipo.service';
-import { PessoaUsuarioService } from './services/pessoa-usuario.service';
+import { FuncionariosAdicionaisTiposService } from './services/adicionais.service';
+import { CartorioService } from './services/cartorio.service';
+import { FornecedoresService } from './services/fornecedores.service';
+import { FuncionariosService } from './services/funcionarios.service';
+import { PessoasEnderecosTiposService } from './services/pessoas-enderecos-tipos.service';
+import { PessoasEnderecosService } from './services/pessoas-enderecos.service';
+import { PessoasFisicasEstadosCivisService } from './services/pessoas-fisicas-estados-civis.service';
+import { PessoasFisicasGenerosService } from './services/pessoas-fisicas-generos.service';
+import { PessoasJuridicasPerfisService } from './services/pessoas-juridicas-perfis.service';
+import { PessoasUsuariosService } from './services/pessoas-usuarios.service';
 import { PessoasService } from './services/pessoas.service';
 
 @Module({
-  imports: [PrismaModule],
   controllers: [
     PessoasController,
-    PessoaTipoController,
-    PessoaPerfilController,
-    PessoaUsuarioController,
+    PessoasUsuariosController,
+    FuncionariosController,
+    FornecedoresController,
+    CartorioController,
+    PessoasEnderecosController,
+    PessoasEnderecosTiposController,
+
+    FuncionariosAdicionaisController,
+    PessoasFisicasEstadosCivisController,
+    PessoasFisicasGenerosController,
+    PessoasJuridicasPerfisController,
   ],
   providers: [
     PessoasService,
-    PessoaTipoService,
-    PessoaPerfilService,
-    PessoaUsuarioService,
+    PessoasUsuariosService,
+    DateUtils,
+    FuncionariosService,
+    FornecedoresService,
+    CartorioService,
+    PessoasEnderecosService,
+    PessoasEnderecosTiposService,
+
+    FuncionariosAdicionaisTiposService,
+    PessoasFisicasEstadosCivisService,
+    PessoasFisicasGenerosService,
+    PessoasJuridicasPerfisService,
   ],
-  exports: [
-    PessoasService,
-    PessoaTipoService,
-    PessoaPerfilService,
-    PessoaUsuarioService,
-  ],
+  exports: [CartorioService],
 })
 export class PessoasModule {}
