@@ -59,7 +59,7 @@ async function bootstrap() {
   await app.listen(port);
 
   console.log(`🚀 Servidor rodando em http://localhost:${port}`);
-  console.log(`📜 Swagger em http://localhost:${port}/api`);
+  console.log(`📜 Swagger em http://localhost:${port}/docs`);
   console.log(`📁 Prisma Studio: npx prisma studio`);
 }
 
