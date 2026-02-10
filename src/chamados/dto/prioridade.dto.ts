@@ -14,7 +14,7 @@ export class CreatePrioridadeDto {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
-  id_empresa: number;
+  id_pessoa_juridica: number;
 
   @ApiProperty({ example: 'Alta', description: 'Descrição da prioridade' })
   @IsString()

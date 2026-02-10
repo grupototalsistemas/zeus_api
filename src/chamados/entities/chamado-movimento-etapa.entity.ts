@@ -1,6 +1,6 @@
 export class ChamadoMovimentoEtapaEntity {
   id: bigint;
-  id_empresa: bigint;
+  id_pessoa_juridica: bigint;
   descricao: string;
   situacao: number;
   motivo?: string;

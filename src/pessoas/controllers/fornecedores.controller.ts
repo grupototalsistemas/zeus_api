@@ -70,7 +70,7 @@ export class FornecedoresController {
 
       // Fallback para caso inesperado
       return res.status(HttpStatus.CREATED).json(result);
-    } catch (error) {
+    } catch (error: any) {
       throw new BadRequestException({
         message: 'Falha ao criar fornecedores',
         erro: error.message,
@@ -83,6 +83,16 @@ export class FornecedoresController {
   @ApiOperation({ summary: 'Listar todas os fornecedores' })
   findAll(@Query() query: QueryFornecedorDto) {
     return this.fornecedorService.findAll(query);
+  }
+
+  @Get('com-chamados/:id')
+  @LogTablePessoas()
+  @ApiOperation({ summary: 'Listar todas os fornecedores com chamados' })
+  findAllComChamados(
+    @Param('id') id: string,
+    @Query() query: QueryFornecedorDto,
+  ) {
+    return this.fornecedorService.findAllComChamados(Number(id), query);
   }
 
   @Get('cartorio')

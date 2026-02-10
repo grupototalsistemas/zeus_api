@@ -2,7 +2,7 @@ CREATE SCHEMA IF NOT EXISTS webzeus;
 
 CREATE TABLE webzeus.chamado (
     id_chamado BIGSERIAL PRIMARY KEY,
-    id_empresa BIGINT NOT NULL,
+    id_pessoa_juridica BIGINT NOT NULL,
     id_sistema BIGINT NOT NULL,
     id_pessoa_empresa BIGINT NOT NULL,
     id_pessoa_usuario BIGINT NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE webzeus.chamado_movimento (
 
 CREATE TABLE webzeus.chamado_movimento_etapa (
     id_chamado_movimento_etapa BIGSERIAL PRIMARY KEY,
-    id_empresa BIGINT NOT NULL,
+    id_pessoa_juridica BIGINT NOT NULL,
     descricao VARCHAR(100) NOT NULL,
 
     situacao INTEGER DEFAULT 1,
@@ -90,7 +90,7 @@ CREATE TABLE webzeus.chamado_movimento_mensagem (
 CREATE TABLE webzeus.ocorrencia (
     id_ocorrencia BIGSERIAL PRIMARY KEY,
     id_ocorrencia_tipo BIGINT NOT NULL,
-    id_empresa BIGINT NOT NULL,
+    id_pessoa_juridica BIGINT NOT NULL,
 
     descricao VARCHAR(100) NOT NULL,
     situacao INTEGER DEFAULT 1,
@@ -102,7 +102,7 @@ CREATE TABLE webzeus.ocorrencia (
 
 CREATE TABLE webzeus.ocorrencia_tipo (
     id_ocorrencia_tipo BIGSERIAL PRIMARY KEY,
-    id_empresa BIGINT NOT NULL,
+    id_pessoa_juridica BIGINT NOT NULL,
 
     descricao VARCHAR(100) NOT NULL,
     situacao INTEGER DEFAULT 1,
@@ -114,7 +114,7 @@ CREATE TABLE webzeus.ocorrencia_tipo (
 
 CREATE TABLE webzeus.prioridade (
     id_prioridade BIGSERIAL PRIMARY KEY,
-    id_empresa BIGINT NOT NULL,
+    id_pessoa_juridica BIGINT NOT NULL,
 
     descricao VARCHAR(100) NOT NULL,
     cor VARCHAR(100) NOT NULL,

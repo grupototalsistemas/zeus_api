@@ -19,7 +19,7 @@ export class CreateOcorrenciaDto {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
-  id_empresa: number;
+  id_pessoa_juridica: number;
 
   @ApiProperty({
     example: 'Erro no sistema',

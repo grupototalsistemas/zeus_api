@@ -124,7 +124,7 @@ export class FornecedoresService {
                 },
               });
               enderecosCriados.push(created_endereco);
-            } catch (error) {
+            } catch (error: any) {
               console.error('Erro ao criar endereço:', error);
               erros.push({
                 ...dto,
@@ -147,8 +147,8 @@ export class FornecedoresService {
                 },
               });
               contatosCriados.push(created_contato);
-            } catch (error) {
-              console.error('Erro ao criar contato:', error);
+            } catch (error: any) {
+              console.error('Erro ao criar contato:', error.message || error);
               erros.push({
                 ...dto,
                 erro: `Erro ao criar contato: ${error.message || 'Erro desconhecido'}`,
@@ -172,7 +172,7 @@ export class FornecedoresService {
                 },
               });
               adicionaisCriados.push(created_adicional);
-            } catch (error) {
+            } catch (error: any) {
               console.error('Erro ao criar adicional:', error);
               erros.push({
                 ...dto,
@@ -252,7 +252,7 @@ export class FornecedoresService {
       insc_municipal,
     } = query;
     const orConditions: any[] = [];
-
+    console.log('Query recebida:', query);
     // Monta condições dinâmicas para o OR
     if (cnpj) orConditions.push({ cnpj: cnpj });
     if (filial_principal === 1 || filial_principal === 0)
@@ -274,16 +274,24 @@ export class FornecedoresService {
 
     // Verifica se foi fornecido o id_pessoa_juridica_empresa
     if (id_pessoa_juridica_empresa) {
-      const empresas = await this.prisma.pessoasJuridicasJuridicas.findMany({
-        where: {
-          id_pessoa_juridica_empresa: Number(id_pessoa_juridica_empresa),
-        },
-      });
-      if (empresas.length === 0) {
-        throw new NotFoundException('Nenhuma empresa encontrado.');
+      try {
+        const empresas = await this.prisma.pessoasJuridicasJuridicas.findMany({
+          where: {
+            id_pessoa_juridica_empresa: Number(id_pessoa_juridica_empresa),
+            situacao: 1,
+          },
+        });
+
+        if (empresas.length === 0) {
+          throw new NotFoundException('Nenhuma empresa encontrado.');
+        }
+        const ids = empresas.map((e) => e.id_pessoa_juridica_filial);
+        orConditions.push({ id: { in: ids } });
+      } catch (error) {
+        throw new InternalServerErrorException(
+          'Erro ao buscar empresas vinculadas',
+        );
       }
-      const ids = empresas.map((e) => e.id_pessoa_juridica_filial);
-      orConditions.push({ id: { in: ids } });
     } else {
       throw new BadRequestException('Empresa não foi fornecida.');
     }
@@ -298,6 +306,8 @@ export class FornecedoresService {
         include: {
           pessoa: {
             include: {
+              pessoaTipo: true,
+              pessoaOrigem: true,
               pessoasContatos: true,
               pessoasEnderecos: true,
               pessoasDadosAdicionais: true,
@@ -305,7 +315,7 @@ export class FornecedoresService {
           },
         },
       });
-
+      console.log('Resultado da consulta:', result);
       return result;
     } else {
       throw new BadRequestException('Nenhuma condição foi fornecida.');
@@ -539,7 +549,7 @@ export class FornecedoresService {
       ]);
 
       return { message: 'Fornecedor removida com sucesso' };
-    } catch (error) {
+    } catch (error: any) {
       if (
         error instanceof BadRequestException ||
         error instanceof NotFoundException
@@ -548,6 +558,56 @@ export class FornecedoresService {
       }
       throw new InternalServerErrorException(
         `Erro ao remover empresa: ${error.message}`,
+      );
+    }
+  }
+
+  async findAllComChamados(id: number, query: QueryFornecedorDto) {
+    const totalSistemasId = 1;
+    try {
+      query.id_pessoa_juridica_empresa = id;
+      const vinculobase = await this.prisma.pessoasJuridicasJuridicas.findMany({
+        where: {
+          id_pessoa_juridica_empresa: Number(totalSistemasId),
+          situacao: 1,
+        },
+      });
+      if (vinculobase.length === 0) {
+        throw new NotFoundException(
+          'Nenhum fornecedor encontrado para a empresa fornecida.',
+        );
+      }
+
+      const forncedoresComChamados = vinculobase.map(async (vinculos) => {
+        const fornecedores = await this.prisma.pessoasJuridicas.findMany({
+          where: {
+            situacao: 1,
+            id: vinculos.id_pessoa_juridica_filial,
+          },
+        });
+
+        const fornecedoresComChamados = await Promise.all(
+          fornecedores.map(async (fornecedor) => {
+            const chamados = await this.prisma.chamado.findMany({
+              where: {
+                id_pessoa_juridica: fornecedor.id,
+                situacao: 1,
+              },
+              include: {
+                sistema: true,
+              },
+            });
+            return { ...fornecedor, chamados };
+          }),
+        );
+        return fornecedoresComChamados;
+      });
+      const result = await Promise.all(forncedoresComChamados);
+
+      return result.flat();
+    } catch (error: any) {
+      throw new InternalServerErrorException(
+        `Erro ao buscar fornecedores com chamados: ${error.message}`,
       );
     }
   }

@@ -12,7 +12,7 @@ export class ChamadoMovimentoEtapasService {
   async create(createDto: CreateChamadoMovimentoEtapaDto) {
     return this.prisma.chamadoMovimentoEtapa.create({
       data: {
-        id_empresa: BigInt(createDto.id_empresa),
+        id_pessoa_juridica: BigInt(createDto.id_pessoa_juridica),
         descricao: createDto.descricao,
         situacao: createDto.situacao ?? 1,
         motivo: createDto.motivo,
@@ -54,8 +54,8 @@ export class ChamadoMovimentoEtapasService {
     return this.prisma.chamadoMovimentoEtapa.update({
       where: { id: BigInt(id) },
       data: {
-        ...(updateDto.id_empresa && {
-          id_empresa: BigInt(updateDto.id_empresa),
+        ...(updateDto.id_pessoa_juridica && {
+          id_pessoa_juridica: BigInt(updateDto.id_pessoa_juridica),
         }),
         ...(updateDto.descricao && { descricao: updateDto.descricao }),
         ...(updateDto.situacao !== undefined && {

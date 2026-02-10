@@ -13,7 +13,7 @@ export class CreateChamadoDto {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
-  id_empresa: number;
+  id_pessoa_juridica: number;
 
   @ApiProperty({ example: 1, description: 'ID do sistema' })
   @IsInt()

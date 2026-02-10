@@ -12,7 +12,7 @@ export class PrioridadeService {
   async create(createPrioridadeDto: CreatePrioridadeDto) {
     return this.prisma.prioridade.create({
       data: {
-        id_empresa: BigInt(createPrioridadeDto.id_empresa),
+        id_pessoa_juridica: BigInt(createPrioridadeDto.id_pessoa_juridica),
         descricao: createPrioridadeDto.descricao,
         cor: createPrioridadeDto.cor,
         tempoResolucao: new Date(createPrioridadeDto.tempoResolucao),
@@ -56,8 +56,8 @@ export class PrioridadeService {
     return this.prisma.prioridade.update({
       where: { id: BigInt(id) },
       data: {
-        ...(updatePrioridadeDto.id_empresa && {
-          id_empresa: BigInt(updatePrioridadeDto.id_empresa),
+        ...(updatePrioridadeDto.id_pessoa_juridica && {
+          id_pessoa_juridica: BigInt(updatePrioridadeDto.id_pessoa_juridica),
         }),
         ...(updatePrioridadeDto.descricao && {
           descricao: updatePrioridadeDto.descricao,

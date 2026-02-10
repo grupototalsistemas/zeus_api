@@ -1,7 +1,7 @@
 export const chamadoExample = {
   'Criar Chamado': {
     value: {
-      id_empresa: 1,
+      id_pessoa_juridica: 1,
       id_sistema: 1,
       id_pessoa_empresa: 1,
       id_pessoa_usuario: 1,

@@ -329,12 +329,11 @@ model PessoasJuridicas {
   pessoasJuridicasSistemas         PessoasJuridicasSistemas[]
   pessoasJuridicasPerfis           PessoasJuridicasPerfis[]
 
-  chamados                  Chamado[]
-  chamadoMovimentoEtapas    ChamadoMovimentoEtapa[]
-  ocorrencias               Ocorrencia[]
-  ocorrenciaTipos           OcorrenciaTipo[]
-  prioridades               Prioridade[]
-  pessoasJuridicasJuridicas PessoasJuridicasJuridicas[]
+  chamados               Chamado[]
+  chamadoMovimentoEtapas ChamadoMovimentoEtapa[]
+  ocorrencias            Ocorrencia[]
+  ocorrenciaTipos        OcorrenciaTipo[]
+  prioridades            Prioridade[]
 
   @@map("pessoas_juridicas")
   @@schema("global")
@@ -370,10 +369,8 @@ model PessoasJuridicasJuridicas {
   updatedAt                  DateTime? @map("updated_at")
 
   // Relacionamentos
-  pessoaJuridicaEmpresa PessoasJuridicas  @relation("PessoasJuridicasJuridicasEmpresa", fields: [id_pessoa_juridica_empresa], references: [id])
-  pessoaJuridicaFilial  PessoasJuridicas  @relation("PessoasJuridicasJuridicasFilial", fields: [id_pessoa_juridica_filial], references: [id])
-  pessoasJuridicas      PessoasJuridicas? @relation(fields: [pessoasJuridicasId], references: [id])
-  pessoasJuridicasId    BigInt?
+  pessoaJuridicaEmpresa PessoasJuridicas @relation("PessoasJuridicasJuridicasEmpresa", fields: [id_pessoa_juridica_empresa], references: [id])
+  pessoaJuridicaFilial  PessoasJuridicas @relation("PessoasJuridicasJuridicasFilial", fields: [id_pessoa_juridica_filial], references: [id])
 
   @@map("pessoas_juridicas_juridicas")
   @@schema("global")
@@ -410,8 +407,8 @@ model PessoasJuridicasSistemas {
 
   // Relacionamentos
   perfisPermissoes ModulosPerfisPermissoes[]
-  sistema          Sistemas                 @relation(fields: [id_sistema], references: [id])
-  pessoaJuridica   PessoasJuridicas         @relation(fields: [id_pessoa_juridica], references: [id])
+  sistema          Sistemas                  @relation(fields: [id_sistema], references: [id])
+  pessoaJuridica   PessoasJuridicas          @relation(fields: [id_pessoa_juridica], references: [id])
 
   @@map("pessoas_juridicas_sistemas")
   @@schema("global")
@@ -515,13 +512,13 @@ model LogSystem {
 // ============================================
 
 model Chamado {
-  id                BigInt @id @default(autoincrement()) @map("id_chamado")
-  id_empresa        BigInt
-  id_sistema        BigInt
-  id_pessoa_empresa BigInt
-  id_pessoa_usuario BigInt
-  id_ocorrencia     BigInt
-  id_prioridade     BigInt
+  id                 BigInt @id @default(autoincrement()) @map("id_chamado")
+  id_pessoa_juridica BigInt
+  id_sistema         BigInt
+  id_pessoa_fisica   BigInt
+  id_pessoa_usuario  BigInt
+  id_ocorrencia      BigInt
+  id_prioridade      BigInt
 
   protocolo  Int?
   titulo     String @db.VarChar(100)
@@ -534,7 +531,7 @@ model Chamado {
   createdAt DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt DateTime? @map("updated_at")
 
-  empresa    PessoasJuridicas   @relation(fields: [id_empresa], references: [id])
+  empresa    PessoasJuridicas   @relation(fields: [id_pessoa_juridica], references: [id])
   sistema    Sistemas           @relation(fields: [id_sistema], references: [id])
   usuario    PessoasUsuarios    @relation(fields: [id_pessoa_usuario], references: [id])
   ocorrencia Ocorrencia         @relation(fields: [id_ocorrencia], references: [id])
@@ -575,9 +572,9 @@ model ChamadoMovimento {
 }
 
 model ChamadoMovimentoEtapa {
-  id         BigInt @id @default(autoincrement()) @map("id_chamado_movimento_etapa")
-  id_empresa BigInt
-  descricao  String @db.VarChar(100)
+  id                 BigInt @id @default(autoincrement()) @map("id_chamado_movimento_etapa")
+  id_pessoa_juridica BigInt
+  descricao          String @db.VarChar(100)
 
   situacao Int     @default(1)
   motivo   String? @db.VarChar(500)
@@ -585,7 +582,7 @@ model ChamadoMovimentoEtapa {
   createdAt DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt DateTime? @map("updated_at")
 
-  empresa    PessoasJuridicas   @relation(fields: [id_empresa], references: [id])
+  empresa    PessoasJuridicas   @relation(fields: [id_pessoa_juridica], references: [id])
   movimentos ChamadoMovimento[]
 
   @@map("chamado_movimento_etapa")
@@ -645,7 +642,7 @@ model ChamadoMovimentoMensagem {
 model Ocorrencia {
   id                 BigInt @id @default(autoincrement()) @map("id_ocorrencia")
   id_ocorrencia_tipo BigInt
-  id_empresa         BigInt
+  id_pessoa_juridica BigInt
   descricao          String @db.VarChar(100)
 
   situacao Int     @default(1)
@@ -655,7 +652,7 @@ model Ocorrencia {
   updatedAt DateTime? @map("updated_at")
 
   tipo     OcorrenciaTipo   @relation(fields: [id_ocorrencia_tipo], references: [id])
-  empresa  PessoasJuridicas @relation(fields: [id_empresa], references: [id])
+  empresa  PessoasJuridicas @relation(fields: [id_pessoa_juridica], references: [id])
   chamados Chamado[]
 
   @@map("ocorrencia")
@@ -663,9 +660,9 @@ model Ocorrencia {
 }
 
 model OcorrenciaTipo {
-  id         BigInt @id @default(autoincrement()) @map("id_ocorrencia_tipo")
-  id_empresa BigInt
-  descricao  String @db.VarChar(100)
+  id                 BigInt @id @default(autoincrement()) @map("id_ocorrencia_tipo")
+  id_pessoa_juridica BigInt
+  descricao          String @db.VarChar(100)
 
   situacao Int     @default(1)
   motivo   String? @db.VarChar(500)
@@ -673,7 +670,7 @@ model OcorrenciaTipo {
   createdAt DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt DateTime? @map("updated_at")
 
-  empresa     PessoasJuridicas @relation(fields: [id_empresa], references: [id])
+  empresa     PessoasJuridicas @relation(fields: [id_pessoa_juridica], references: [id])
   ocorrencias Ocorrencia[]
 
   @@map("ocorrencia_tipo")
@@ -681,11 +678,11 @@ model OcorrenciaTipo {
 }
 
 model Prioridade {
-  id             BigInt   @id @default(autoincrement()) @map("id_prioridade")
-  id_empresa     BigInt
-  descricao      String   @db.VarChar(100)
-  cor            String   @db.VarChar(100)
-  tempoResolucao DateTime @map("tempo_resolucao")
+  id                 BigInt   @id @default(autoincrement()) @map("id_prioridade")
+  id_pessoa_juridica BigInt
+  descricao          String   @db.VarChar(100)
+  cor                String   @db.VarChar(100)
+  tempoResolucao     DateTime @map("tempo_resolucao")
 
   situacao Int     @default(1)
   motivo   String? @db.VarChar(500)
@@ -693,7 +690,7 @@ model Prioridade {
   createdAt DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt DateTime? @map("updated_at")
 
-  empresa  PessoasJuridicas @relation(fields: [id_empresa], references: [id])
+  empresa  PessoasJuridicas @relation(fields: [id_pessoa_juridica], references: [id])
   chamados Chamado[]
 
   @@map("prioridade")

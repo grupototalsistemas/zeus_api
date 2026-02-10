@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateChamadoDto, UpdateChamadoDto } from '../dto/chamado.dto';
 
@@ -7,11 +11,16 @@ export class ChamadosService {
   constructor(private prisma: PrismaService) {}
 
   async create(createChamadoDto: CreateChamadoDto) {
+    if (!this.verificaDados(createChamadoDto)) {
+      throw new BadRequestException(
+        `Erro ao criar chamado. Verifique os dados enviados.`,
+      );
+    }
     return this.prisma.chamado.create({
       data: {
-        id_empresa: BigInt(createChamadoDto.id_empresa),
+        id_pessoa_juridica: BigInt(createChamadoDto.id_pessoa_juridica),
         id_sistema: BigInt(createChamadoDto.id_sistema),
-        id_pessoa_empresa: BigInt(createChamadoDto.id_pessoa_empresa),
+        id_pessoa_fisica: BigInt(createChamadoDto.id_pessoa_empresa),
         id_pessoa_usuario: BigInt(createChamadoDto.id_pessoa_usuario),
         id_ocorrencia: BigInt(createChamadoDto.id_ocorrencia),
         id_prioridade: BigInt(createChamadoDto.id_prioridade),
@@ -30,6 +39,38 @@ export class ChamadosService {
         prioridade: true,
       },
     });
+  }
+
+  private async verificaDados(
+    createChamadoDto: CreateChamadoDto,
+  ): Promise<boolean> {
+    const empresa = await this.prisma.pessoasJuridicas.findUnique({
+      where: { id: BigInt(createChamadoDto.id_pessoa_juridica) },
+    });
+    const sistema = await this.prisma.sistemas.findUnique({
+      where: { id: BigInt(createChamadoDto.id_sistema) },
+    });
+    const pessoaEmpresa = await this.prisma.pessoas.findUnique({
+      where: { id: BigInt(createChamadoDto.id_pessoa_empresa) },
+    });
+    const pessoaUsuario = await this.prisma.pessoas.findUnique({
+      where: { id: BigInt(createChamadoDto.id_pessoa_usuario) },
+    });
+    const ocorrencia = await this.prisma.ocorrencia.findUnique({
+      where: { id: BigInt(createChamadoDto.id_ocorrencia) },
+    });
+    const prioridade = await this.prisma.prioridade.findUnique({
+      where: { id: BigInt(createChamadoDto.id_prioridade) },
+    });
+
+    return !!(
+      empresa &&
+      sistema &&
+      pessoaEmpresa &&
+      pessoaUsuario &&
+      ocorrencia &&
+      prioridade
+    );
   }
 
   async findAll() {
@@ -79,8 +120,8 @@ export class ChamadosService {
     return this.prisma.chamado.update({
       where: { id: BigInt(id) },
       data: {
-        ...(updateChamadoDto.id_empresa && {
-          id_empresa: BigInt(updateChamadoDto.id_empresa),
+        ...(updateChamadoDto.id_pessoa_juridica && {
+          id_pessoa_juridica: BigInt(updateChamadoDto.id_pessoa_juridica),
         }),
         ...(updateChamadoDto.id_sistema && {
           id_sistema: BigInt(updateChamadoDto.id_sistema),

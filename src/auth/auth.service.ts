@@ -271,8 +271,8 @@ export class AuthService {
       return {
         id_pessoa_usuario: pessoaUsuario.id,
         id_pessoa: pessoaFisica.pessoa.id,
-        id_empresa: pessoaJuridica.pessoa.id,
-        id_pessoa_juridica: pessoaJuridicaFisica.id_pessoa_juridica,
+        id_pessoa_juridica: pessoaJuridica.pessoa.id,
+        id_pessoa_juridica_fisica: pessoaJuridicaFisica.id_pessoa_juridica,
         id_pessoa_fisica: pessoaJuridicaFisica.id_pessoa_fisica,
         id_pessoa_juridica_perfil:
           pessoaJuridicaFisica.id_pessoa_juridica_perfil,
@@ -406,7 +406,7 @@ export class AuthService {
         cns: cnsDescricao,
         dados: res,
       };
-    } catch (error) {
+    } catch (error: any) {
       if (
         error.name === 'JsonWebTokenError' ||
         error.name === 'TokenExpiredError'

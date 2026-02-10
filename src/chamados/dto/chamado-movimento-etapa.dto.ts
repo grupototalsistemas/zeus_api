@@ -13,7 +13,7 @@ export class CreateChamadoMovimentoEtapaDto {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
-  id_empresa: number;
+  id_pessoa_juridica: number;
 
   @ApiProperty({ example: 'Em Análise', description: 'Descrição da etapa' })
   @IsString()

@@ -1,6 +1,6 @@
 export class ChamadoEntity {
   id: bigint;
-  id_empresa: bigint;
+  id_pessoa_juridica: bigint;
   id_sistema: bigint;
   id_pessoa_empresa: bigint;
   id_pessoa_usuario: bigint;

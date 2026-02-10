@@ -13,7 +13,7 @@ export class OcorrenciaService {
     return this.prisma.ocorrencia.create({
       data: {
         id_ocorrencia_tipo: BigInt(createOcorrenciaDto.id_ocorrencia_tipo),
-        id_empresa: BigInt(createOcorrenciaDto.id_empresa),
+        id_pessoa_juridica: BigInt(createOcorrenciaDto.id_pessoa_juridica),
         descricao: createOcorrenciaDto.descricao,
         situacao: createOcorrenciaDto.situacao ?? 1,
         motivo: createOcorrenciaDto.motivo,
@@ -61,8 +61,8 @@ export class OcorrenciaService {
         ...(updateOcorrenciaDto.id_ocorrencia_tipo && {
           id_ocorrencia_tipo: BigInt(updateOcorrenciaDto.id_ocorrencia_tipo),
         }),
-        ...(updateOcorrenciaDto.id_empresa && {
-          id_empresa: BigInt(updateOcorrenciaDto.id_empresa),
+        ...(updateOcorrenciaDto.id_pessoa_juridica && {
+          id_pessoa_juridica: BigInt(updateOcorrenciaDto.id_pessoa_juridica),
         }),
         ...(updateOcorrenciaDto.descricao && {
           descricao: updateOcorrenciaDto.descricao,
