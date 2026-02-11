@@ -563,49 +563,65 @@ export class FornecedoresService {
   }
 
   async findAllComChamados(id: number, query: QueryFornecedorDto) {
-    const totalSistemasId = 1;
     try {
       query.id_pessoa_juridica_empresa = id;
-      const vinculobase = await this.prisma.pessoasJuridicasJuridicas.findMany({
+      const vinculoBase = await this.prisma.pessoasJuridicasJuridicas.findMany({
         where: {
-          id_pessoa_juridica_empresa: Number(totalSistemasId),
+          id_pessoa_juridica_empresa: 1,
           situacao: 1,
         },
       });
-      if (vinculobase.length === 0) {
+
+      if (vinculoBase.length === 0) {
         throw new NotFoundException(
           'Nenhum fornecedor encontrado para a empresa fornecida.',
         );
       }
 
-      const forncedoresComChamados = vinculobase.map(async (vinculos) => {
-        const fornecedores = await this.prisma.pessoasJuridicas.findMany({
-          where: {
-            situacao: 1,
-            id: vinculos.id_pessoa_juridica_filial,
+      const idsFornecedores = vinculoBase.map(
+        (vinculo) => vinculo.id_pessoa_juridica_filial,
+      );
+
+      const fornecedores = await this.prisma.pessoasJuridicas.findMany({
+        where: {
+          situacao: 1,
+          id: { in: idsFornecedores },
+          pessoasJuridicasSistemas: {
+            some: {
+              situacao: 1,
+              id_pessoa_juridica: { in: idsFornecedores },
+            },
           },
-        });
-
-        const fornecedoresComChamados = await Promise.all(
-          fornecedores.map(async (fornecedor) => {
-            const chamados = await this.prisma.chamado.findMany({
-              where: {
-                id_pessoa_juridica: fornecedor.id,
-                situacao: 1,
-              },
-              include: {
-                sistema: true,
-              },
-            });
-            return { ...fornecedor, chamados };
-          }),
-        );
-        return fornecedoresComChamados;
+        },
+        include: {
+          pessoasJuridicasSistemas: {
+            select: { sistema: true },
+            where: { situacao: 1 },
+          },
+          chamados: {
+            where: { situacao: 1 },
+            include: {
+              sistema: true,
+            },
+          },
+        },
       });
-      const result = await Promise.all(forncedoresComChamados);
 
-      return result.flat();
+      if (fornecedores.length === 0) {
+        throw new NotFoundException(
+          'Nenhum fornecedor ativo encontrado para a empresa fornecida.',
+        );
+      }
+
+      return fornecedores;
     } catch (error: any) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(
         `Erro ao buscar fornecedores com chamados: ${error.message}`,
       );
