@@ -31,7 +31,7 @@ export class OcorrenciaController {
 
   @Get()
   findAll() {
-    return this.ocorrenciaService.findAll();
+    return this.ocorrenciaService.findAll() || [];
   }
 
   @Get(':id')
