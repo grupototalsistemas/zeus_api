@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CreateOcorrenciaDto,
+  QueryOcorrenciaDto,
   UpdateOcorrenciaDto,
 } from '../dto/ocorrencia.dto';
 
@@ -10,24 +15,51 @@ export class OcorrenciaService {
   constructor(private prisma: PrismaService) {}
 
   async create(createOcorrenciaDto: CreateOcorrenciaDto) {
+    const descricao = createOcorrenciaDto.descricao.trim();
+
+    const ocorrenciaExistente = await this.prisma.ocorrencia.findFirst({
+      where: {
+        id_ocorrencia_tipo: BigInt(createOcorrenciaDto.id_ocorrencia_tipo),
+        id_pessoa_juridica: BigInt(createOcorrenciaDto.id_pessoa_juridica),
+        descricao,
+        situacao: 1,
+      },
+    });
+
+    if (ocorrenciaExistente) {
+      throw new BadRequestException('Ocorrencia ja cadastrada');
+    }
+
     return this.prisma.ocorrencia.create({
       data: {
         id_ocorrencia_tipo: BigInt(createOcorrenciaDto.id_ocorrencia_tipo),
         id_pessoa_juridica: BigInt(createOcorrenciaDto.id_pessoa_juridica),
-        descricao: createOcorrenciaDto.descricao,
+        descricao,
         situacao: createOcorrenciaDto.situacao ?? 1,
         motivo: createOcorrenciaDto.motivo,
-      },
-      include: {
-        tipo: true,
-        empresa: true,
       },
     });
   }
 
-  async findAll() {
+  async findAll(query?: QueryOcorrenciaDto) {
+    const createdAt = query?.createdAt ? new Date(query.createdAt) : undefined;
+    const hasValidCreatedAt = createdAt && !Number.isNaN(createdAt.getTime());
+
     const ocorrencias = await this.prisma.ocorrencia.findMany({
-      where: { situacao: 1 },
+      where: {
+        situacao: query?.situacao ?? 1,
+        ...(query?.id && { id: BigInt(query.id) }),
+        ...(query?.id_ocorrencia_tipo && {
+          id_ocorrencia_tipo: BigInt(query.id_ocorrencia_tipo),
+        }),
+        ...(query?.id_pessoa_juridica && {
+          id_pessoa_juridica: BigInt(query.id_pessoa_juridica),
+        }),
+        ...(query?.descricao && {
+          descricao: { contains: query.descricao, mode: 'insensitive' },
+        }),
+        ...(hasValidCreatedAt && { createdAt }),
+      },
     });
     return ocorrencias;
   }
@@ -50,7 +82,34 @@ export class OcorrenciaService {
   }
 
   async update(id: number, updateOcorrenciaDto: UpdateOcorrenciaDto) {
-    await this.findOne(id);
+    const ocorrenciaAtual = await this.findOne(id);
+
+    const idOcorrenciaTipo =
+      updateOcorrenciaDto.id_ocorrencia_tipo !== undefined
+        ? BigInt(updateOcorrenciaDto.id_ocorrencia_tipo)
+        : ocorrenciaAtual.id_ocorrencia_tipo;
+
+    const idPessoaJuridica =
+      updateOcorrenciaDto.id_pessoa_juridica !== undefined
+        ? BigInt(updateOcorrenciaDto.id_pessoa_juridica)
+        : ocorrenciaAtual.id_pessoa_juridica;
+
+    const descricao =
+      updateOcorrenciaDto.descricao?.trim() ?? ocorrenciaAtual.descricao;
+
+    const ocorrenciaDuplicada = await this.prisma.ocorrencia.findFirst({
+      where: {
+        id: { not: BigInt(id) },
+        id_ocorrencia_tipo: idOcorrenciaTipo,
+        id_pessoa_juridica: idPessoaJuridica,
+        descricao,
+        situacao: 1,
+      },
+    });
+
+    if (ocorrenciaDuplicada) {
+      throw new BadRequestException('Ocorrencia ja cadastrada');
+    }
 
     return this.prisma.ocorrencia.update({
       where: { id: BigInt(id) },
@@ -62,7 +121,7 @@ export class OcorrenciaService {
           id_pessoa_juridica: BigInt(updateOcorrenciaDto.id_pessoa_juridica),
         }),
         ...(updateOcorrenciaDto.descricao && {
-          descricao: updateOcorrenciaDto.descricao,
+          descricao,
         }),
         ...(updateOcorrenciaDto.situacao !== undefined && {
           situacao: updateOcorrenciaDto.situacao,
@@ -72,15 +131,15 @@ export class OcorrenciaService {
         }),
         updatedAt: new Date(),
       },
-      include: {
-        tipo: true,
-        empresa: true,
-      },
     });
   }
 
   async remove(id: number, motivo: string) {
-    await this.findOne(id);
+    const ocorrenciaAtual = await this.findOne(id);
+
+    if (ocorrenciaAtual.situacao !== 1) {
+      throw new BadRequestException('Ocorrencia ja esta desativada');
+    }
 
     return this.prisma.ocorrencia.update({
       where: { id: BigInt(id) },

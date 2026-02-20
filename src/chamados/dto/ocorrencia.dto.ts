@@ -1,4 +1,5 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsInt,
   IsNotEmpty,
@@ -7,22 +8,22 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
+import { BaseQueryDto } from 'src/common/dto/base-query.dto';
 
 export class CreateOcorrenciaDto {
-  @ApiProperty({ example: 1, description: 'ID do tipo de ocorrência' })
+  @ApiProperty({ description: 'ID do tipo de ocorrência' })
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
   id_ocorrencia_tipo: number;
 
-  @ApiProperty({ example: 1, description: 'ID da empresa' })
+  @ApiProperty({ description: 'ID da empresa' })
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
   id_pessoa_juridica: number;
 
   @ApiProperty({
-    example: 'Erro no sistema',
     description: 'Descrição da ocorrência',
   })
   @IsString()
@@ -31,7 +32,6 @@ export class CreateOcorrenciaDto {
   descricao: string;
 
   @ApiProperty({
-    example: 1,
     required: false,
     description: 'Situação do registro',
   })
@@ -39,7 +39,7 @@ export class CreateOcorrenciaDto {
   @IsInt()
   situacao?: number;
 
-  @ApiProperty({ example: 'Motivo da alteração', required: false })
+  @ApiProperty({ required: false, description: 'Motivo da alteração' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
@@ -47,3 +47,34 @@ export class CreateOcorrenciaDto {
 }
 
 export class UpdateOcorrenciaDto extends PartialType(CreateOcorrenciaDto) {}
+
+export class QueryOcorrenciaBaseDto {
+  @ApiPropertyOptional({ description: 'ID da ocorrência' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  id?: number;
+
+  @ApiPropertyOptional({ description: 'ID do tipo de ocorrência' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  id_ocorrencia_tipo?: number;
+
+  @ApiPropertyOptional({ description: 'ID da empresa' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  id_pessoa_juridica?: number;
+
+  @ApiPropertyOptional({ description: 'Filtrar por descricao (parcial)' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  descricao?: string;
+}
+
+export class QueryOcorrenciaDto extends BaseQueryDto(QueryOcorrenciaBaseDto) {}
