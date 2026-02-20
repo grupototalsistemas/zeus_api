@@ -1,46 +1,52 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
-  IsDateString,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsPositive,
   IsString,
+  Matches,
+  Max,
   MaxLength,
+  Min,
 } from 'class-validator';
+import { BaseQueryDto } from 'src/common/dto/base-query.dto';
 
 export class CreatePrioridadeDto {
-  @ApiProperty({ example: 1, description: 'ID da empresa' })
+  @ApiProperty({ description: 'ID da empresa' })
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
   id_pessoa_juridica: number;
 
-  @ApiProperty({ example: 'Alta', description: 'Descrição da prioridade' })
+  @ApiProperty({ description: 'Descrição da prioridade' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
   descricao: string;
 
   @ApiProperty({
-    example: '#FF0000',
     description: 'Cor da prioridade em hexadecimal',
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(100)
+  @MaxLength(7)
+  @Matches(/^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/, {
+    message: 'A cor deve estar em formato hexadecimal (ex: #FF0000)',
+  })
   cor: string;
 
   @ApiProperty({
-    example: '2024-01-07T10:00:00Z',
-    description: 'Tempo de resolução esperado',
+    description: 'Tempo de resolução esperado em minutos',
   })
-  @IsDateString()
-  @IsNotEmpty()
-  tempoResolucao: string;
+  @IsInt()
+  @IsPositive()
+  @Min(1)
+  @Max(525600)
+  tempoResolucao: number;
 
   @ApiProperty({
-    example: 1,
     required: false,
     description: 'Situação do registro',
   })
@@ -48,7 +54,7 @@ export class CreatePrioridadeDto {
   @IsInt()
   situacao?: number;
 
-  @ApiProperty({ example: 'Motivo da alteração', required: false })
+  @ApiProperty({ required: false, description: 'Motivo da alteração' })
   @IsOptional()
   @IsString()
   @MaxLength(500)
@@ -56,3 +62,67 @@ export class CreatePrioridadeDto {
 }
 
 export class UpdatePrioridadeDto extends PartialType(CreatePrioridadeDto) {}
+
+export class QueryPrioridadeBaseDto {
+  @ApiPropertyOptional({ description: 'ID da prioridade' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  id?: number;
+
+  @ApiPropertyOptional({ description: 'ID da empresa' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  id_pessoa_juridica?: number;
+
+  @ApiPropertyOptional({
+    description: 'Filtrar por descricao (parcial)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  descricao?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filtrar por cor hexadecimal',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(7)
+  @Matches(/^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/, {
+    message: 'A cor deve estar em formato hexadecimal (ex: #FF0000)',
+  })
+  cor?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filtrar por tempo de resolucao exato (minutos)',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  tempoResolucao?: number;
+
+  @ApiPropertyOptional({
+    description: 'Filtrar por tempo de resolucao minimo (minutos)',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  tempoResolucaoMin?: number;
+
+  @ApiPropertyOptional({
+    description: 'Filtrar por tempo de resolucao maximo (minutos)',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  tempoResolucaoMax?: number;
+}
+
+export class QueryPrioridadeDto extends BaseQueryDto(QueryPrioridadeBaseDto) {}

@@ -10,16 +10,16 @@ export function setupSwagger(app: INestApplication) {
   // Adiciona servidores baseado no ambiente
   switch (process.env.NODE_ENV) {
     case 'production':
-      configBuilder.addServer('http://localhost:3001');
+      configBuilder.addServer('http://localhost:4000');
       break;
     case 'homolog':
-      configBuilder.addServer('http://localhost:3001');
+      configBuilder.addServer('http://localhost:4000');
       break;
     case 'development':
-      configBuilder.addServer('http://localhost:3001');
+      configBuilder.addServer('http://localhost:4000');
       break;
     default:
-      configBuilder.addServer('http://localhost:3001');
+      configBuilder.addServer('http://localhost:4000');
       break;
   }
 

@@ -164,6 +164,7 @@ export class AuthService {
   }
 
   async login(loginDto: LoginSenhaDto): Promise<any> {
+    // console.log('Login attempt:', loginDto);
     // Query completa baseada no seu SQL - validando tudo de uma vez
     const userData = await this.getUserLoginData(
       loginDto.login,

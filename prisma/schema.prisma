@@ -678,11 +678,11 @@ model OcorrenciaTipo {
 }
 
 model Prioridade {
-  id                 BigInt   @id @default(autoincrement()) @map("id_prioridade")
+  id                 BigInt @id @default(autoincrement()) @map("id_prioridade")
   id_pessoa_juridica BigInt
-  descricao          String   @db.VarChar(100)
-  cor                String   @db.VarChar(100)
-  tempoResolucao     DateTime @map("tempo_resolucao")
+  descricao          String @db.VarChar(100)
+  cor                String @db.VarChar(100)
+  tempoResolucao     Int    @map("tempo_resolucao")
 
   situacao Int     @default(1)
   motivo   String? @db.VarChar(500)

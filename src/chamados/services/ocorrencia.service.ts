@@ -26,13 +26,10 @@ export class OcorrenciaService {
   }
 
   async findAll() {
-    return this.prisma.ocorrencia.findMany({
+    const ocorrencias = await this.prisma.ocorrencia.findMany({
       where: { situacao: 1 },
-      include: {
-        tipo: true,
-        empresa: true,
-      },
     });
+    return ocorrencias;
   }
 
   async findOne(id: number) {
