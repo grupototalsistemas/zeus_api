@@ -1,7 +1,8 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
   IsInt,
   IsNotEmpty,
+  IsNumberString,
   IsOptional,
   IsPositive,
   IsString,
@@ -46,13 +47,13 @@ export class CreateChamadoDto {
   id_prioridade: number;
 
   @ApiProperty({
-    example: 12345,
+    example: '1771613909281',
     required: false,
     description: 'Número do protocolo',
   })
   @IsOptional()
-  @IsInt()
-  protocolo?: number;
+  @IsNumberString()
+  protocolo?: string;
 
   @ApiProperty({
     example: 'Problema no sistema',
@@ -72,14 +73,13 @@ export class CreateChamadoDto {
   @MaxLength(500)
   descricao: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'Observações adicionais',
     description: 'Observação do chamado',
   })
   @IsString()
-  @IsNotEmpty()
   @MaxLength(500)
-  observacao: string;
+  observacao?: string;
 
   @ApiProperty({
     example: 1,

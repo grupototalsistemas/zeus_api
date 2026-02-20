@@ -24,7 +24,7 @@ export class ChamadosController {
     description: 'Criação de um novo chamado',
     type: CreateChamadoDto,
   })
-  create(@Body() createChamadoDto: CreateChamadoDto) {
+  create(@Body() createChamadoDto: CreateChamadoDto[]) {
     return this.chamadosService.create(createChamadoDto);
   }
 

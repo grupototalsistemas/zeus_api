@@ -3,6 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
+import { PLimitUtil } from 'src/common/utils/p-limit.util';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateChamadoDto, UpdateChamadoDto } from '../dto/chamado.dto';
 
@@ -10,35 +12,63 @@ import { CreateChamadoDto, UpdateChamadoDto } from '../dto/chamado.dto';
 export class ChamadosService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createChamadoDto: CreateChamadoDto) {
-    if (!this.verificaDados(createChamadoDto)) {
+  async create(createChamadoDto: CreateChamadoDto[]) {
+    const erros: any[] = [];
+    const sucessos: any[] = [];
+
+    const total = createChamadoDto.length;
+
+    if (!Array.isArray(createChamadoDto) || total === 0) {
       throw new BadRequestException(
-        `Erro ao criar chamado. Verifique os dados enviados.`,
+        'O corpo da requisição deve ser um array de chamados e não pode estar vazio.',
       );
     }
-    return this.prisma.chamado.create({
-      data: {
-        id_pessoa_juridica: BigInt(createChamadoDto.id_pessoa_juridica),
-        id_sistema: BigInt(createChamadoDto.id_sistema),
-        id_pessoa_fisica: BigInt(createChamadoDto.id_pessoa_empresa),
-        id_pessoa_usuario: BigInt(createChamadoDto.id_pessoa_usuario),
-        id_ocorrencia: BigInt(createChamadoDto.id_ocorrencia),
-        id_prioridade: BigInt(createChamadoDto.id_prioridade),
-        protocolo: createChamadoDto.protocolo,
-        titulo: createChamadoDto.titulo,
-        descricao: createChamadoDto.descricao,
-        observacao: createChamadoDto.observacao,
-        situacao: createChamadoDto.situacao ?? 1,
-        motivo: createChamadoDto.motivo,
-      },
-      include: {
-        empresa: true,
-        sistema: true,
-        usuario: true,
-        ocorrencia: true,
-        prioridade: true,
-      },
-    });
+
+    // limita o uso de conexoes simultaneas
+    const limit = await PLimitUtil.create(50);
+
+    const validacoes = await Promise.all(
+      createChamadoDto.map((dto) => limit(() => this.verificaDados(dto))),
+    );
+
+    const chamadosCriados = await Promise.all(
+      createChamadoDto.map((dto, index) =>
+        limit(async () => {
+          if (!validacoes[index]) {
+            erros.push({ index, dto });
+            return null;
+          }
+          const chamado = await this.prisma.chamado.create({
+            data: {
+              id_pessoa_juridica: BigInt(dto.id_pessoa_juridica),
+              id_sistema: BigInt(dto.id_sistema),
+              id_pessoa_fisica: BigInt(dto.id_pessoa_empresa),
+              id_pessoa_usuario: BigInt(dto.id_pessoa_usuario),
+              id_ocorrencia: BigInt(dto.id_ocorrencia),
+              id_prioridade: BigInt(dto.id_prioridade),
+              ...(dto.protocolo !== undefined && {
+                protocolo: dto.protocolo,
+              }),
+              titulo: dto.titulo,
+              descricao: dto.descricao,
+              observacao: dto.observacao || '',
+              situacao: dto.situacao ?? 1,
+              motivo: dto.motivo,
+            },
+          });
+          sucessos.push(chamado);
+          return chamado;
+        }),
+      ),
+    );
+
+    return {
+      total,
+      criados: sucessos.length,
+      erros: erros.length,
+      detalhesErros: erros,
+      chamadosCriados,
+    };
   }
 
   private async verificaDados(

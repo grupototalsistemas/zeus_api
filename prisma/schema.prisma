@@ -520,10 +520,10 @@ model Chamado {
   id_ocorrencia      BigInt
   id_prioridade      BigInt
 
-  protocolo  Int?
-  titulo     String @db.VarChar(100)
-  descricao  String @db.VarChar(500)
-  observacao String @db.VarChar(500)
+  protocolo  String?
+  titulo     String  @db.VarChar(100)
+  descricao  String  @db.VarChar(500)
+  observacao String? @db.VarChar(500)
 
   situacao Int     @default(1)
   motivo   String? @db.VarChar(500)
