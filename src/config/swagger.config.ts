@@ -10,13 +10,13 @@ export function setupSwagger(app: INestApplication) {
   // Adiciona servidores baseado no ambiente
   switch (process.env.NODE_ENV) {
     case 'production':
-      configBuilder.addServer('http://localhost:4000');
+      configBuilder.addServer('https://zeus-api.totalsistemas.com.br');
       break;
     case 'homolog':
-      configBuilder.addServer('http://localhost:4000');
+      configBuilder.addServer('https://hml-zeus-api.totalsistemas.com.br');
       break;
     case 'development':
-      configBuilder.addServer('http://localhost:4000');
+      configBuilder.addServer('https://dev-zeus-api.totalsistemas.com.br');
       break;
     default:
       configBuilder.addServer('http://localhost:4000');
