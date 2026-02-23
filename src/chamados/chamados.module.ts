@@ -4,6 +4,7 @@ import { ChamadoMovimentoEtapasController } from './controllers/chamado-moviment
 import { ChamadoMovimentoMensagensController } from './controllers/chamado-movimento-mensagens.controller';
 import { ChamadoMovimentosController } from './controllers/chamado-movimentos.controller';
 import { ChamadosController } from './controllers/chamados.controller';
+import { OcorrenciaTipoController } from './controllers/ocorrencia-tipo.controller';
 import { OcorrenciaController } from './controllers/ocorrencia.controller';
 import { PrioridadeController } from './controllers/prioridade.controller';
 import { ChamadoMovimentoAnexosService } from './services/chamado-movimento-anexos.service';
@@ -11,6 +12,7 @@ import { ChamadoMovimentoEtapasService } from './services/chamado-movimento-etap
 import { ChamadoMovimentoMensagensService } from './services/chamado-movimento-mensagens.service';
 import { ChamadoMovimentosService } from './services/chamado-movimentos.service';
 import { ChamadosService } from './services/chamados.service';
+import { OcorrenciaTipoService } from './services/ocorrencia-tipo.service';
 import { OcorrenciaService } from './services/ocorrencia.service';
 import { PrioridadeService } from './services/prioridade.service';
 
@@ -22,6 +24,7 @@ import { PrioridadeService } from './services/prioridade.service';
     ChamadoMovimentoAnexosController,
     ChamadoMovimentoMensagensController,
     OcorrenciaController,
+    OcorrenciaTipoController,
     PrioridadeController,
   ],
   providers: [
@@ -31,6 +34,7 @@ import { PrioridadeService } from './services/prioridade.service';
     ChamadoMovimentoAnexosService,
     ChamadoMovimentoMensagensService,
     OcorrenciaService,
+    OcorrenciaTipoService,
     PrioridadeService,
   ],
   exports: [
@@ -40,6 +44,7 @@ import { PrioridadeService } from './services/prioridade.service';
     ChamadoMovimentoAnexosService,
     ChamadoMovimentoMensagensService,
     OcorrenciaService,
+    OcorrenciaTipoService,
     PrioridadeService,
   ],
 })

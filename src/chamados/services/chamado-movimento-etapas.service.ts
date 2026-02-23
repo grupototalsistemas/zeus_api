@@ -24,12 +24,11 @@ export class ChamadoMovimentoEtapasService {
   }
 
   async findAll() {
-    return this.prisma.chamadoMovimentoEtapa.findMany({
+    const etapas = await this.prisma.chamadoMovimentoEtapa.findMany({
       where: { situacao: 1 },
-      include: {
-        empresa: true,
-      },
     });
+
+    return etapas;
   }
 
   async findOne(id: number) {

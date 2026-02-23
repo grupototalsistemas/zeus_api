@@ -18,7 +18,7 @@ import { ChamadoMovimentoEtapasService } from '../services/chamado-movimento-eta
 
 @ApiTags('Chamados - Etapas')
 @Public()
-@Controller('chamados-movimentos-etapas')
+@Controller('chamados-movimento-etapas')
 export class ChamadoMovimentoEtapasController {
   constructor(private readonly service: ChamadoMovimentoEtapasService) {}
 
