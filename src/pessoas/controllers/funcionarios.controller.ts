@@ -47,10 +47,10 @@ export class FuncionariosController {
     return this.funcionariosService.create(dto);
   }
 
-  @Get('pessoa-juridica/:id_pessoa_juridica')
+  @Get('empresa/:id_pessoa_juridica')
   @LogTablePessoas()
   @ApiOperation({
-    summary: 'Buscar funcionários por pessoa jurídica',
+    summary: 'Buscar funcionários por empresa',
     description:
       'Retorna apenas pessoas do tipo 6 (Funcionários). Filtro opcional por id_pessoa_fisica.',
   })

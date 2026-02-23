@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/common/decorators/public.decorator';
@@ -47,5 +48,23 @@ export class ChamadosController {
   @ApiBody({ type: DeleteDto, description: 'Motivo da exclusão' })
   remove(@Param('id') id: string, @Body() deleteData: DeleteDto) {
     return this.chamadosService.remove(+id, deleteData.motivo);
+  }
+
+  @Get('metricas-empresa/:id_pessoa_juridica')
+  getME(
+    @Param('id_pessoa_juridica') id_pessoa_juridica: string,
+    @Query('data_inicio') data_inicio?: string,
+    @Query('data_fim') data_fim?: string,
+  ) {
+    return this.chamadosService.getMetricasEmpresa(
+      +id_pessoa_juridica,
+      data_inicio,
+      data_fim,
+    );
+  }
+
+  @Get('metricas-usuario/:id_usuario')
+  getMU(@Param('id_usuario') id_usuario: string) {
+    return this.chamadosService.getMetricasUsuario(+id_usuario);
   }
 }

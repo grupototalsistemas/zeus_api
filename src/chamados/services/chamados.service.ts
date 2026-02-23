@@ -206,4 +206,127 @@ export class ChamadosService {
       },
     });
   }
+
+  async getMetricasEmpresa(
+    id_pessoa_usuario: number,
+    data_inicio?: string,
+    data_fim?: string,
+  ) {
+    const totalChamados = await this.prisma.chamado.count({
+      where: {
+        situacao: 1,
+        id_pessoa_usuario: BigInt(id_pessoa_usuario),
+        ...(data_inicio && { createdAt: { gte: new Date(data_inicio) } }),
+        ...(data_fim && { createdAt: { lte: new Date(data_fim) } }),
+      },
+    });
+    console.log('Total de chamados:', totalChamados);
+
+    const chamadosAbertos = await this.prisma.chamado.count({
+      where: {
+        situacao: 1,
+        id_pessoa_usuario: BigInt(id_pessoa_usuario),
+        ...(data_inicio && { createdAt: { gte: new Date(data_inicio) } }),
+        ...(data_fim && { createdAt: { lte: new Date(data_fim) } }),
+        movimentos: {
+          none: {
+            etapa: { id: 1 }, // etapa: CONCLUÍDO
+          },
+        },
+      },
+    });
+
+    const chamadosFechados = totalChamados - chamadosAbertos;
+
+    const chamadosPorSistema = await this.prisma.chamado.groupBy({
+      by: ['id_sistema'],
+      where: {
+        situacao: 1,
+        id_pessoa_usuario: BigInt(id_pessoa_usuario),
+        ...(data_inicio && { createdAt: { gte: new Date(data_inicio) } }),
+        ...(data_fim && { createdAt: { lte: new Date(data_fim) } }),
+      },
+      _count: { id: true },
+    });
+
+    const chamadosPorPrioridade = await this.prisma.chamado.groupBy({
+      by: ['id_prioridade'],
+      where: {
+        situacao: 1,
+        id_pessoa_usuario: BigInt(id_pessoa_usuario),
+        ...(data_inicio && { createdAt: { gte: new Date(data_inicio) } }),
+        ...(data_fim && { createdAt: { lte: new Date(data_fim) } }),
+      },
+      _count: { id: true },
+    });
+
+    // const tempoMedioResolucao = await this.prisma.chamado.aggregate({
+    //   where: {
+    //     situacao: 1,
+    //     id_pessoa_juridica: BigInt(id_pessoa_juridica),
+    //     ...(data_inicio && { createdAt: { gte: new Date(data_inicio) } }),
+    //     ...(data_fim && { createdAt: { lte: new Date(data_fim) } }),
+    //     movimentos: {
+    //       some: {
+    //         etapa: { id: 1 }, // etapa: CONCLUÍDO
+    //       },
+    //     },
+    //   },
+    //   _avg: {
+    //     // calcula a média em horas entre a data de criação do chamado e a data do movimento de conclusão
+    //   },
+    // });
+
+    const chamadosAbertosPorDia = await this.prisma.chamado.groupBy({
+      by: ['createdAt'],
+      where: {
+        situacao: 1,
+        id_pessoa_usuario: BigInt(id_pessoa_usuario),
+        ...(data_inicio && { createdAt: { gte: new Date(data_inicio) } }),
+        ...(data_fim && { createdAt: { lte: new Date(data_fim) } }),
+        movimentos: {
+          none: {
+            etapa: { id: 1 }, // etapa: CONCLUÍDO
+          },
+        },
+      },
+      _count: { id: true },
+    });
+
+    const chamadosFechadosPorDia = await this.prisma.chamado.groupBy({
+      by: ['createdAt'],
+      where: {
+        situacao: 1,
+        id_pessoa_usuario: BigInt(id_pessoa_usuario),
+        ...(data_inicio && { createdAt: { gte: new Date(data_inicio) } }),
+        ...(data_fim && { createdAt: { lte: new Date(data_fim) } }),
+        movimentos: {
+          some: {
+            etapa: { id: 1 }, // etapa: CONCLUÍDO
+          },
+        },
+      },
+      _count: { id: true },
+    });
+
+    const resultado = {
+      totalChamados,
+      chamadosAbertos,
+      chamadosFechados,
+      chamadosPorSistema,
+      chamadosPorPrioridade,
+      chamadosAbertosPorDia,
+      chamadosFechadosPorDia,
+    };
+
+    return resultado;
+  }
+
+  async getMetricasUsuario(id_usuario: number) {
+    const totalChamados = await this.prisma.chamado.count({
+      where: {
+        id_pessoa_usuario: BigInt(id_usuario),
+      },
+    });
+  }
 }
