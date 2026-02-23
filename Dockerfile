@@ -1,6 +1,3 @@
-# Backend Dockerfile - NestJS com Prisma
-# Multi-stage build para imagem menor
-
 # ========== STAGE 1: Build ==========
 FROM node:20.18.1-slim AS builder
 
@@ -9,27 +6,23 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Instala TODAS as dependências (incluindo devDependencies para build)
-RUN npm ci --ignore-scripts
+RUN npm ci
 
-# Gera o Prisma Client
 RUN npx prisma generate
 
 COPY . .
 
-# Compila o projeto
 RUN npm run build
+
 
 # ========== STAGE 2: Production ==========
 FROM node:20.18.1-slim AS production
 
-# Define timezone e NODE_ENV
 ENV TZ=America/Sao_Paulo
 ENV NODE_ENV=production
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-# Instala dependências do sistema para Puppeteer/Chromium
 RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     fonts-liberation \
@@ -47,22 +40,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tzdata \
     openssl \
     && rm -rf /var/lib/apt/lists/* \
-    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone
 
 WORKDIR /app
 
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Instala apenas dependências de produção
-RUN npm ci --only=production --ignore-scripts
+RUN npm ci --only=production
 
-# Gera o Prisma Client
-RUN npx prisma generate
-
-# Copia os arquivos compilados do stage de build
+# Copia build + prisma client
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 EXPOSE 3000
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/main.js"]
