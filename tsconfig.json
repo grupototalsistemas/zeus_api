@@ -38,6 +38,8 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
+    "strict": true,
+    "strictPropertyInitialization": false,
     // "ignoreDeprecations": "6.0",
     "paths": {
       "src/*": ["src/*"]
