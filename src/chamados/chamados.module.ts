@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MulterModule } from '@nestjs/platform-express';
+import { FileStorageService } from '../common/services/file-storage.service';
 import { ChamadoMovimentoAnexosController } from './controllers/chamado-movimento-anexos.controller';
 import { ChamadoMovimentoEtapasController } from './controllers/chamado-movimento-etapas.controller';
 import { ChamadoMovimentoMensagensController } from './controllers/chamado-movimento-mensagens.controller';
@@ -17,6 +20,18 @@ import { OcorrenciaService } from './services/ocorrencia.service';
 import { PrioridadeService } from './services/prioridade.service';
 
 @Module({
+  imports: [
+    ConfigModule,
+    MulterModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        limits: {
+          fileSize: 10 * 1024 * 1024, // 10MB
+        },
+      }),
+      inject: [ConfigService],
+    }),
+  ],
   controllers: [
     ChamadosController,
     ChamadoMovimentosController,
@@ -28,6 +43,7 @@ import { PrioridadeService } from './services/prioridade.service';
     PrioridadeController,
   ],
   providers: [
+    FileStorageService,
     ChamadosService,
     ChamadoMovimentosService,
     ChamadoMovimentoEtapasService,
@@ -38,6 +54,7 @@ import { PrioridadeService } from './services/prioridade.service';
     PrioridadeService,
   ],
   exports: [
+    FileStorageService,
     ChamadosService,
     ChamadoMovimentosService,
     ChamadoMovimentoEtapasService,

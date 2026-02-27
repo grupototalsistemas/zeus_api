@@ -7,15 +7,31 @@ import {
 import { PLimitUtil } from 'src/common/utils/p-limit.util';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateChamadoDto, UpdateChamadoDto } from '../dto/chamado.dto';
+import { FindChamadosQueryDto } from '../dto/find-chamados-query.dto';
+
+export interface ErroDetalhes {
+  index: number;
+  dto: CreateChamadoDto;
+  motivo: string;
+}
+
+export interface ResultadoCriacaoChamados {
+  total: number;
+  criados: number;
+  erros: number;
+  detalhesErros: ErroDetalhes[];
+  chamadosCriados: any[];
+}
 
 @Injectable()
 export class ChamadosService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createChamadoDto: CreateChamadoDto[]) {
-    const erros: any[] = [];
+  async create(
+    createChamadoDto: CreateChamadoDto[],
+  ): Promise<ResultadoCriacaoChamados> {
+    const erros: ErroDetalhes[] = [];
     const sucessos: any[] = [];
-
     const total = createChamadoDto.length;
 
     if (!Array.isArray(createChamadoDto) || total === 0) {
@@ -27,39 +43,84 @@ export class ChamadosService {
     // limita o uso de conexoes simultaneas
     const limit = await PLimitUtil.create(50);
 
+    // Valida todos os DTOs primeiro
     const validacoes = await Promise.all(
-      createChamadoDto.map((dto) => limit(() => this.verificaDados(dto))),
+      createChamadoDto.map((dto, index) =>
+        limit(async () => {
+          const resultado = await this.verificaDados(dto);
+          if (!resultado.valido) {
+            erros.push({
+              index,
+              dto,
+              motivo: resultado.mensagem || 'Dados inválidos',
+            });
+          }
+          return resultado.valido;
+        }),
+      ),
     );
 
-    const chamadosCriados = await Promise.all(
+    // Cria os chamados que passaram na validação
+    const chamadosProcessados = await Promise.all(
       createChamadoDto.map((dto, index) =>
         limit(async () => {
           if (!validacoes[index]) {
-            erros.push({ index, dto });
             return null;
           }
-          const chamado = await this.prisma.chamado.create({
-            data: {
-              id_pessoa_juridica: BigInt(dto.id_pessoa_juridica),
-              id_sistema: BigInt(dto.id_sistema),
-              id_pessoa_fisica: BigInt(dto.id_pessoa_empresa),
-              id_pessoa_usuario: BigInt(dto.id_pessoa_usuario),
-              id_ocorrencia: BigInt(dto.id_ocorrencia),
-              id_prioridade: BigInt(dto.id_prioridade),
-              ...(dto.protocolo !== undefined && {
-                protocolo: dto.protocolo,
-              }),
-              titulo: dto.titulo,
-              descricao: dto.descricao,
-              observacao: dto.observacao || '',
-              situacao: dto.situacao ?? 1,
-              motivo: dto.motivo,
-            },
-          });
-          sucessos.push(chamado);
-          return chamado;
+
+          try {
+            // Usa transação para garantir que chamado e movimento sejam criados juntos
+            const resultado = await this.prisma.$transaction(async (tx) => {
+              const chamado = await tx.chamado.create({
+                data: {
+                  id_pessoa_juridica: BigInt(dto.id_pessoa_juridica),
+                  id_sistema: BigInt(dto.id_sistema),
+                  id_pessoa_fisica: BigInt(dto.id_pessoa_empresa),
+                  id_pessoa_usuario: BigInt(dto.id_pessoa_usuario),
+                  id_ocorrencia: BigInt(dto.id_ocorrencia),
+                  id_prioridade: BigInt(dto.id_prioridade),
+                  ...(dto.protocolo !== undefined && {
+                    protocolo: dto.protocolo,
+                  }),
+                  titulo: dto.titulo,
+                  descricao: dto.descricao,
+                  observacao: dto.observacao || '',
+                  situacao: dto.situacao ?? 1,
+                },
+              });
+
+              const movimento = await tx.chamadoMovimento.create({
+                data: {
+                  id_chamado: chamado.id,
+                  id_chamado_movimento_etapa: BigInt(8), // etapa: ABERTO
+                  id_pessoa_usuario: BigInt(dto.id_pessoa_usuario),
+                  ordem: 1,
+                  dataHoraInicio: new Date(),
+                  descricaoAcao: 'Abertura do chamado',
+                  observacaoTecnica: 'Abertura do chamado pelo sistema',
+                },
+              });
+
+              return { chamado, movimento };
+            });
+
+            sucessos.push(resultado.chamado);
+            return resultado.chamado;
+          } catch (error: any) {
+            erros.push({
+              index,
+              dto,
+              motivo: `Erro ao criar chamado: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
+            });
+            return null;
+          }
         }),
       ),
+    );
+
+    // Remove valores null do resultado
+    const chamadosCriados = chamadosProcessados.filter(
+      (chamado) => chamado !== null,
     );
 
     return {
@@ -73,47 +134,119 @@ export class ChamadosService {
 
   private async verificaDados(
     createChamadoDto: CreateChamadoDto,
-  ): Promise<boolean> {
-    const empresa = await this.prisma.pessoasJuridicas.findUnique({
-      where: { id: BigInt(createChamadoDto.id_pessoa_juridica) },
-    });
-    const sistema = await this.prisma.sistemas.findUnique({
-      where: { id: BigInt(createChamadoDto.id_sistema) },
-    });
-    const pessoaEmpresa = await this.prisma.pessoas.findUnique({
-      where: { id: BigInt(createChamadoDto.id_pessoa_empresa) },
-    });
-    const pessoaUsuario = await this.prisma.pessoas.findUnique({
-      where: { id: BigInt(createChamadoDto.id_pessoa_usuario) },
-    });
-    const ocorrencia = await this.prisma.ocorrencia.findUnique({
-      where: { id: BigInt(createChamadoDto.id_ocorrencia) },
-    });
-    const prioridade = await this.prisma.prioridade.findUnique({
-      where: { id: BigInt(createChamadoDto.id_prioridade) },
-    });
+  ): Promise<{ valido: boolean; mensagem?: string }> {
+    try {
+      const [
+        empresa,
+        sistema,
+        pessoaEmpresa,
+        pessoaUsuario,
+        ocorrencia,
+        prioridade,
+      ] = await Promise.all([
+        this.prisma.pessoasJuridicas.findUnique({
+          where: { id: BigInt(createChamadoDto.id_pessoa_juridica) },
+        }),
+        this.prisma.sistemas.findUnique({
+          where: { id: BigInt(createChamadoDto.id_sistema) },
+        }),
+        this.prisma.pessoas.findUnique({
+          where: { id: BigInt(createChamadoDto.id_pessoa_empresa) },
+        }),
+        this.prisma.pessoas.findUnique({
+          where: { id: BigInt(createChamadoDto.id_pessoa_usuario) },
+        }),
+        this.prisma.ocorrencia.findUnique({
+          where: { id: BigInt(createChamadoDto.id_ocorrencia) },
+        }),
+        this.prisma.prioridade.findUnique({
+          where: { id: BigInt(createChamadoDto.id_prioridade) },
+        }),
+      ]);
 
-    return !!(
-      empresa &&
-      sistema &&
-      pessoaEmpresa &&
-      pessoaUsuario &&
-      ocorrencia &&
-      prioridade
-    );
+      const camposInvalidos: string[] = [];
+
+      if (!empresa) camposInvalidos.push('Empresa não encontrada');
+      if (!sistema) camposInvalidos.push('Sistema não encontrado');
+      if (!pessoaEmpresa) camposInvalidos.push('Pessoa empresa não encontrada');
+      if (!pessoaUsuario) camposInvalidos.push('Usuário não encontrado');
+      if (!ocorrencia) camposInvalidos.push('Ocorrência não encontrada');
+      if (!prioridade) camposInvalidos.push('Prioridade não encontrada');
+
+      if (camposInvalidos.length > 0) {
+        return {
+          valido: false,
+          mensagem: camposInvalidos.join(', '),
+        };
+      }
+
+      return { valido: true };
+    } catch (error) {
+      return {
+        valido: false,
+        mensagem: `Erro ao validar dados: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
+      };
+    }
   }
 
-  async findAll() {
+  async findAll(query: FindChamadosQueryDto) {
+    // Valores padrão
+    const skip = query.skip ?? 0;
+    const take = query.take ?? 10;
+    const orderBy = query.orderBy ?? 'id';
+    const orderDirection = query.orderDirection ?? 'desc';
+
+    // Construir filtros dinâmicos
+    const where: any = {
+      situacao: query.situacao ?? 1,
+    };
+
+    // Filtros opcionais
+    if (query.id_sistema) {
+      where.id_sistema = BigInt(query.id_sistema);
+    }
+
+    if (query.id_pessoa_juridica) {
+      where.id_pessoa_juridica = BigInt(query.id_pessoa_juridica);
+    }
+
+    if (query.id_prioridade) {
+      where.id_prioridade = BigInt(query.id_prioridade);
+    }
+
+    if (query.id_pessoa_usuario) {
+      where.id_pessoa_usuario = BigInt(query.id_pessoa_usuario);
+    }
+
+    // Busca por texto
+    if (query.search) {
+      where.OR = [
+        { titulo: { contains: query.search, mode: 'insensitive' } },
+        { descricao: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Construir ordenação dinamicamente
+    const orderByObj: any = {};
+    orderByObj[orderBy] = orderDirection;
+
     return this.prisma.chamado.findMany({
-      where: { situacao: 1 },
+      where,
       include: {
         empresa: true,
         sistema: true,
-        usuario: true,
+        pessoaFisica: true,
         ocorrencia: true,
         prioridade: true,
-        movimentos: true,
+        movimentos: {
+          include: {
+            etapa: true,
+          },
+        },
       },
+      skip,
+      take,
+      orderBy: orderByObj,
     });
   }
 

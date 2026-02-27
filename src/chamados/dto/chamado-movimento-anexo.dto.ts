@@ -1,12 +1,11 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsDateString,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsPositive,
   IsString,
-  MaxLength,
+  MaxLength
 } from 'class-validator';
 
 export class CreateChamadoMovimentoAnexoDto {
@@ -37,39 +36,44 @@ export class CreateChamadoMovimentoAnexoDto {
   descricao: string;
 
   @ApiProperty({
-    example: '2024-01-01T10:00:00Z',
-    required: false,
-    description: 'Data e hora do anexo',
+    type: 'string',
+    format: 'binary',
+    description: 'Arquivo para upload',
+    required: true,
   })
-  @IsOptional()
-  @IsDateString()
-  dataHora?: string;
-
-  @ApiProperty({
-    example: '/uploads/anexos/arquivo.pdf',
-    description: 'Caminho do arquivo',
-  })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(150)
-  caminho: string;
-
-  @ApiProperty({
-    example: 1,
-    required: false,
-    description: 'Situação do registro',
-  })
-  @IsOptional()
-  @IsInt()
-  situacao?: number;
-
-  @ApiProperty({ example: 'Motivo da alteração', required: false })
-  @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  motivo?: string;
+  arquivo: any;
 }
 
-export class UpdateChamadoMovimentoAnexoDto extends PartialType(
-  CreateChamadoMovimentoAnexoDto,
-) {}
+export class UpdateChamadoMovimentoAnexoDto {
+  @ApiProperty({ example: 1, required: false, description: 'Ordem do anexo' })
+  @IsOptional()
+  @IsInt()
+  ordem?: number;
+
+  @ApiProperty({
+    example: 'Screenshot atualizado',
+    required: false,
+    description: 'Descrição do anexo',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  descricao?: string;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Novo arquivo para upload (opcional)',
+    required: false,
+  })
+  arquivo?: any;
+}
+
+export class FindAnexosByMovimentoDto {
+  @ApiProperty({ example: 1, description: 'ID do movimento do chamado' })
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
+  id_chamado_movimento: number;
+}
+

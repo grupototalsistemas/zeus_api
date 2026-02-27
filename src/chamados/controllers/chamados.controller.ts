@@ -12,7 +12,11 @@ import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/common/decorators/public.decorator';
 import { DeleteDto } from 'src/common/dto/delete.dto';
 import { CreateChamadoDto, UpdateChamadoDto } from '../dto/chamado.dto';
-import { ChamadosService } from '../services/chamados.service';
+import { FindChamadosQueryDto } from '../dto/find-chamados-query.dto';
+import {
+  ChamadosService,
+  ResultadoCriacaoChamados,
+} from '../services/chamados.service';
 
 @ApiTags('Chamados')
 @Public()
@@ -25,13 +29,15 @@ export class ChamadosController {
     description: 'Criação de um novo chamado',
     type: CreateChamadoDto,
   })
-  create(@Body() createChamadoDto: CreateChamadoDto[]) {
+  create(
+    @Body() createChamadoDto: CreateChamadoDto[],
+  ): Promise<ResultadoCriacaoChamados> {
     return this.chamadosService.create(createChamadoDto);
   }
 
   @Get()
-  findAll() {
-    return this.chamadosService.findAll();
+  findAll(@Query() query: FindChamadosQueryDto) {
+    return this.chamadosService.findAll(query);
   }
 
   @Get(':id')
