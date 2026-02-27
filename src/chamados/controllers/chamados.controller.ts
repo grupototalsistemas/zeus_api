@@ -7,16 +7,25 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/common/decorators/public.decorator';
 import { DeleteDto } from 'src/common/dto/delete.dto';
-import { CreateChamadoDto, UpdateChamadoDto } from '../dto/chamado.dto';
+import {
+  CreateChamadoComAnexoDto,
+  CreateChamadoDto,
+  UpdateChamadoDto,
+} from '../dto/chamado.dto';
 import { FindChamadosQueryDto } from '../dto/find-chamados-query.dto';
 import {
   ChamadosService,
   ResultadoCriacaoChamados,
 } from '../services/chamados.service';
+
+type MulterFile = Express.Multer.File;
 
 @ApiTags('Chamados')
 @Public()
@@ -33,6 +42,23 @@ export class ChamadosController {
     @Body() createChamadoDto: CreateChamadoDto[],
   ): Promise<ResultadoCriacaoChamados> {
     return this.chamadosService.create(createChamadoDto);
+  }
+
+  @Post('with-attachment')
+  @UseInterceptors(FileInterceptor('arquivo'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Criação de um novo chamado com anexo opcional',
+    type: CreateChamadoComAnexoDto,
+  })
+  async createWithAttachment(
+    @Body() createChamadoComAnexoDto: CreateChamadoComAnexoDto,
+    @UploadedFile() file?: MulterFile,
+  ) {
+    return this.chamadosService.createWithAttachment(
+      createChamadoComAnexoDto,
+      file,
+    );
   }
 
   @Get()

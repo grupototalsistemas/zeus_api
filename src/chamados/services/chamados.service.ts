@@ -4,10 +4,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import { FileStorageService } from 'src/common/services/file-storage.service';
 import { PLimitUtil } from 'src/common/utils/p-limit.util';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateChamadoDto, UpdateChamadoDto } from '../dto/chamado.dto';
+import {
+  CreateChamadoComAnexoDto,
+  CreateChamadoDto,
+  UpdateChamadoDto,
+} from '../dto/chamado.dto';
 import { FindChamadosQueryDto } from '../dto/find-chamados-query.dto';
+
+type MulterFile = Express.Multer.File;
 
 export interface ErroDetalhes {
   index: number;
@@ -25,7 +32,10 @@ export interface ResultadoCriacaoChamados {
 
 @Injectable()
 export class ChamadosService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private fileStorage: FileStorageService,
+  ) {}
 
   async create(
     createChamadoDto: CreateChamadoDto[],
@@ -79,9 +89,7 @@ export class ChamadosService {
                   id_pessoa_usuario: BigInt(dto.id_pessoa_usuario),
                   id_ocorrencia: BigInt(dto.id_ocorrencia),
                   id_prioridade: BigInt(dto.id_prioridade),
-                  ...(dto.protocolo !== undefined && {
-                    protocolo: dto.protocolo,
-                  }),
+                  protocolo: dto.protocolo || this.gerarProtocolo(),
                   titulo: dto.titulo,
                   descricao: dto.descricao,
                   observacao: dto.observacao || '',
@@ -132,10 +140,109 @@ export class ChamadosService {
     };
   }
 
+  async createWithAttachment(
+    createChamadoComAnexoDto: CreateChamadoComAnexoDto,
+    file?: MulterFile,
+  ) {
+    // Usa transação para garantir que chamado, movimento e anexo sejam criados juntos
+    const resultado = await this.prisma.$transaction(async (tx) => {
+      // Cria o chamado
+      // Valida dados do chamado usando o método reutilizável
+      const validacao = await this.verificaDados(createChamadoComAnexoDto, tx);
+
+      if (!validacao.valido) {
+        throw new BadRequestException(validacao.mensagem);
+      }
+
+      const chamado = await tx.chamado.create({
+        data: {
+          id_pessoa_juridica: BigInt(
+            createChamadoComAnexoDto.id_pessoa_juridica,
+          ),
+          id_sistema: BigInt(createChamadoComAnexoDto.id_sistema),
+          id_pessoa_fisica: BigInt(createChamadoComAnexoDto.id_pessoa_empresa),
+          id_pessoa_usuario: BigInt(createChamadoComAnexoDto.id_pessoa_usuario),
+          id_ocorrencia: BigInt(createChamadoComAnexoDto.id_ocorrencia),
+          id_prioridade: BigInt(createChamadoComAnexoDto.id_prioridade),
+          protocolo:
+            createChamadoComAnexoDto.protocolo || this.gerarProtocolo(),
+          titulo: createChamadoComAnexoDto.titulo,
+          descricao: createChamadoComAnexoDto.descricao,
+          observacao: createChamadoComAnexoDto.observacao || '',
+          situacao: createChamadoComAnexoDto.situacao ?? 1,
+        },
+      });
+
+      // Cria o movimento inicial
+      const movimento = await tx.chamadoMovimento.create({
+        data: {
+          id_chamado: chamado.id,
+          id_chamado_movimento_etapa: BigInt(8), // etapa: ABERTO
+          id_pessoa_usuario: BigInt(createChamadoComAnexoDto.id_pessoa_usuario),
+          ordem: 1,
+          dataHoraInicio: new Date(),
+          descricaoAcao: 'Abertura do chamado',
+          observacaoTecnica: 'Abertura do chamado pelo sistema',
+        },
+      });
+
+      // Se houver arquivo, cria o anexo
+      let anexo: any = null;
+      if (file) {
+        const caminho = await this.fileStorage.saveFile(file, 'anexos');
+
+        anexo = await tx.chamadoMovimentoAnexo.create({
+          data: {
+            id_chamado_movimento: movimento.id,
+            id_pessoa_usuario: BigInt(
+              createChamadoComAnexoDto.id_pessoa_usuario,
+            ),
+            ordem: 1,
+            descricao:
+              createChamadoComAnexoDto.descricaoAnexo || 'Anexo do chamado',
+            dataHora: new Date(),
+            caminho,
+            situacao: 1,
+          },
+          include: {
+            movimento: true,
+            usuario: true,
+          },
+        });
+      }
+
+      return {
+        chamado,
+        movimento,
+        anexo,
+      };
+    });
+
+    return resultado;
+  }
+
+  private gerarProtocolo(): string {
+    const agora = new Date();
+    const ano = agora.getFullYear();
+    const mes = String(agora.getMonth() + 1).padStart(2, '0');
+    const dia = String(agora.getDate()).padStart(2, '0');
+    const hora = String(agora.getHours()).padStart(2, '0');
+    const minuto = String(agora.getMinutes()).padStart(2, '0');
+    const segundo = String(agora.getSeconds()).padStart(2, '0');
+    const random = Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, '0');
+
+    return `${ano}${mes}${dia}${hora}${minuto}${segundo}${random}`;
+  }
+
   private async verificaDados(
     createChamadoDto: CreateChamadoDto,
+    tx?: any,
   ): Promise<{ valido: boolean; mensagem?: string }> {
     try {
+      const prismaClient = tx || this.prisma;
+
       const [
         empresa,
         sistema,
@@ -144,22 +251,22 @@ export class ChamadosService {
         ocorrencia,
         prioridade,
       ] = await Promise.all([
-        this.prisma.pessoasJuridicas.findUnique({
+        prismaClient.pessoasJuridicas.findUnique({
           where: { id: BigInt(createChamadoDto.id_pessoa_juridica) },
         }),
-        this.prisma.sistemas.findUnique({
+        prismaClient.sistemas.findUnique({
           where: { id: BigInt(createChamadoDto.id_sistema) },
         }),
-        this.prisma.pessoas.findUnique({
+        prismaClient.pessoas.findUnique({
           where: { id: BigInt(createChamadoDto.id_pessoa_empresa) },
         }),
-        this.prisma.pessoas.findUnique({
+        prismaClient.pessoas.findUnique({
           where: { id: BigInt(createChamadoDto.id_pessoa_usuario) },
         }),
-        this.prisma.ocorrencia.findUnique({
+        prismaClient.ocorrencia.findUnique({
           where: { id: BigInt(createChamadoDto.id_ocorrencia) },
         }),
-        this.prisma.prioridade.findUnique({
+        prismaClient.prioridade.findUnique({
           where: { id: BigInt(createChamadoDto.id_prioridade) },
         }),
       ]);
