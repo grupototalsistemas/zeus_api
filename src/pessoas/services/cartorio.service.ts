@@ -306,7 +306,7 @@ export class CartorioService {
           },
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof BadRequestException) {
         throw error;
       }
@@ -518,7 +518,7 @@ export class CartorioService {
         createdAt: cartorio.createdAt,
         updatedAt: cartorio.updatedAt,
       }));
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -682,7 +682,7 @@ export class CartorioService {
         createdAt: cartorio.createdAt,
         updatedAt: cartorio.updatedAt,
       };
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -1078,7 +1078,7 @@ export class CartorioService {
         success: true,
         message: 'Cartório atualizado com sucesso',
       };
-    } catch (error) {
+    } catch (error: any) {
       if (
         error instanceof BadRequestException ||
         error instanceof NotFoundException
@@ -1290,7 +1290,7 @@ export class CartorioService {
         success: true,
         message: 'Cartório desativado com sucesso',
       };
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof NotFoundException) {
         throw error;
       }

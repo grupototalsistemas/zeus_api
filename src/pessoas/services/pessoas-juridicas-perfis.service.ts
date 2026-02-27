@@ -87,7 +87,7 @@ export class PessoasJuridicasPerfisService {
           data: perfil,
         });
         successCount++;
-      } catch (error) {
+      } catch (error: any) {
         results.push({
           success: false,
           error: error.message || 'Erro desconhecido ao criar perfil',

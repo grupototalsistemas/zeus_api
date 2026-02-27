@@ -25,7 +25,7 @@ export class SistemasService {
       if (sistemaExistente) {
         throw new BadRequestException('Sistema ja cadastrado');
       }
-    } catch (error) {
+    } catch (error: any) {
       throw new ServiceUnavailableException('Erro ao criar sistema');
     }
     return this.prisma.sistemas.create({

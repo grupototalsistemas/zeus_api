@@ -102,7 +102,7 @@ export class PessoasFisicasGenerosService {
           erros,
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       throw new BadRequestException({
         message: 'Erro ao criar gêneros',
         error: error.message,

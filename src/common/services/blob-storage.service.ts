@@ -24,7 +24,7 @@ export class BlobStorageService {
   async deleteFile(pathname: string): Promise<void> {
     try {
       await del(pathname);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao deletar arquivo do blob storage:', error);
       // Não propagar erro para não quebrar outras operações
     }

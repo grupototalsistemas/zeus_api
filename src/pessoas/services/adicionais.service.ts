@@ -107,7 +107,7 @@ export class FuncionariosAdicionaisTiposService {
           erros,
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       throw new BadRequestException({
         message: 'Erro ao criar dados adicionais',
         error: error.message,

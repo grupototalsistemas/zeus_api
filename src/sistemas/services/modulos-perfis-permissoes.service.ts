@@ -121,7 +121,7 @@ export class ModulosPerfisPermissoesService {
             perfil: novaPermissao.perfil.descricao,
           },
         });
-      } catch (error) {
+      } catch (error: any) {
         erros.push({
           permissao,
           erro: `Erro ao criar permissão: ${error.message}`,

@@ -674,7 +674,7 @@ export class AuthService {
 
       const tokens = await this.generateTokens(userData[0]);
       return tokens;
-    } catch (error) {
+    } catch (error: any) {
       throw new UnauthorizedException('Token inválido ou expirado');
     }
   }
@@ -706,7 +706,7 @@ export class AuthService {
         timestamp: new Date().toISOString(),
         database: 'connected',
       };
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
         'Banco ou sistema indisponível',
         HttpStatus.SERVICE_UNAVAILABLE,
@@ -725,7 +725,7 @@ export class AuthService {
       }
 
       return await bcrypt.compare(plainPassword, hashedPassword);
-    } catch (error) {
+    } catch (error: any) {
       throw new BadRequestException('Usuario ou senha inválidos');
     }
   }

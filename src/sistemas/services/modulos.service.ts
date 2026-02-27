@@ -78,7 +78,7 @@ export class ModulosService {
 
         return novoModulo;
       });
-    } catch (error) {
+    } catch (error: any) {
       if (
         error instanceof BadRequestException ||
         error instanceof NotFoundException

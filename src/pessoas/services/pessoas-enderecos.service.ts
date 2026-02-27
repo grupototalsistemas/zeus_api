@@ -294,7 +294,7 @@ export class PessoasEnderecosService {
 
     try {
       return typeof value === 'bigint' ? value : BigInt(value);
-    } catch (error) {
+    } catch (error: any) {
       throw new BadRequestException(`Campo ${field} invalido`);
     }
   }

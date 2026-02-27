@@ -139,7 +139,7 @@ export class PrismaService
         poolSize: 10, // Valor padrão do Prisma
         activeConnections: -1, // Não disponível facilmente no Prisma
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         isConnected: false,
         poolSize: 0,

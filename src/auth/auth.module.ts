@@ -5,7 +5,6 @@ import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 import { LocalStrategy } from 'src/common/strategies/local.strategy';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { CertificateService } from './certificate.service';
 
 @Module({
   imports: [
@@ -14,7 +13,7 @@ import { CertificateService } from './certificate.service';
       secret: process.env.JWT_SECRET || 'secret123',
     }),
   ],
-  providers: [AuthService, CertificateService, JwtStrategy, LocalStrategy],
+  providers: [AuthService, JwtStrategy, LocalStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

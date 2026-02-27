@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -9,7 +8,6 @@ import {
   Post,
   Request,
   Res,
-  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -23,7 +21,6 @@ import { NoLog } from 'src/common/decorators/no-log.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthService } from './auth.service';
-import { CertificateService } from './certificate.service';
 import {
   ChaveSenhaApiDto,
   CriarChaveDto,
@@ -37,128 +34,9 @@ import {
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private certificateService: CertificateService,
     private prisma: PrismaService,
   ) {}
 
-  //--------------------------------------- Validar Certificado ---------------------------------------
-  @Public()
-  @ApiExcludeEndpoint()
-  @Post('certificate/validate')
-  @ApiOperation({
-    summary: 'Validar certificado digital',
-    description:
-      'Valida um certificado digital e retorna apenas se é válido ou não',
-  })
-  @ApiBody({
-    required: true,
-    schema: {
-      type: 'object',
-      properties: {
-        certificate: {
-          type: 'string',
-          description: 'Certificado digital em formato string (PEM ou base64)',
-        },
-      },
-    },
-  })
-  async validateCertificate(@Body() body: { certificate: string }) {
-    if (!body.certificate) {
-      throw new BadRequestException('Certificado digital é obrigatório');
-    }
-
-    try {
-      const isValid = this.certificateService.validateCertificate(
-        body.certificate,
-      );
-
-      return {
-        isValid,
-      };
-    } catch (error) {
-      console.error('Erro ao validar certificado:', error);
-      return {
-        isValid: false,
-      };
-    }
-  }
-
-  //--------------------------------------- Login com Certificado ---------------------------------------
-  @Public()
-  @NoLog()
-  @Post('certificate/login')
-  @ApiExcludeEndpoint()
-  @ApiOperation({
-    summary: 'Login com certificado digital',
-    description:
-      'Autentica usuário usando certificado digital em formato string',
-  })
-  @ApiBody({
-    required: true,
-    schema: {
-      type: 'object',
-      properties: {
-        certificate: {
-          type: 'string',
-          description: 'Certificado digital em formato string (PEM ou base64)',
-        },
-      },
-    },
-  })
-  async loginWithCertificate(
-    @Body() body: { certificate: string },
-    @Res({ passthrough: true }) res: express.Response,
-  ) {
-    if (!body.certificate) {
-      throw new BadRequestException('Certificado digital é obrigatório');
-    }
-
-    // 1. Valida o certificado
-    const isValid = this.certificateService.validateCertificate(
-      body.certificate,
-    );
-    if (!isValid) {
-      throw new UnauthorizedException(
-        'Certificado digital inválido ou expirado',
-      );
-    }
-
-    // 2. Extrai informações do certificado
-    const certInfo = this.certificateService.extractCertificateData(
-      body.certificate,
-    );
-    // 3. Busca o usuário no banco
-    const user = await this.certificateService.findUserByCertificate(certInfo);
-    if (!user) {
-      throw new UnauthorizedException(
-        'Usuário não encontrado para este certificado',
-      );
-    }
-    // 4. Gera o token JWT
-    const { accessToken, user: userData } = await this.authService.login(user);
-    // 5. Define o cookie
-    const isSecureEnv = ['production', 'homolog', 'development'].includes(
-      process.env.NODE_ENV || '',
-    );
-    res.cookie('token', accessToken, {
-      httpOnly: true,
-      secure: isSecureEnv,
-      sameSite: isSecureEnv ? 'none' : 'lax',
-      maxAge: 24 * 60 * 60 * 1000, // 1 dia
-      path: '/',
-      domain: isSecureEnv ? 'totalsistemas.com.br' : 'localhost',
-    });
-
-    return {
-      user: userData,
-      authMethod: 'certificate',
-      certificateInfo: {
-        commonName: certInfo.commonName,
-        issuer: certInfo.issuer,
-        validTo: certInfo.validTo,
-      },
-    };
-  }
   //
   //--------------------------------------- Criar Chave JWT e Senha Randômica ---------------------------------------
   @Public()
@@ -400,7 +278,7 @@ export class AuthController {
     try {
       await this.prisma.$queryRaw`SELECT 1`; // query bem leve
       return { status: 'ok', database: 'connected' };
-    } catch (error) {
+    } catch (error: any) {
       return { status: 'error', database: 'disconnected', error };
     }
   }

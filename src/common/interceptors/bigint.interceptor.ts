@@ -30,7 +30,7 @@ export class BigIntInterceptor implements NestInterceptor {
                 typeof value === 'bigint' ? value.toString() : value,
               ),
             );
-          } catch (error) {
+          } catch (error: any) {
             // Se não conseguir serializar, retorna o dado original
             return data;
           }

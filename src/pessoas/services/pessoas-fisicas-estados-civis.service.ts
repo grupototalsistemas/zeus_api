@@ -98,7 +98,7 @@ export class PessoasFisicasEstadosCivisService {
           erros,
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       throw new BadRequestException({
         message: 'Erro ao criar estados civis',
         error: error.message,

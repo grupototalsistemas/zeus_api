@@ -287,7 +287,7 @@ export class FornecedoresService {
         }
         const ids = empresas.map((e) => e.id_pessoa_juridica_filial);
         orConditions.push({ id: { in: ids } });
-      } catch (error) {
+      } catch (error: any) {
         throw new InternalServerErrorException(
           'Erro ao buscar empresas vinculadas',
         );

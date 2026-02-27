@@ -110,7 +110,7 @@ export class SistemasModulosService {
             component_text: novoVinculo.moduloPrincipal.component_text,
           },
         });
-      } catch (error) {
+      } catch (error: any) {
         erros.push({
           modulo,
           erro: `Erro ao criar vínculo: ${error.message}`,
