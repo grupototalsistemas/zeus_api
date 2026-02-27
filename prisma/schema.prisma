@@ -458,14 +458,13 @@ model PessoasUsuarios {
   updatedAt        DateTime? @map("updated_at")
 
   // Relacionamentos
-  pessoaFisica              PessoasFisica              @relation(fields: [id_pessoa_fisica], references: [id])
-  logSystem                 LogSystem[]
-  chamados                  Chamado[]
-  chamadoMovimentos         ChamadoMovimento[]
-  chamadoMovimentoAnexos    ChamadoMovimentoAnexo[]
-  mensagensEnviadas         ChamadoMovimentoMensagem[] @relation("MensagemEnvio")
-  mensagensLidas            ChamadoMovimentoMensagem[] @relation("MensagemLeitura")
-  chamadoMovimentoMensagens ChamadoMovimentoMensagem[]
+  pessoaFisica           PessoasFisica              @relation(fields: [id_pessoa_fisica], references: [id])
+  logSystem              LogSystem[]
+  chamados               Chamado[]
+  chamadoMovimentos      ChamadoMovimento[]
+  chamadoMovimentoAnexos ChamadoMovimentoAnexo[]
+  mensagensEnviadas      ChamadoMovimentoMensagem[] @relation("MensagemEnvio")
+  mensagensLidas         ChamadoMovimentoMensagem[] @relation("MensagemLeitura")
 
   @@map("pessoas_usuarios")
   @@schema("global")
@@ -629,11 +628,9 @@ model ChamadoMovimentoMensagem {
   createdAt DateTime  @default(dbgenerated("now()")) @map("created_at")
   updatedAt DateTime? @map("updated_at")
 
-  movimento         ChamadoMovimento @relation(fields: [id_chamado_movimento], references: [id])
-  usuarioEnvio      PessoasUsuarios  @relation("MensagemEnvio", fields: [id_pessoa_usuario_envio], references: [id])
-  usuarioLeitura    PessoasUsuarios  @relation("MensagemLeitura", fields: [id_pessoa_usuario_leitura], references: [id])
-  pessoasUsuarios   PessoasUsuarios? @relation(fields: [pessoasUsuariosId], references: [id])
-  pessoasUsuariosId BigInt?
+  movimento      ChamadoMovimento @relation(fields: [id_chamado_movimento], references: [id])
+  usuarioEnvio   PessoasUsuarios  @relation("MensagemEnvio", fields: [id_pessoa_usuario_envio], references: [id])
+  usuarioLeitura PessoasUsuarios  @relation("MensagemLeitura", fields: [id_pessoa_usuario_leitura], references: [id])
 
   @@map("chamado_movimento_mensagem")
   @@schema("webzeus")

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { ChamadosModule } from './chamados/chamados.module';
 import { CommonServicesModule } from './common/services/common-services.module';
@@ -24,6 +25,6 @@ import { SistemasModule } from './sistemas/sistemas.module';
     SistemasModule,
     ChamadosModule,
   ],
-  controllers: [],
+  controllers: [AppController],
 })
 export class AppModule {}
