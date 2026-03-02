@@ -343,11 +343,13 @@ export class ChamadosService {
         empresa: true,
         sistema: true,
         pessoaFisica: true,
+        usuario: true,
         ocorrencia: true,
         prioridade: true,
         movimentos: {
           include: {
             etapa: true,
+            mensagens: true,
           },
         },
       },
